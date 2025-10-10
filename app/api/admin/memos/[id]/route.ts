@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@/app/generated/prisma";
 
 const prisma = new PrismaClient();
+const db = prisma as any;
 
 export async function GET(
   request: NextRequest,
@@ -20,20 +21,15 @@ export async function GET(
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
       );
     }
 
-    const memo = await prisma.memo.findUnique({
+    const memo = await db.memo.findUnique({
       where: { id },
       include: {
         items: true,
@@ -79,13 +75,8 @@ export async function PUT(
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
@@ -95,7 +86,7 @@ export async function PUT(
     const data = await request.json();
 
     // Update memo
-    const memo = await prisma.memo.update({
+    const memo = await db.memo.update({
       where: { id },
       data: {
         date: new Date(data.date),
@@ -115,13 +106,22 @@ export async function PUT(
     // Update items
     if (data.items) {
       // Delete existing items
-      await prisma.memoItem.deleteMany({
+      await db.memoItem.deleteMany({
         where: { memoId: id },
       });
 
       // Create new items
-      await prisma.memoItem.createMany({
-        data: data.items.map((item: any) => ({
+      await db.memoItem.createMany({
+        data: data.items.map((item: {
+          description: string;
+          carat: number;
+          color: string;
+          clarity: string;
+          lab: string;
+          reportNo: string;
+          pricePerCarat: number;
+          total: number;
+        }) => ({
           memoId: id,
           description: item.description,
           carat: item.carat,
@@ -163,13 +163,8 @@ export async function DELETE(
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
@@ -177,7 +172,7 @@ export async function DELETE(
     }
 
     // Delete memo (items will be deleted automatically due to cascade)
-    await prisma.memo.delete({
+    await db.memo.delete({
       where: { id },
     });
 
