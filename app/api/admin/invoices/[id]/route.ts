@@ -20,13 +20,8 @@ export async function GET(
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
@@ -79,13 +74,8 @@ export async function PUT(
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
@@ -121,7 +111,16 @@ export async function PUT(
 
       // Create new items
       await prisma.invoiceItem.createMany({
-        data: data.items.map((item: any) => ({
+        data: data.items.map((item: {
+          description: string;
+          carat: number;
+          color: string;
+          clarity: string;
+          lab: string;
+          reportNo: string;
+          pricePerCarat: number;
+          total: number;
+        }) => ({
           invoiceId: id,
           description: item.description,
           carat: item.carat,
@@ -163,13 +162,8 @@ export async function DELETE(
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
