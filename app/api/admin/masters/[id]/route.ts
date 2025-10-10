@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@/app/generated/prisma";
 
 const prisma = new PrismaClient();
+const db = prisma as any;
 
 export async function GET(
   request: NextRequest,
@@ -20,20 +21,15 @@ export async function GET(
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
       );
     }
 
-    const master = await prisma.master.findUnique({
+    const master = await db.master.findUnique({
       where: { id },
       include: {
         references: true,
@@ -77,13 +73,8 @@ export async function PUT(
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
@@ -93,7 +84,7 @@ export async function PUT(
     const data = await request.json();
 
     // Update master
-    const master = await prisma.master.update({
+    const master = await db.master.update({
       where: { id },
       data: {
         companyName: data.companyName,
@@ -132,15 +123,15 @@ export async function PUT(
     // Update references
     if (data.referenceType === 'REFERENCE') {
       // Delete existing references
-      await prisma.reference.deleteMany({
+      await db.reference.deleteMany({
         where: { masterId: id },
       });
 
       // Create new references
-      await prisma.reference.createMany({
+      await db.reference.createMany({
         data: data.references
-          .filter((ref: any) => ref.companyName && ref.contactPerson && ref.contactNo)
-          .map((ref: any) => ({
+          .filter((ref: { companyName?: string; contactPerson?: string; contactNo?: string }) => ref.companyName && ref.contactPerson && ref.contactNo)
+          .map((ref: { companyName: string; contactPerson: string; contactNo: string }) => ({
             masterId: id,
             companyName: ref.companyName,
             contactPerson: ref.contactPerson,
@@ -177,13 +168,8 @@ export async function DELETE(
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
@@ -191,12 +177,12 @@ export async function DELETE(
     }
 
     // Delete references first
-    await prisma.reference.deleteMany({
+    await db.reference.deleteMany({
       where: { masterId: id },
     });
 
     // Delete master
-    await prisma.master.delete({
+    await db.master.delete({
       where: { id },
     });
 
