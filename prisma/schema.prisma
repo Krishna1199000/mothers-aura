@@ -13,3 +13,214 @@ datasource db {
   provider = "postgresql"
   url      = env("DATABASE_URL")
 }
+
+// -------------
+// Common Enums
+// -------------
+
+enum Role {
+  ADMIN
+  EMPLOYEE
+  CUSTOMER
+}
+
+// -----------------
+// NextAuth.js models
+// -----------------
+
+model User {
+  id             String   @id @default(uuid())
+  name           String?
+  email          String   @unique
+  phone          String?
+  password       String?
+  image          String?
+  role           Role     @default(CUSTOMER)
+  emailVerified  DateTime?
+  createdAt      DateTime @default(now())
+  updatedAt      DateTime @updatedAt
+
+  accounts       Account[]
+  sessions       Session[]
+
+  // Relations to created records
+  createdInvoices Invoice[] @relation("InvoiceCreatedBy")
+  createdMemos    Memo[]    @relation("MemoCreatedBy")
+}
+
+model Account {
+  id                String  @id @default(uuid())
+  userId            String
+  type              String
+  provider          String
+  providerAccountId String
+  refresh_token     String?
+  access_token      String?
+  expires_at        Int?
+  token_type        String?
+  scope             String?
+  id_token          String?
+  session_state     String?
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([provider, providerAccountId])
+}
+
+model Session {
+  id           String   @id @default(uuid())
+  sessionToken String   @unique
+  userId       String
+  expires      DateTime
+
+  user User @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model VerificationToken {
+  identifier String
+  token      String   @unique
+  expires    DateTime
+
+  @@unique([identifier, token])
+}
+
+// -----------------
+// Business models
+// -----------------
+
+model Master {
+  id                 String    @id @default(uuid())
+  companyName        String
+  ownerName          String?
+  addressLine1       String?
+  addressLine2       String?
+  country            String?
+  state              String?
+  city               String?
+  postalCode         String?
+  phoneNo            String?
+  faxNo              String?
+  email              String?
+  website            String?
+  paymentTerms       String?
+  shippedBy          String?
+  organizationType   String?
+  businessType       String?
+  businessRegNo      String?
+  panNo              String?
+  sellerPermitNo     String?
+  cstTinNo           String?
+  tradeBodyMembership String?
+  referenceType      String?
+  notes              String?
+  authorizedById     String?
+  accountManagerId   String?
+  brokerName         String?
+  partyGroup         String?
+  salesExecutiveId   String?
+  leadSourceId       String?
+  limit              Float?
+  createdAt          DateTime  @default(now())
+  updatedAt          DateTime  @updatedAt
+
+  references Reference[]
+  invoices   Invoice[]
+  memos      Memo[]
+}
+
+model Reference {
+  id           String  @id @default(uuid())
+  masterId     String
+  companyName  String
+  contactPerson String
+  contactNo    String
+  createdAt    DateTime @default(now())
+  updatedAt    DateTime @updatedAt
+
+  master Master @relation(fields: [masterId], references: [id], onDelete: Cascade)
+}
+
+model Invoice {
+  id            String    @id @default(uuid())
+  invoiceNumber String    @unique
+  date          DateTime?
+  dueDate       DateTime?
+  paymentTerms  String?
+  emailPdf      Boolean?  @default(false)
+  masterId      String
+  description   String?
+  shipmentCost  Float?    @default(0)
+  discount      Float?    @default(0)
+  crPayment     Float?    @default(0)
+  subtotal      Float?    @default(0)
+  totalDue      Float?    @default(0)
+  createdById   String?
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+
+  master   Master  @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  createdBy User?   @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
+  items    InvoiceItem[]
+}
+
+model InvoiceItem {
+  id             String   @id @default(uuid())
+  invoiceId      String
+  description    String
+  carat          Float
+  color          String?
+  clarity        String?
+  lab            String?
+  reportNo       String?
+  pricePerCarat  Float
+  total          Float
+
+  invoice Invoice @relation(fields: [invoiceId], references: [id], onDelete: Cascade)
+}
+
+model Memo {
+  id           String    @id @default(uuid())
+  memoNumber   String    @unique
+  date         DateTime?
+  dueDate      DateTime?
+  paymentTerms String?
+  emailPdf     Boolean?  @default(false)
+  masterId     String
+  description  String?
+  shipmentCost Float?    @default(0)
+  discount     Float?    @default(0)
+  crPayment    Float?    @default(0)
+  subtotal     Float?    @default(0)
+  totalDue     Float?    @default(0)
+  createdById  String?
+  createdAt    DateTime  @default(now())
+  updatedAt    DateTime  @updatedAt
+
+  master   Master @relation(fields: [masterId], references: [id], onDelete: Cascade)
+  createdBy User?  @relation("MemoCreatedBy", fields: [createdById], references: [id])
+  items    MemoItem[]
+}
+
+model MemoItem {
+  id            String  @id @default(uuid())
+  memoId        String
+  description   String
+  carat         Float
+  color         String?
+  clarity       String?
+  lab           String?
+  reportNo      String?
+  pricePerCarat Float
+  total         Float
+
+  memo Memo @relation(fields: [memoId], references: [id], onDelete: Cascade)
+}
+
+model ParcelGoods {
+  id          String   @id @default(uuid())
+  sieveSize   Int?
+  price       Float?
+  createdById String?
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+}
