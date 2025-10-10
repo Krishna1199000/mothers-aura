@@ -1,9 +1,7 @@
 import { NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { PrismaClient } from "@/app/generated/prisma";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 
 export async function GET() {
   try {
@@ -13,11 +11,7 @@ export async function GET() {
     }
 
     // Admin only
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true },
-    });
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Access denied. Admin role required.' }, { status: 403 });
     }
 
@@ -44,11 +38,7 @@ export async function POST(request: Request) {
       return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
     }
 
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { id: true, role: true },
-    });
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json({ error: 'Access denied. Admin role required.' }, { status: 403 });
     }
 
@@ -63,7 +53,7 @@ export async function POST(request: Request) {
     }
 
     // Check if sieve size already exists
-    const existing = await prisma.parcelGoods.findUnique({
+    const existing = await prisma.parcelGoods.findFirst({
       where: { sieveSize: parseFloat(sieveSize) }
     });
 
@@ -78,7 +68,7 @@ export async function POST(request: Request) {
       data: {
         sieveSize: parseFloat(sieveSize),
         price: parseFloat(price),
-        createdById: currentUser.id,
+        createdById: (session.user as any)?.id,
       }
     });
 
