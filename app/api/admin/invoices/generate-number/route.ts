@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@/app/generated/prisma";
 
 const prisma = new PrismaClient();
+const db = prisma as any;
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,13 +17,8 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if ((session.user as any)?.role !== 'ADMIN') {
       return NextResponse.json(
         { error: "Access denied. Admin role required." },
         { status: 403 }
@@ -36,7 +32,7 @@ export async function GET(request: NextRequest) {
     const dateFormat = `${day}${month}`;
 
     // Find the latest invoice for this day/month
-    const latestInvoice = await prisma.invoice.findFirst({
+    const latestInvoice = await db.invoice.findFirst({
       where: {
         invoiceNumber: {
           contains: `/${dateFormat}`,
