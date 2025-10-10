@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@/app/generated/prisma";
 
 const prisma = new PrismaClient();
+const db = prisma as any;
 
 export async function GET(
   request: NextRequest,
@@ -28,7 +29,7 @@ export async function GET(
       );
     }
 
-    const invoice = await prisma.invoice.findUnique({
+    const invoice = await db.invoice.findUnique({
       where: { id },
       include: {
         items: true,
@@ -85,7 +86,7 @@ export async function PUT(
     const data = await request.json();
 
     // Update invoice
-    const invoice = await prisma.invoice.update({
+    const invoice = await db.invoice.update({
       where: { id },
       data: {
         date: new Date(data.date),
@@ -105,12 +106,12 @@ export async function PUT(
     // Update items
     if (data.items) {
       // Delete existing items
-      await prisma.invoiceItem.deleteMany({
+      await db.invoiceItem.deleteMany({
         where: { invoiceId: id },
       });
 
       // Create new items
-      await prisma.invoiceItem.createMany({
+      await db.invoiceItem.createMany({
         data: data.items.map((item: {
           description: string;
           carat: number;
@@ -171,7 +172,7 @@ export async function DELETE(
     }
 
     // Delete invoice (items will be deleted automatically due to cascade)
-    await prisma.invoice.delete({
+    await db.invoice.delete({
       where: { id },
     });
 

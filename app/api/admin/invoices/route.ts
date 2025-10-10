@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@/app/generated/prisma";
 
 const prisma = new PrismaClient();
+const db = prisma as any;
 
 export async function GET(request: NextRequest) {
   try {
@@ -25,7 +26,7 @@ export async function GET(request: NextRequest) {
     }
 
     // Fetch all invoices with related data
-    const invoices = await prisma.invoice.findMany({
+    const invoices = await db.invoice.findMany({
       select: {
         id: true,
         invoiceNumber: true,
@@ -75,7 +76,7 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
 
     // Create invoice with items
-    const invoice = await prisma.invoice.create({
+    const invoice = await db.invoice.create({
       data: {
         invoiceNumber: data.invoiceNumber,
         date: new Date(data.date),
