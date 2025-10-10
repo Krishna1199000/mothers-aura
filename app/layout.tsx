@@ -31,8 +31,9 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en-GB" className={inter.className}>
+    <html lang="en-GB" suppressHydrationWarning>
       <head>
+        <style dangerouslySetInnerHTML={{ __html: `:root { color-scheme: light; }` }} />
         <script
           type="application/ld+json"
           dangerouslySetInnerHTML={{
@@ -52,7 +53,7 @@ export default function RootLayout({
           }}
         />
       </head>
-      <body className="antialiased">
+      <body className={`antialiased ${inter.className}`}>
         <Providers>
           {children}
         </Providers>

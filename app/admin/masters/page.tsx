@@ -18,7 +18,7 @@ interface Master {
   companyName: string;
   email: string;
   phoneNo: string;
-  salesExecutive: {
+  salesExecutive?: {
     name: string;
   };
   updatedAt: string;
@@ -146,7 +146,7 @@ export default function MastersPage() {
                       <TableCell className="font-medium">{master.companyName}</TableCell>
                       <TableCell>{master.email}</TableCell>
                       <TableCell>{master.phoneNo}</TableCell>
-                      <TableCell>{master.salesExecutive.name}</TableCell>
+                      <TableCell>{master.salesExecutive?.name ?? "-"}</TableCell>
                       <TableCell>
                         {new Date(master.updatedAt).toLocaleString()}
                       </TableCell>

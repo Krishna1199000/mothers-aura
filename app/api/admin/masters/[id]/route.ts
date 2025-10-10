@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { PrismaClient } from "@/app/generated/prisma";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 const db = prisma as any;
 
 export async function GET(
@@ -33,11 +31,6 @@ export async function GET(
       where: { id },
       include: {
         references: true,
-        salesExecutive: {
-          select: {
-            name: true,
-          },
-        },
       },
     });
 

@@ -1,9 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { PrismaClient } from "@/app/generated/prisma";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
 const db = prisma as any;
 
 export async function GET(request: NextRequest) {
@@ -75,24 +73,38 @@ export async function POST(request: NextRequest) {
 
     const data = await request.json();
 
+    // Basic validation to avoid runtime errors
+    if (!data.masterId || typeof data.masterId !== 'string') {
+      return NextResponse.json(
+        { error: "masterId is required" },
+        { status: 400 }
+      );
+    }
+    if (!data.invoiceNumber || typeof data.invoiceNumber !== 'string') {
+      return NextResponse.json(
+        { error: "invoiceNumber is required" },
+        { status: 400 }
+      );
+    }
+
     // Create invoice with items
     const invoice = await db.invoice.create({
       data: {
         invoiceNumber: data.invoiceNumber,
-        date: new Date(data.date),
-        dueDate: new Date(data.dueDate),
-        paymentTerms: data.paymentTerms,
+        date: data.date ? new Date(data.date) : null,
+        dueDate: data.dueDate ? new Date(data.dueDate) : null,
+        paymentTerms: typeof data.paymentTerms === 'string' ? data.paymentTerms : String(data.paymentTerms ?? ''),
         emailPdf: data.emailPdf,
         masterId: data.masterId,
         description: data.description,
-        shipmentCost: data.shipmentCost,
-        discount: data.discount,
-        crPayment: data.crPayment,
-        subtotal: data.subtotal,
-        totalDue: data.totalDue,
+        shipmentCost: typeof data.shipmentCost === 'number' ? data.shipmentCost : 0,
+        discount: typeof data.discount === 'number' ? data.discount : 0,
+        crPayment: typeof data.crPayment === 'number' ? data.crPayment : 0,
+        subtotal: typeof data.subtotal === 'number' ? data.subtotal : 0,
+        totalDue: typeof data.totalDue === 'number' ? data.totalDue : 0,
         createdById: session.user.id as string,
-        items: {
-          create: data.items.map((item: {
+        items: data.items && Array.isArray(data.items) ? {
+          create: (data.items as Array<{
             description: string;
             carat: number;
             color: string;
@@ -101,17 +113,19 @@ export async function POST(request: NextRequest) {
             reportNo: string;
             pricePerCarat: number;
             total: number;
-          }) => ({
-            description: item.description,
-            carat: item.carat,
-            color: item.color,
-            clarity: item.clarity,
-            lab: item.lab,
-            reportNo: item.reportNo,
-            pricePerCarat: item.pricePerCarat,
-            total: item.total,
-          }))
-        }
+          }>).
+            filter((item) => Number.isFinite(item.carat) && Number.isFinite(item.pricePerCarat) && Number.isFinite(item.total)).
+            map((item) => ({
+              description: item.description ?? '',
+              carat: item.carat ?? 0,
+              color: item.color ?? null,
+              clarity: item.clarity ?? null,
+              lab: item.lab ?? null,
+              reportNo: item.reportNo ?? null,
+              pricePerCarat: item.pricePerCarat ?? 0,
+              total: item.total ?? 0,
+            }))
+        } : undefined
       },
       include: {
         items: true,

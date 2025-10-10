@@ -168,6 +168,18 @@ export default function CreateInvoicePage() {
     setLoading(true);
 
     try {
+      // Client-side validation to avoid 500s
+      if (!formData.masterId) {
+        throw new Error("Please select a company (master).");
+      }
+      if (!formData.invoiceNumber) {
+        throw new Error("Invoice number is missing. Try regenerating and submitting again.");
+      }
+      const hasAtLeastOneItem = items.length > 0 && items.some(i => parseFloat(i.total) > 0);
+      if (!hasAtLeastOneItem) {
+        throw new Error("Please add at least one item with a non-zero total.");
+      }
+
       const subtotal = calculateSubtotal();
       const totalDue = calculateTotal();
 
@@ -178,6 +190,8 @@ export default function CreateInvoicePage() {
         },
         body: JSON.stringify({
           ...formData,
+          date: formData.date?.toISOString?.() ?? null,
+          dueDate: formData.dueDate?.toISOString?.() ?? null,
           items: items.map(item => ({
             ...item,
             carat: parseFloat(item.carat),
@@ -193,10 +207,11 @@ export default function CreateInvoicePage() {
         }),
       });
 
-      const data = await response.json();
+      let data: any = null;
+      try { data = await response.json(); } catch {}
 
       if (!response.ok) {
-        throw new Error(data.error || "Failed to create invoice");
+        throw new Error(data?.error || `Failed to create invoice (${response.status})`);
       }
 
       router.push('/admin/invoices');

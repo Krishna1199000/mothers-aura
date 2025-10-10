@@ -28,19 +28,24 @@ function SigninInner() {
   const searchParams = useSearchParams();
 
   useEffect(() => {
-    // Check if user is already signed in
+    // Check if user is already signed in and honor callbackUrl
     const checkSession = async () => {
       const session = await getSession();
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
       if (session) {
-        router.push("/dashboard");
+        router.replace(callbackUrl);
       }
     };
     checkSession();
 
-    // Get success message from URL params
+    // Get success message or error from URL params
     const message = searchParams.get("message");
     if (message) {
       setSuccessMessage(message);
+    }
+    const error = searchParams.get("error");
+    if (error) {
+      setSubmitError(error);
     }
   }, [router, searchParams]);
 
@@ -83,6 +88,7 @@ function SigninInner() {
     setIsLoading(true);
 
     try {
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
       const result = await signIn("credentials", {
         email: formData.email,
         password: formData.password,
@@ -92,7 +98,7 @@ function SigninInner() {
       if (result?.error) {
         setSubmitError("Invalid email or password");
       } else if (result?.ok) {
-        router.push("/dashboard");
+        router.replace(callbackUrl);
       }
     } catch {
       setSubmitError("Something went wrong. Please try again.");
