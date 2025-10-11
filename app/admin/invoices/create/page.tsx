@@ -3,7 +3,6 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { RoleBasedHeader } from "@/components/RoleBasedHeader";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -240,7 +239,6 @@ export default function CreateInvoicePage() {
   return (
     <div className="min-h-screen bg-background">
       <AnnouncementBar />
-      <RoleBasedHeader />
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">

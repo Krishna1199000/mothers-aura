@@ -18,21 +18,31 @@ export async function GET(request: NextRequest) {
     }
 
     // Authorize using role from session token
-    if ((session.user as any)?.role !== 'ADMIN') {
+    if (!["ADMIN", "EMPLOYEE"].includes((session.user as any)?.role)) {
       return NextResponse.json(
-        { error: "Access denied. Admin role required." },
+        { error: "Access denied. Admin or Employee role required." },
         { status: 403 }
       );
     }
 
+    // Build where clause
+    const where: any = {};
+
+    // For employees, only show masters they created
+    if ((session.user as any)?.role === "EMPLOYEE") {
+      where.createdById = session.user.id;
+    }
+
     // Fetch all masters with related data
     const masters = await db.master.findMany({
+      where,
       select: {
         id: true,
         companyName: true,
         email: true,
         phoneNo: true,
         updatedAt: true,
+        createdById: true,
       },
       orderBy: {
         updatedAt: 'desc',
@@ -61,9 +71,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Authorize using role from session token
-    if ((session.user as any)?.role !== 'ADMIN') {
+    if (!["ADMIN", "EMPLOYEE"].includes((session.user as any)?.role)) {
       return NextResponse.json(
-        { error: "Access denied. Admin role required." },
+        { error: "Access denied. Admin or Employee role required." },
         { status: 403 }
       );
     }
@@ -113,6 +123,7 @@ export async function POST(request: NextRequest) {
         salesExecutiveId: data.salesExecutiveId,
         leadSourceId: data.leadSourceId,
         limit: parseFloat(data.limit),
+        createdById: session.user.id,
         references: data.referenceType === 'REFERENCE' 
           ? {
               create: (data.references as Array<{ companyName: string; contactPerson: string; contactNo: string }>)

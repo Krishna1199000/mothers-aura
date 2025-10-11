@@ -3,8 +3,7 @@
 import React from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { RoleBasedHeader } from "@/components/RoleBasedHeader";
+import { useEffect, useState, useCallback } from "react";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -37,17 +36,7 @@ export default function MasterDetailsPage({ params }: { params: Promise<{ id: st
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (status === "loading") return;
-    if (!session) {
-      router.push("/signin");
-      return;
-    }
-    
-    fetchMaster();
-  }, [session, status, router, id]);
-
-  const fetchMaster = async () => {
+  const fetchMaster = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/masters/${id}`);
       if (response.ok) {
@@ -61,7 +50,17 @@ export default function MasterDetailsPage({ params }: { params: Promise<{ id: st
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session) {
+      router.push("/signin");
+      return;
+    }
+    
+    fetchMaster();
+  }, [session, status, router, id, fetchMaster]);
 
   if (status === "loading" || loading) {
     return (
@@ -82,7 +81,6 @@ export default function MasterDetailsPage({ params }: { params: Promise<{ id: st
     return (
       <div className="min-h-screen bg-background">
         <AnnouncementBar />
-        <RoleBasedHeader />
         
         <main className="container mx-auto px-4 py-8">
           <Alert variant="destructive">
@@ -98,7 +96,6 @@ export default function MasterDetailsPage({ params }: { params: Promise<{ id: st
   return (
     <div className="min-h-screen bg-background">
       <AnnouncementBar />
-      <RoleBasedHeader />
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">

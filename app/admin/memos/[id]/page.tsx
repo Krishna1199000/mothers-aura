@@ -13,7 +13,6 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState, useCallback } from "react";
-import { RoleBasedHeader } from "@/components/RoleBasedHeader";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -242,7 +241,6 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
     return (
       <div className="min-h-screen bg-background">
       <AnnouncementBar />
-      <RoleBasedHeader />
         
         <main className="container mx-auto px-4 py-8">
           <Alert variant="destructive">
@@ -259,7 +257,6 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
     <div className="min-h-screen bg-background">
       <div className="no-print">
         <AnnouncementBar />
-        <RoleBasedHeader />
       </div>
       
       <main className="container mx-auto px-4 py-8">

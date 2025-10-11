@@ -16,21 +16,31 @@ export async function GET(request: NextRequest) {
     }
 
     // Authorize using role from session token
-    if ((session.user as any)?.role !== 'ADMIN') {
+    if (!["ADMIN", "EMPLOYEE"].includes((session.user as any)?.role)) {
       return NextResponse.json(
-        { error: "Access denied. Admin role required." },
+        { error: "Access denied. Admin or Employee role required." },
         { status: 403 }
       );
     }
 
+    // Build where clause
+    const where: any = {};
+
+    // For employees, only show invoices they created
+    if ((session.user as any)?.role === "EMPLOYEE") {
+      where.createdById = session.user.id;
+    }
+
     // Fetch all invoices with related data
     const invoices = await db.invoice.findMany({
+      where,
       select: {
         id: true,
         invoiceNumber: true,
         date: true,
         dueDate: true,
         totalDue: true,
+        createdById: true,
         master: {
           select: {
             companyName: true,
@@ -64,9 +74,9 @@ export async function POST(request: NextRequest) {
     }
 
     // Authorize using role from session token
-    if ((session.user as any)?.role !== 'ADMIN') {
+    if (!["ADMIN", "EMPLOYEE"].includes((session.user as any)?.role)) {
       return NextResponse.json(
-        { error: "Access denied. Admin role required." },
+        { error: "Access denied. Admin or Employee role required." },
         { status: 403 }
       );
     }

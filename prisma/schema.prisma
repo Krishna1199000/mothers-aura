@@ -46,6 +46,10 @@ model User {
   // Relations to created records
   createdInvoices Invoice[] @relation("InvoiceCreatedBy")
   createdMemos    Memo[]    @relation("MemoCreatedBy")
+  createdLedger   Ledger[]  @relation("LedgerCreatedBy")
+  createdReports  PerformanceReport[] @relation("PerformanceReportCreatedBy")
+  createdMasters  Master[]  @relation("MasterCreatedBy")
+  createdInventory Inventory[] @relation("InventoryCreatedBy")
 }
 
 model Account {
@@ -120,12 +124,15 @@ model Master {
   salesExecutiveId   String?
   leadSourceId       String?
   limit              Float?
+  createdById        String?
   createdAt          DateTime  @default(now())
   updatedAt          DateTime  @updatedAt
 
   references Reference[]
   invoices   Invoice[]
   memos      Memo[]
+  ledger     Ledger[]
+  createdBy  User?    @relation("MasterCreatedBy", fields: [createdById], references: [id])
 }
 
 model Reference {
@@ -161,6 +168,7 @@ model Invoice {
   master   Master  @relation(fields: [masterId], references: [id], onDelete: Cascade)
   createdBy User?   @relation("InvoiceCreatedBy", fields: [createdById], references: [id])
   items    InvoiceItem[]
+  ledger   Ledger[]
 }
 
 model InvoiceItem {
@@ -223,4 +231,65 @@ model ParcelGoods {
   createdById String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+}
+
+model Inventory {
+  id              String   @id @default(uuid())
+  stockId         String   @unique
+  heldByCompany   String?
+  status          String   // AVAILABLE, HOLD, MEMO, SOLD
+  shape           String
+  carat           Float
+  color           String
+  clarity         String
+  cut             String?
+  polish          String
+  symmetry        String
+  certificateNo   String?
+  lab             String
+  pricePerCarat   Float
+  amount          Float
+  imageUrl        String?
+  videoUrl        String?
+  certificateUrl  String?
+  measurement     String?
+  location        String?
+  createdById     String
+  createdAt       DateTime @default(now())
+  updatedAt       DateTime @updatedAt
+
+  createdBy       User     @relation("InventoryCreatedBy", fields: [createdById], references: [id])
+}
+
+model PerformanceReport {
+  id                  String   @id @default(uuid())
+  date                DateTime
+  totalCalls          Int
+  totalEmails         Int
+  requirementReceived Int
+  memoNumber          String?
+  invoiceNumber       String?
+  notes               String?
+  createdById         String
+  createdAt           DateTime @default(now())
+  updatedAt           DateTime @updatedAt
+
+  createdBy User @relation("PerformanceReportCreatedBy", fields: [createdById], references: [id])
+}
+
+model Ledger {
+  id          String   @id @default(uuid())
+  date        DateTime
+  type        String   // CREDIT or DEBIT
+  amount      Float
+  description String
+  invoiceId   String?
+  masterId    String
+  createdById String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  invoice   Invoice? @relation(fields: [invoiceId], references: [id])
+  master    Master   @relation(fields: [masterId], references: [id])
+  createdBy User     @relation("LedgerCreatedBy", fields: [createdById], references: [id])
 }

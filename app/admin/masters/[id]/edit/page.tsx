@@ -3,8 +3,7 @@
 import React from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useEffect, useState } from "react";
-import { RoleBasedHeader } from "@/components/RoleBasedHeader";
+import { useEffect, useState, useCallback } from "react";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
@@ -119,17 +118,6 @@ export default function EditMasterPage({ params }: { params: Promise<{ id: strin
     limit: "0",
   });
 
-  useEffect(() => {
-    if (status === "loading") return;
-    if (!session) {
-      router.push("/signin");
-      return;
-    }
-    
-    fetchUsers();
-    fetchMaster();
-  }, [session, status, router, id]);
-
   const fetchUsers = async () => {
     try {
       const response = await fetch('/api/admin/users');
@@ -143,7 +131,7 @@ export default function EditMasterPage({ params }: { params: Promise<{ id: strin
     }
   };
 
-  const fetchMaster = async () => {
+  const fetchMaster = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/masters/${id}`);
       if (response.ok) {
@@ -195,7 +183,18 @@ export default function EditMasterPage({ params }: { params: Promise<{ id: strin
     } catch (error) {
       console.error("Error fetching master:", error);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session) {
+      router.push("/signin");
+      return;
+    }
+    
+    fetchUsers();
+    fetchMaster();
+  }, [session, status, router, id, fetchMaster]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -262,7 +261,6 @@ export default function EditMasterPage({ params }: { params: Promise<{ id: strin
     return (
       <div className="min-h-screen bg-background">
         <AnnouncementBar />
-        <RoleBasedHeader />
         
         <main className="container mx-auto px-4 py-8">
           <Alert variant="destructive">
@@ -278,7 +276,6 @@ export default function EditMasterPage({ params }: { params: Promise<{ id: strin
   return (
     <div className="min-h-screen bg-background">
       <AnnouncementBar />
-      <RoleBasedHeader />
       
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">

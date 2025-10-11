@@ -2,8 +2,7 @@
 
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import React, { useEffect, useState } from "react";
-import { RoleBasedHeader } from "@/components/RoleBasedHeader";
+import React, { useEffect, useState, useCallback } from "react";
 import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { AdminHeader } from "@/components/AdminHeader";
 import { Footer } from "@/components/Footer";
@@ -66,17 +65,7 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
   const [loading, setLoading] = useState(true);
   const [error, setError] = useState("");
 
-  useEffect(() => {
-    if (status === "loading") return;
-    if (!session) {
-      router.push("/signin");
-      return;
-    }
-    
-    fetchInvoice();
-  }, [session, status, router, id]);
-
-  const fetchInvoice = async () => {
+  const fetchInvoice = useCallback(async () => {
     try {
       const response = await fetch(`/api/admin/invoices/${id}`);
       if (response.ok) {
@@ -90,7 +79,17 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
     } finally {
       setLoading(false);
     }
-  };
+  }, [id]);
+
+  useEffect(() => {
+    if (status === "loading") return;
+    if (!session) {
+      router.push("/signin");
+      return;
+    }
+    
+    fetchInvoice();
+  }, [session, status, router, id, fetchInvoice]);
 
   const [isPrinting, setIsPrinting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
@@ -269,7 +268,6 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
     return (
       <div className="min-h-screen bg-background">
         <AnnouncementBar />
-        <RoleBasedHeader />
         
         <main className="container mx-auto px-4 py-8">
           <Alert variant="destructive">

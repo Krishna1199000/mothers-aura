@@ -1,9 +1,8 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import { PrismaClient } from "@/app/generated/prisma";
-
-const prisma = new PrismaClient();
+import prisma from "@/lib/prisma";
+const db = prisma as any;
 
 export async function GET(request: NextRequest) {
   try {
@@ -16,27 +15,32 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Get the current user's role
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if (!["ADMIN", "EMPLOYEE"].includes((session.user as any)?.role)) {
       return NextResponse.json(
-        { error: "Access denied. Admin role required." },
+        { error: "Access denied. Admin or Employee role required." },
         { status: 403 }
       );
     }
 
+    // Build where clause
+    const where: any = {};
+
+    // For employees, only show memos they created
+    if ((session.user as any)?.role === "EMPLOYEE") {
+      where.createdById = session.user.id;
+    }
+
     // Fetch all memos with related data
-    const memos = await prisma.memo.findMany({
+    const memos = await db.memo.findMany({
+      where,
       select: {
         id: true,
         memoNumber: true,
         date: true,
         dueDate: true,
         totalDue: true,
+        createdById: true,
         master: {
           select: {
             companyName: true,
@@ -69,15 +73,10 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Get the current user
-    const currentUser = await prisma.user.findUnique({
-      where: { email: session.user.email! },
-      select: { id: true, role: true }
-    });
-
-    if (!currentUser || currentUser.role !== 'ADMIN') {
+    // Authorize using role from session token
+    if (!["ADMIN", "EMPLOYEE"].includes((session.user as any)?.role)) {
       return NextResponse.json(
-        { error: "Access denied. Admin role required." },
+        { error: "Access denied. Admin or Employee role required." },
         { status: 403 }
       );
     }
@@ -85,7 +84,7 @@ export async function POST(request: NextRequest) {
     const data = await request.json();
 
     // Create memo with items
-    const memo = await prisma.memo.create({
+    const memo = await db.memo.create({
       data: {
         memoNumber: data.memoNumber,
         date: new Date(data.date),
@@ -99,7 +98,7 @@ export async function POST(request: NextRequest) {
         crPayment: data.crPayment,
         subtotal: data.subtotal,
         totalDue: data.totalDue,
-        createdById: currentUser.id,
+        createdById: session.user.id,
         items: {
           create: data.items.map((item: any) => ({
             description: item.description,
@@ -131,6 +130,8 @@ export async function POST(request: NextRequest) {
     );
   }
 }
+
+
 
 
 
