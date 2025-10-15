@@ -328,17 +328,17 @@ export default function AdminChatsPage() {
             <TabsList className="w-full">
               <TabsTrigger value="active" className="flex-1">
                 Active Chats
-                {activeChats.length > 0 && (
+                {(activeChats?.length ?? 0) > 0 && (
                   <Badge variant="secondary" className="ml-2">
-                    {activeChats.length}
+                    {activeChats?.length ?? 0}
                   </Badge>
                 )}
               </TabsTrigger>
               <TabsTrigger value="requests" className="flex-1">
                 Requests
-                {chatRequests.length > 0 && (
+                {(chatRequests?.length ?? 0) > 0 && (
                   <Badge variant="secondary" className="ml-2">
-                    {chatRequests.length}
+                    {chatRequests?.length ?? 0}
                   </Badge>
                 )}
               </TabsTrigger>
@@ -348,13 +348,13 @@ export default function AdminChatsPage() {
               <Card>
                 <CardContent className="p-4">
                   <ScrollArea className="h-[600px]">
-                    {activeChats.length === 0 ? (
+                    {(activeChats?.length ?? 0) === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         No active chats
                       </div>
                     ) : (
                       <div className="space-y-2">
-                        {activeChats.map((chat) => (
+                        {(activeChats ?? []).map((chat) => (
                           <div
                             key={chat.id}
                             className={`p-4 rounded-lg cursor-pointer transition-colors ${
@@ -396,13 +396,13 @@ export default function AdminChatsPage() {
               <Card>
                 <CardContent className="p-4">
                   <ScrollArea className="h-[600px]">
-                    {chatRequests.length === 0 ? (
+                    {(chatRequests?.length ?? 0) === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         No pending requests
                       </div>
                     ) : (
                       <div className="space-y-4">
-                        {chatRequests.map((request) => (
+                        {(chatRequests ?? []).map((request) => (
                           <Card key={request.id}>
                             <CardContent className="p-4">
                               <div className="flex items-start justify-between">

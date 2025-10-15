@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useRef } from "react";
 import Link from "next/link";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
@@ -68,6 +68,9 @@ const navItems: Record<string, NavItem[]> = {
 export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
   const pathname = usePathname();
   const [isOpen, setIsOpen] = useState(false);
+  const [activeGroup, setActiveGroup] = useState<string | null>(null);
+  const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
+  const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const items = navItems[role] || navItems.CUSTOMER;
 
   // Group items for desktop navigation
@@ -107,7 +110,18 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
           {/* Desktop Navigation */}
           <div className="hidden md:flex items-center space-x-1">
             {Object.entries(groupedItems).map(([group, groupItems]) => (
-              <div key={group} className="relative group">
+              <div
+                key={group}
+                className="relative"
+                onMouseEnter={() => {
+                  if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                  setActiveGroup(group);
+                }}
+                onMouseLeave={() => {
+                  if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                  hoverTimerRef.current = setTimeout(() => setActiveGroup(null), 150);
+                }}
+              >
                 {groupItems.length === 1 ? (
                   <Link
                     href={groupItems[0].href}
@@ -133,7 +147,18 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
                       {group.charAt(0).toUpperCase() + group.slice(1)}
                       <ChevronDown className="h-4 w-4" />
                     </button>
-                    <div className="absolute top-full left-0 mt-1 w-48 bg-popover rounded-md shadow-md opacity-0 invisible group-hover:opacity-100 group-hover:visible transition-all duration-200 border">
+                    {activeGroup === group && (
+                    <div
+                      className="absolute top-full left-0 mt-1 w-56 bg-popover rounded-md shadow-md border"
+                      onMouseEnter={() => {
+                        if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                        setActiveGroup(group);
+                      }}
+                      onMouseLeave={() => {
+                        if (hoverTimerRef.current) clearTimeout(hoverTimerRef.current);
+                        hoverTimerRef.current = setTimeout(() => setActiveGroup(null), 150);
+                      }}
+                    >
                       <div className="py-1">
                         {groupItems.map((item) => (
                           <Link
@@ -151,6 +176,7 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
                         ))}
                       </div>
                     </div>
+                    )}
                   </>
                 )}
               </div>
@@ -187,29 +213,52 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
                 </SheetTitle>
               </SheetHeader>
               <div className="mt-8 flex flex-col space-y-2">
-                {Object.entries(groupedItems).map(([group, groupItems]) => (
+                {Object.entries(groupedItems)
+                  .filter(([group]) => group !== 'ungrouped')
+                  .map(([group, groupItems]) => (
                   <div key={group} className="space-y-1">
                     {group !== "ungrouped" && (
-                      <h3 className="px-4 text-xs font-semibold text-muted-foreground uppercase tracking-wider">
-                        {group}
-                      </h3>
-                    )}
-                    {groupItems.map((item) => (
-                      <Link
-                        key={item.href}
-                        href={item.href}
-                        onClick={() => setIsOpen(false)}
-                        className={cn(
-                          "px-4 py-2 text-sm font-medium rounded-md transition-colors block",
-                          pathname === item.href
-                            ? "bg-primary/10 text-primary"
-                            : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-                        )}
+                      <button
+                        className="w-full flex items-center justify-between px-4 py-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider"
+                        onClick={() => setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }))}
                       >
-                        {item.label}
-                      </Link>
-                    ))}
+                        <span>{group}</span>
+                        <ChevronDown className={`h-4 w-4 transition-transform ${expandedGroups[group] ? 'rotate-180' : ''}`} />
+                      </button>
+                    )}
+                    <div className={`${expandedGroups[group] ? 'block' : 'hidden'}`}>
+                      {groupItems.map((item) => (
+                        <Link
+                          key={item.href}
+                          href={item.href}
+                          onClick={() => setIsOpen(false)}
+                          className={cn(
+                            "px-6 py-2 text-sm font-medium rounded-md transition-colors block",
+                            pathname === item.href
+                              ? "bg-primary/10 text-primary"
+                              : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                          )}
+                        >
+                          {item.label}
+                        </Link>
+                      ))}
+                    </div>
                   </div>
+                ))}
+                {groupedItems.ungrouped?.map((item) => (
+                  <Link
+                    key={item.href}
+                    href={item.href}
+                    onClick={() => setIsOpen(false)}
+                    className={cn(
+                      "px-4 py-2 text-sm font-medium rounded-md transition-colors block",
+                      pathname === item.href
+                        ? "bg-primary/10 text-primary"
+                        : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                    )}
+                  >
+                    {item.label}
+                  </Link>
                 ))}
               </div>
             </SheetContent>

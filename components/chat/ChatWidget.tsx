@@ -119,24 +119,36 @@ export function ChatWidget({ className }: ChatWidgetProps) {
     return () => clearTimeout(timer);
   }, [hasAutopopupRun]);
 
-  // Poll for new messages if we have a chat
+  // Poll for updates: if chatId present fetch messages; otherwise try to attach to a newly created chat for this email
   useEffect(() => {
-    if (!chatId || !isOpen) return;
+    if (!isOpen) return;
 
     const interval = setInterval(async () => {
       try {
-        const res = await fetch(`/api/chat/${chatId}`);
-        if (res.ok) {
-          const data = await res.json();
-          setMessages(data.messages);
+        if (chatId) {
+          const res = await fetch(`/api/chat/${chatId}`);
+          if (res.ok) {
+            const data = await res.json();
+            setMessages(data.messages);
+          }
+        } else if (formData.email) {
+          const res = await fetch('/api/chat/active');
+          if (res.ok) {
+            const data = await res.json();
+            const match = (data.chats || []).find((c: any) => c.customerEmail === formData.email);
+            if (match?.id) {
+              setChatId(match.id);
+              localStorage.setItem('chatId', match.id);
+            }
+          }
         }
       } catch (error) {
-        console.error('Error polling for messages:', error);
+        console.error('Error polling chat state:', error);
       }
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [chatId, isOpen]);
+  }, [chatId, isOpen, formData.email]);
 
   // Load existing chat if any and add welcome message
   useEffect(() => {
@@ -286,6 +298,29 @@ export function ChatWidget({ className }: ChatWidgetProps) {
           if (data.chat) {
             setChatId(data.chat.id);
             localStorage.setItem('chatId', data.chat.id);
+          } else if (formData.email) {
+            // Try to immediately attach to any active chat for this email
+            try {
+              const activeRes = await fetch('/api/chat/active');
+              if (activeRes.ok) {
+                const activeData = await activeRes.json();
+                const match = (activeData.chats || []).find((c: any) => c.customerEmail === formData.email);
+                if (match?.id) {
+                  setChatId(match.id);
+                  localStorage.setItem('chatId', match.id);
+                  await fetch('/api/chat/message', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                      content: newMessage,
+                      senderType: 'CUSTOMER',
+                      chatId: match.id,
+                      senderId: null,
+                    })
+                  });
+                }
+              }
+            } catch {}
           }
         } else {
           // Save message to existing chat
@@ -300,17 +335,6 @@ export function ChatWidget({ className }: ChatWidgetProps) {
             })
           });
         }
-
-        // Add final message
-        setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: 'final',
-            content: 'Thank you for providing your information! One of our representatives will be with you shortly.',
-            senderType: 'ADMIN',
-            createdAt: new Date().toISOString(),
-            isRead: false
-          }]);
-        }, 500);
       }
 
       setNewMessage('');
