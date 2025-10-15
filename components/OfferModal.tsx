@@ -11,32 +11,11 @@ export const OfferModal = () => {
   const [consent, setConsent] = useState(false);
 
   useEffect(() => {
-    const hasSeenOffer = localStorage.getItem('offer-seen');
-    const offerDismissed = localStorage.getItem('offer-dismissed');
-    
-    // Check if offer was dismissed and if the dismissal period has expired
-    if (offerDismissed) {
-      const dismissDate = new Date(offerDismissed);
-      const now = new Date();
-      if (now < dismissDate) {
-        // Still within dismissal period, don't show
-        return;
-      } else {
-        // Dismissal period expired, clear the storage
-        localStorage.removeItem('offer-dismissed');
-        localStorage.removeItem('offer-seen');
-      }
-    }
-    
-    // Show offer if not seen before or dismissal period expired
-    if (!hasSeenOffer) {
-      const timer = setTimeout(() => {
-        setIsVisible(true);
-        localStorage.setItem('offer-seen', 'true');
-      }, 3000); // Show after 3 seconds (reduced for testing)
+    const timer = setTimeout(() => {
+      setIsVisible(true);
+    }, 3000);
 
-      return () => clearTimeout(timer);
-    }
+    return () => clearTimeout(timer);
   }, []);
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -44,29 +23,17 @@ export const OfferModal = () => {
     if (email && phone && consent) {
       // TODO: Handle form submission
       console.log('Offer claimed:', { email, phone });
-      
-      // Store dismissal for 7 days
-      const dismissUntil = new Date();
-      dismissUntil.setDate(dismissUntil.getDate() + 7);
-      localStorage.setItem('offer-dismissed', dismissUntil.toISOString());
-      
+
       setIsVisible(false);
     }
   };
 
   const handleDismiss = () => {
-    // Store dismissal for 7 days
-    const dismissUntil = new Date();
-    dismissUntil.setDate(dismissUntil.getDate() + 7);
-    localStorage.setItem('offer-dismissed', dismissUntil.toISOString());
-    
     setIsVisible(false);
   };
 
   // Function to clear localStorage for testing (can be called from browser console)
   const clearOfferStorage = () => {
-    localStorage.removeItem('offer-seen');
-    localStorage.removeItem('offer-dismissed');
     setIsVisible(true);
   };
 

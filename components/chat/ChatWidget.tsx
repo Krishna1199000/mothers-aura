@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, MessageCircle, Send, X, MinusCircle } from 'lucide-react';
+import { Loader2, MessageCircle, Send, X, MinusCircle, RefreshCw } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
 import { useToast } from '@/components/ui/use-toast';
@@ -27,6 +27,7 @@ interface ChatWidgetProps {
 export function ChatWidget({ className }: ChatWidgetProps) {
   const { toast } = useToast();
   const [isOpen, setIsOpen] = useState(false);
+  const [hasAutopopupRun, setHasAutopopupRun] = useState(false);
   const [isMinimized, setIsMinimized] = useState(false);
   const [messages, setMessages] = useState<Message[]>([]);
   const [newMessage, setNewMessage] = useState('');
@@ -107,6 +108,16 @@ export function ChatWidget({ className }: ChatWidgetProps) {
 
     checkAdminStatus();
   }, []);
+
+  // Auto-open widget 10s after page load once per page view
+  useEffect(() => {
+    if (hasAutopopupRun) return;
+    const timer = setTimeout(() => {
+      setIsOpen(true);
+      setHasAutopopupRun(true);
+    }, 10000);
+    return () => clearTimeout(timer);
+  }, [hasAutopopupRun]);
 
   // Poll for new messages if we have a chat
   useEffect(() => {
@@ -328,6 +339,26 @@ export function ChatWidget({ className }: ChatWidgetProps) {
     }, 2000);
   };
 
+  const resetChat = () => {
+    try {
+      localStorage.removeItem('chatId');
+    } catch {}
+    setChatId(null);
+    setFormData({ name: '', email: '', message: '' });
+    setMessages([
+      {
+        id: 'welcome',
+        content: 'Hello! How can I help you today?',
+        senderType: 'ADMIN',
+        createdAt: new Date().toISOString(),
+        isRead: false
+      }
+    ]);
+    setChatStep('welcome');
+    setIsMinimized(false);
+    setIsOpen(true);
+  };
+
   return (
     <AnimatePresence>
       <div className={`fixed bottom-4 right-4 z-50 ${className}`}>
@@ -361,6 +392,14 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                     Chat with Us
                   </CardTitle>
                   <div className="flex items-center gap-2">
+                    <Button
+                      variant="ghost"
+                      size="icon"
+                      onClick={resetChat}
+                      title="Start new chat"
+                    >
+                      <RefreshCw className="h-4 w-4" />
+                    </Button>
                     <Button
                       variant="ghost"
                       size="icon"
