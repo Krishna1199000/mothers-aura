@@ -3,28 +3,27 @@ import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 export const Footer = () => {
   const footerLinks = {
     'Contact Us': [
-      { name: 'hello@mothersaura.co.uk', href: 'mailto:hello@mothersaura.co.uk' },
-      { name: '123 Diamond Lane, London', href: '#' }
+      { name: 'info@cranberridiamonds.in', href: 'mailto:info@cranberridiamonds.in' },
+      { name: '+91 845 287 2491', href: 'tel:+918452872491' }
     ],
     'Information': [
-      { name: 'Terms & Conditions', href: '#' },
-      { name: 'About Us', href: '#' },
-      { name: 'Privacy Policy', href: '#' },
-      { name: 'Contact Us', href: '#' }
+      { name: 'Terms & Conditions', href: '/terms' },
+      { name: 'About Us', href: '/about' },
+      { name: 'Privacy Policy', href: '/privacy' },
+      { name: 'Contact Us', href: '/contact' }
     ],
     'Links': [
-      { name: 'Diamond Education', href: '#' },
-      { name: 'Ring Sizing Guide', href: '#' },
-      { name: 'Care Instructions', href: '#' },
-      { name: 'Certification', href: '#' }
+      { name: 'Diamond Education', href: '/diamond-education' },
+      { name: 'Ring Sizing Guide', href: '/sizing-guide' },
+      { name: 'Care Instructions', href: '/care' },
+      { name: 'Certification', href: '/certification' }
     ]
   };
 
   const socialLinks = [
-    { icon: Facebook, href: '#', label: 'Facebook' },
-    { icon: Instagram, href: '#', label: 'Instagram' },
-    { icon: Linkedin, href: '#', label: 'LinkedIn' },
-    { icon: Twitter, href: '#', label: 'Twitter' }
+    { icon: Facebook, href: 'https://facebook.com/cranberridiamonds', label: 'Facebook' },
+    { icon: Instagram, href: 'https://instagram.com/cranberridiamonds', label: 'Instagram' },
+    { icon: Twitter, href: 'https://twitter.com/cranberridiamonds', label: 'Twitter' }
   ];
 
   return (

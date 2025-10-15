@@ -537,13 +537,13 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
                         <td className="border border-gray-300 p-2">{item.color} {item.clarity}</td>
                         <td className="border border-gray-300 p-2 text-center">{item.lab}</td>
                         <td className="border border-gray-300 p-2 text-center">{item.reportNo}</td>
-                        <td className="border border-gray-300 p-2 text-right">{item.pricePerCarat.toFixed(2)}</td>
-                        <td className="border border-gray-300 p-2 text-right">{item.total.toFixed(2)}</td>
+                        <td className="border border-gray-300 p-2 text-right">${item.pricePerCarat.toFixed(2)}</td>
+                        <td className="border border-gray-300 p-2 text-right">${item.total.toFixed(2)}</td>
                       </tr>
                     ))}
                     <tr>
                       <td colSpan={6} className="border border-gray-300 p-2 text-right font-bold">Grand Total:</td>
-                      <td className="border border-gray-300 p-2 text-right font-bold">{memo.subtotal.toFixed(2)}</td>
+                      <td className="border border-gray-300 p-2 text-right font-bold">${memo.subtotal.toFixed(2)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -569,30 +569,30 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span>{memo.subtotal.toFixed(2)}</span>
+                    <span>${memo.subtotal.toFixed(2)}</span>
                   </div>
                   {memo.discount > 0 && (
                     <div className="flex justify-between">
                       <span>Discount:</span>
-                      <span>{memo.discount.toFixed(2)}</span>
+                      <span>${memo.discount.toFixed(2)}</span>
                     </div>
                   )}
                   {memo.crPayment > 0 && (
                     <div className="flex justify-between">
                       <span>CR Payment:</span>
-                      <span>{memo.crPayment.toFixed(2)}</span>
+                      <span>${memo.crPayment.toFixed(2)}</span>
                     </div>
                   )}
                   {memo.shipmentCost > 0 && (
                     <div className="flex justify-between">
                       <span>Shipping:</span>
-                      <span>{memo.shipmentCost.toFixed(2)}</span>
+                      <span>${memo.shipmentCost.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="border-t pt-2">
                     <div className="flex justify-between font-bold">
                       <span>Total Due:</span>
-                      <span>{memo.totalDue.toFixed(2)}</span>
+                      <span>${memo.totalDue.toFixed(2)}</span>
                     </div>
                   </div>
                 </div>

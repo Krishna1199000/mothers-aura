@@ -6,42 +6,66 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
+import { useToast } from "@/components/ui/use-toast";
+import { Loader2 } from "lucide-react";
+import { DIAMOND_SHAPES } from "@/lib/constants/diamond-shapes";
+import Image from "next/image";
+
+interface Diamond {
+  id: string;
+  stockId: string;
+  shape: string;
+  carat: number;
+  color: string;
+  clarity: string;
+  cut?: string;
+  certificateNo?: string;
+  lab: string;
+  pricePerCarat: number;
+  amount: number;
+  status: string;
+  imageUrl?: string;
+  createdBy: {
+    name: string;
+    email: string;
+  };
+}
 
 interface DiamondSearchProps {
   className?: string;
+  initialFilters?: Record<string, string>;
 }
 
-export const DiamondSearch = ({ className }: DiamondSearchProps) => {
-  const [filters, setFilters] = useState({
-    shapes: [] as string[],
-    caratFrom: "",
-    caratTo: "",
-    stoneId: "",
-    priceFrom: "",
-    priceTo: "",
-    colors: [] as string[],
-    clarities: [] as string[],
-    cuts: [] as string[],
-    labs: [] as string[],
-    polishes: [] as string[],
-    symmetries: [] as string[],
-    fluorescences: [] as string[],
-    locations: [] as string[]
+export const DiamondSearch = ({ className, initialFilters = {} }: DiamondSearchProps) => {
+  const { toast } = useToast();
+  const [isLoading, setIsLoading] = useState(false);
+  const [filters, setFilters] = useState(() => {
+    // Parse initial filters
+    const shapes = initialFilters.shape ? initialFilters.shape.split(',') : [];
+    const colors = initialFilters.color ? initialFilters.color.split(',') : [];
+    const clarities = initialFilters.clarity ? initialFilters.clarity.split(',') : [];
+    const cuts = initialFilters.cut ? initialFilters.cut.split(',') : [];
+    const labs = initialFilters.lab ? initialFilters.lab.split(',') : [];
+    const polishes = initialFilters.polish ? initialFilters.polish.split(',') : [];
+    const symmetries = initialFilters.symmetry ? initialFilters.symmetry.split(',') : [];
+    
+    return {
+      shapes,
+      caratFrom: initialFilters.minCarat || "",
+      caratTo: initialFilters.maxCarat || "",
+      stoneId: initialFilters.search || "",
+      priceFrom: initialFilters.minPrice || "",
+      priceTo: initialFilters.maxPrice || "",
+      colors,
+      clarities,
+      cuts,
+      labs,
+      polishes,
+      symmetries,
+      fluorescences: [] as string[],
+      locations: [] as string[]
+    };
   });
-
-  const shapes = [
-    { name: "ROUND", icon: "⬢" },
-    { name: "OVAL", icon: "⭕" },
-    { name: "PEAR", icon: "💧" },
-    { name: "MARQUISE", icon: "🔶" },
-    { name: "HEART", icon: "💎" },
-    { name: "EMERALD", icon: "⬜" },
-    { name: "CUSHION", icon: "◆" },
-    { name: "PRINCESS", icon: "⬛" },
-    { name: "RADIANT", icon: "📐" },
-    { name: "ASSCHER", icon: "⬜" },
-    { name: "OTHERS", icon: "✨" }
-  ];
 
   const colors = ["D", "E", "F", "G", "H", "I", "J", "K", "L", "M", "N", "FANCY INTENCE PINK", "FANCY BROWN", "BLUE", "FANCY INTENSE BLUE", "FANCY INTENCE YELLOW", "FANCY VIVID PINK", "F+"];
   
@@ -72,6 +96,55 @@ export const DiamondSearch = ({ className }: DiamondSearchProps) => {
     setFilters(prev => ({ ...prev, [field]: value }));
   };
 
+  const handleSearch = async () => {
+    setIsLoading(true);
+    
+    try {
+      // Build query parameters
+      const params = new URLSearchParams();
+      
+      // Add filters to params if they have values
+      if (filters.shapes.length > 0) {
+        filters.shapes.forEach(shape => params.append('shape', shape));
+      }
+      if (filters.caratFrom) params.append('minCarat', filters.caratFrom);
+      if (filters.caratTo) params.append('maxCarat', filters.caratTo);
+      if (filters.stoneId) params.append('search', filters.stoneId);
+      if (filters.priceFrom) params.append('minPrice', filters.priceFrom);
+      if (filters.priceTo) params.append('maxPrice', filters.priceTo);
+      if (filters.colors.length > 0) {
+        filters.colors.forEach(color => params.append('color', color));
+      }
+      if (filters.clarities.length > 0) {
+        filters.clarities.forEach(clarity => params.append('clarity', clarity));
+      }
+      if (filters.cuts.length > 0) {
+        filters.cuts.forEach(cut => params.append('cut', cut));
+      }
+      if (filters.labs.length > 0) {
+        filters.labs.forEach(lab => params.append('lab', lab));
+      }
+      if (filters.polishes.length > 0) {
+        filters.polishes.forEach(polish => params.append('polish', polish));
+      }
+      if (filters.symmetries.length > 0) {
+        filters.symmetries.forEach(symmetry => params.append('symmetry', symmetry));
+      }
+
+      // Redirect to search results page with filters
+      window.location.href = `/diamonds?${params.toString()}`;
+    } catch (error) {
+      console.error('Search error:', error);
+      toast({
+        title: "Search Error",
+        description: "Failed to perform search. Please try again.",
+        variant: "destructive",
+      });
+    } finally {
+      setIsLoading(false);
+    }
+  };
+
   return (
     <div className={`space-y-8 ${className}`}>
       <Card className="w-full">
@@ -82,19 +155,25 @@ export const DiamondSearch = ({ className }: DiamondSearchProps) => {
           {/* Diamond Shapes */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Diamond Shapes</h3>
-            <div className="grid grid-cols-4 md:grid-cols-6 lg:grid-cols-11 gap-4">
-              {shapes.map((shape) => (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-11 gap-3">
+              {DIAMOND_SHAPES.map((shape) => (
                 <button
-                  key={shape.name}
-                  onClick={() => toggleFilter("shapes", shape.name)}
+                  key={shape.id}
+                  onClick={() => toggleFilter("shapes", shape.id)}
                   className={`flex flex-col items-center p-3 border rounded-lg transition-all ${
-                    filters.shapes.includes(shape.name)
+                    filters.shapes.includes(shape.id)
                       ? "border-blue-500 bg-blue-50 text-blue-700"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <div className="w-12 h-12 flex items-center justify-center border rounded-lg mb-2">
-                    <span className="text-xl">{shape.icon}</span>
+                  <div className="w-12 h-12 flex items-center justify-center border rounded-lg mb-2 relative">
+                    <Image
+                      src={shape.icon}
+                      alt={shape.name}
+                      width={32}
+                      height={32}
+                      className={filters.shapes.includes(shape.id) ? "text-blue-700" : "text-gray-600"}
+                    />
                   </div>
                   <span className="text-xs text-center font-medium">{shape.name}</span>
                 </button>
@@ -297,8 +376,20 @@ export const DiamondSearch = ({ className }: DiamondSearchProps) => {
 
           {/* Search Button */}
           <div className="flex justify-center pt-6">
-            <Button size="lg" className="px-12 py-3 text-lg">
-              Search Diamonds
+            <Button 
+              size="lg" 
+              className="px-12 py-3 text-lg"
+              onClick={handleSearch}
+              disabled={isLoading}
+            >
+              {isLoading ? (
+                <>
+                  <Loader2 className="mr-2 h-4 w-4 animate-spin" />
+                  Searching...
+                </>
+              ) : (
+                "Search Diamonds"
+              )}
             </Button>
           </div>
         </CardContent>

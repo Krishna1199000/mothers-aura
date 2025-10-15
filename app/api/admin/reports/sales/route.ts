@@ -121,6 +121,51 @@ export async function GET(request: NextRequest) {
       })
     );
 
+    // Get top salesmen
+    const salesByMaster = await prisma.invoice.findMany({
+      where: {
+        date: Object.keys(dateFilter).length > 0 ? dateFilter : undefined,
+      },
+      select: {
+        totalDue: true,
+        master: {
+          select: {
+            salesExecutiveId: true,
+          },
+        },
+      },
+    });
+
+    // Group by sales executive
+    const salesBySalesman = salesByMaster.reduce((acc, invoice) => {
+      const salesExecId = invoice.master.salesExecutiveId;
+      if (salesExecId) {
+        acc[salesExecId] = (acc[salesExecId] || 0) + Number(invoice.totalDue || 0);
+      }
+      return acc;
+    }, {} as Record<string, number>);
+
+    // Get top 5 salesmen
+    const topSalesmenIds = Object.entries(salesBySalesman)
+      .sort(([, a], [, b]) => b - a)
+      .slice(0, 5);
+
+    // Get salesman details
+    const topSalesmenWithDetails = await Promise.all(
+      topSalesmenIds.map(async ([salesExecId, totalSales]) => {
+        const userDetails = await prisma.user.findUnique({
+          where: { id: salesExecId },
+          select: { name: true, email: true },
+        });
+        return {
+          salesExecutiveId: salesExecId,
+          name: userDetails?.name || 'Unknown',
+          email: userDetails?.email || '',
+          totalSales: Number(totalSales || 0),
+        };
+      })
+    );
+
     // Calculate category distribution (based on item descriptions)
     const categoryDistribution = invoices.reduce((acc, invoice) => {
       invoice.items.forEach((item) => {
@@ -137,6 +182,7 @@ export async function GET(request: NextRequest) {
         totalOrders: totalStats._count._all,
         averageOrderValue: totalStats._avg.totalDue || 0,
         topCustomers: topCustomersWithDetails,
+        topSalesmen: topSalesmenWithDetails,
       },
       dailySales: dailySales.map((day) => ({
         date: day.date,
@@ -148,7 +194,7 @@ export async function GET(request: NextRequest) {
         invoiceNumber: invoice.invoiceNumber,
         date: invoice.date,
         companyName: invoice.master.companyName,
-        total: invoice.totalDue,
+        total: Number(invoice.totalDue || 0),
       })),
     };
 

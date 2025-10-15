@@ -2,15 +2,26 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import { useRouter } from 'next/navigation';
+import { useSession } from 'next-auth/react';
 import { Phone, Search, ShoppingCart, Menu } from 'lucide-react';
 import { MegaMenu } from './MegaMenu';
 import { SearchPanel } from './SearchPanel';
 import { ModeToggle } from './ModeToggle';
+import { useCart } from '@/lib/contexts/cart-context';
+import { CartModal } from './cart/CartModal';
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
+  const [isCartOpen, setIsCartOpen] = useState(false);
+  const { items } = useCart();
+  const router = useRouter();
+  const { data: session } = useSession();
+
+  // Calculate total items in cart
+  const totalItems = items.reduce((total, item) => total + item.quantity, 0);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -24,8 +35,8 @@ export const Header = () => {
   return (
     <>
       {/* Top Bar */}
-  <div className="bg-background border-b border-border">
-    <div className="container mx-auto px-4 h-16 flex items-center justify-between">
+      <div className="bg-background border-b border-border">
+        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           {/* Phone */}
           <div className="flex items-center space-x-2">
             <Phone size={16} className="text-muted-foreground" />
@@ -38,9 +49,9 @@ export const Header = () => {
           </div>
 
           {/* Logo */}
-      <Link href="/" className="flex items-center">
-        <img src="/Logo.jpg" alt="Logo" className="h-12 w-12 rounded-lg object-cover" />
-      </Link>
+          <Link href="/" className="flex items-center">
+            <img src="/Logo.jpg" alt="Logo" className="h-12 w-12 rounded-lg object-cover" />
+          </Link>
 
           {/* Right Actions */}
           <div className="flex items-center space-x-4">
@@ -54,11 +65,17 @@ export const Header = () => {
             
             <ModeToggle />
 
-            <button className="relative hover:text-primary transition-colors" aria-label="Shopping cart">
+            <button 
+              onClick={() => setIsCartOpen(true)}
+              className="relative hover:text-primary transition-colors" 
+              aria-label="Shopping cart"
+            >
               <ShoppingCart size={20} />
-              <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center">
-                0
-              </span>
+              {totalItems > 0 && (
+                <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
+                  {totalItems}
+                </span>
+              )}
             </button>
 
             <button
@@ -83,6 +100,9 @@ export const Header = () => {
 
       {/* Search Panel */}
       <SearchPanel isOpen={isSearchOpen} onClose={() => setIsSearchOpen(false)} />
+
+      {/* Cart Modal */}
+      <CartModal open={isCartOpen} onClose={() => setIsCartOpen(false)} />
     </>
   );
 };

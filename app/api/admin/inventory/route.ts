@@ -30,9 +30,15 @@ export async function GET(request: NextRequest) {
     const status = searchParams.get("status");
     const minCarat = searchParams.get("minCarat");
     const maxCarat = searchParams.get("maxCarat");
+    const minPrice = searchParams.get("minPrice");
+    const maxPrice = searchParams.get("maxPrice");
     const colors = searchParams.getAll("color");
     const clarities = searchParams.getAll("clarity");
     const shapes = searchParams.getAll("shape");
+    const cuts = searchParams.getAll("cut");
+    const labs = searchParams.getAll("lab");
+    const polishes = searchParams.getAll("polish");
+    const symmetries = searchParams.getAll("symmetry");
     const sortBy = searchParams.get("sortBy");
     const order = searchParams.get("order") === "asc" ? "asc" : "desc";
 
@@ -79,6 +85,34 @@ export async function GET(request: NextRequest) {
     // Shape filter
     if (shapes.length > 0) {
       where.shape = { in: shapes };
+    }
+
+    // Cut filter
+    if (cuts.length > 0) {
+      where.cut = { in: cuts };
+    }
+
+    // Lab filter
+    if (labs.length > 0) {
+      where.lab = { in: labs };
+    }
+
+    // Polish filter
+    if (polishes.length > 0) {
+      where.polish = { in: polishes };
+    }
+
+    // Symmetry filter
+    if (symmetries.length > 0) {
+      where.symmetry = { in: symmetries };
+    }
+
+    // Price range filter
+    if (minPrice || maxPrice) {
+      where.pricePerCarat = {
+        ...(minPrice && { gte: parseFloat(minPrice) }),
+        ...(maxPrice && { lte: parseFloat(maxPrice) }),
+      };
     }
 
     // Fetch inventory with related data
@@ -167,6 +201,7 @@ export async function POST(request: NextRequest) {
         lab: data.lab,
         pricePerCarat: parseFloat(data.pricePerCarat),
         amount: parseFloat(data.amount),
+        discountPercent: parseFloat(data.discountPercent) || 5.0,
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
         certificateUrl: data.certificateUrl,

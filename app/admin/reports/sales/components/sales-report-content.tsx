@@ -8,6 +8,7 @@ import { SalesFilter } from "./sales-filter";
 import { SummaryCards } from "./summary-cards";
 import { SalesCharts } from "./sales-charts";
 import { RecentSales } from "./recent-sales";
+import { TopSalesmen } from "./top-salesmen";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 
@@ -67,6 +68,9 @@ export function SalesReportContent() {
                 categoryDistribution={data.categoryDistribution}
               />
             </div>
+            {data.summary.topSalesmen && data.summary.topSalesmen.length > 0 && (
+              <TopSalesmen salesmen={data.summary.topSalesmen} />
+            )}
             <RecentSales invoices={data.recentInvoices} />
           </>
         )

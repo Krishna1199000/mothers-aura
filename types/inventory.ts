@@ -14,6 +14,7 @@ export interface Inventory {
   lab: string;
   pricePerCarat: number;
   amount: number;
+  discountPercent: number;
   imageUrl: string | null;
   videoUrl: string | null;
   certificateUrl: string | null;
@@ -43,6 +44,7 @@ export interface InventoryFormData {
   lab: string;
   pricePerCarat: number;
   amount: number;
+  discountPercent?: number;
   imageUrl?: string;
   videoUrl?: string;
   certificateUrl?: string;

@@ -98,6 +98,27 @@ function SigninInner() {
       if (result?.error) {
         setSubmitError("Invalid email or password");
       } else if (result?.ok) {
+        // Check for pending cart item
+        const pendingCartItem = localStorage.getItem('pendingCartItem');
+        if (pendingCartItem) {
+          // Clear the pending item
+          localStorage.removeItem('pendingCartItem');
+          
+          // Add the item to cart
+          const item = JSON.parse(pendingCartItem);
+          const response = await fetch("/api/cart", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ item }),
+          });
+
+          if (response.ok) {
+            // Redirect to cart page
+            router.replace("/cart");
+            return;
+          }
+        }
+
         router.replace(callbackUrl);
       }
     } catch {

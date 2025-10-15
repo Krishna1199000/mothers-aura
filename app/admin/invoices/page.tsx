@@ -3,12 +3,13 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useEffect, useState } from "react";
-import { AnnouncementBar } from "@/components/AnnouncementBar";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuTrigger } from "@/components/ui/dropdown-menu";
-import { Plus, MoreVertical, Eye, Edit, Trash } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
+import { Plus, MoreVertical, Eye, Edit, Trash, Printer, Search } from "lucide-react";
 
 interface Invoice {
   id: string;
@@ -26,6 +27,8 @@ export default function InvoicesPage() {
   const router = useRouter();
   const [invoices, setInvoices] = useState<Invoice[]>([]);
   const [loading, setLoading] = useState(true);
+  const [searchTerm, setSearchTerm] = useState("");
+  const [filteredInvoices, setFilteredInvoices] = useState<Invoice[]>([]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -43,6 +46,7 @@ export default function InvoicesPage() {
       if (response.ok) {
         const data = await response.json();
         setInvoices(data);
+        setFilteredInvoices(data);
       }
     } catch (error) {
       console.error("Error fetching invoices:", error);
@@ -50,6 +54,15 @@ export default function InvoicesPage() {
       setLoading(false);
     }
   };
+
+  // Filter invoices based on search term
+  useEffect(() => {
+    const filtered = invoices.filter(invoice =>
+      invoice.invoiceNumber.toLowerCase().includes(searchTerm.toLowerCase()) ||
+      invoice.master.companyName.toLowerCase().includes(searchTerm.toLowerCase())
+    );
+    setFilteredInvoices(filtered);
+  }, [searchTerm, invoices]);
 
   const handleDelete = async (id: string) => {
     if (!confirm("Are you sure you want to delete this invoice?")) return;
@@ -84,8 +97,6 @@ export default function InvoicesPage() {
 
   return (
     <div className="min-h-screen bg-background">
-      <AnnouncementBar />
-      
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-6">
           {/* Header */}
@@ -108,71 +119,98 @@ export default function InvoicesPage() {
             </div>
           </div>
 
-          {/* Invoices Grid */}
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
-            {invoices.map((invoice) => (
-              <Card key={invoice.id} className="hover:shadow-lg transition-shadow">
-                <CardContent className="p-6">
-                  <div className="flex items-start justify-between mb-4">
-                    <div className="space-y-1">
-                      <h3 className="font-semibold text-lg">{invoice.invoiceNumber}</h3>
-                      <p className="text-sm text-muted-foreground">{invoice.master.companyName}</p>
-                    </div>
-                    <div className="text-right space-y-1">
-                      <p className="font-semibold">${invoice.totalDue.toFixed(2)}</p>
-                      <DropdownMenu>
-                        <DropdownMenuTrigger asChild>
-                          <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                            <MoreVertical className="h-4 w-4" />
-                          </Button>
-                        </DropdownMenuTrigger>
-                        <DropdownMenuContent align="end">
-                          <DropdownMenuItem
+          {/* Search Bar */}
+          <div className="flex items-center gap-4">
+            <div className="relative flex-1 max-w-sm">
+              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
+              <Input
+                placeholder="Search invoices..."
+                value={searchTerm}
+                onChange={(e) => setSearchTerm(e.target.value)}
+                className="pl-10"
+              />
+            </div>
+            <div className="text-sm text-muted-foreground">
+              {filteredInvoices.length} of {invoices.length} invoices
+            </div>
+          </div>
+
+          {/* Invoices Table */}
+          <Card>
+            <CardContent className="p-0">
+              <Table>
+                <TableHeader>
+                  <TableRow>
+                    <TableHead>Invoice Number</TableHead>
+                    <TableHead>Company</TableHead>
+                    <TableHead>Date</TableHead>
+                    <TableHead>Due Date</TableHead>
+                    <TableHead className="text-right">Total Due</TableHead>
+                    <TableHead className="text-center">Actions</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  {filteredInvoices.map((invoice) => (
+                    <TableRow key={invoice.id} className="hover:bg-muted/50">
+                      <TableCell className="font-medium">{invoice.invoiceNumber}</TableCell>
+                      <TableCell>{invoice.master.companyName}</TableCell>
+                      <TableCell>{new Date(invoice.date).toLocaleDateString()}</TableCell>
+                      <TableCell>{new Date(invoice.dueDate).toLocaleDateString()}</TableCell>
+                      <TableCell className="text-right font-semibold">
+                        ${invoice.totalDue.toFixed(2)}
+                      </TableCell>
+                      <TableCell className="text-center">
+                        <div className="flex items-center justify-center gap-2">
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => router.push(`/admin/invoices/${invoice.id}`)}
                           >
-                            <Eye className="mr-2 h-4 w-4" />
-                            View
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
+                            <Eye className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => router.push(`/admin/invoices/${invoice.id}`)}
+                          >
+                            <Printer className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => router.push(`/admin/invoices/${invoice.id}/edit`)}
                           >
-                            <Edit className="mr-2 h-4 w-4" />
-                            Edit
-                          </DropdownMenuItem>
-                          <DropdownMenuItem
-                            className="text-destructive focus:text-destructive"
+                            <Edit className="h-4 w-4" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="sm"
                             onClick={() => handleDelete(invoice.id)}
+                            className="text-destructive hover:text-destructive"
                           >
-                            <Trash className="mr-2 h-4 w-4" />
-                            Delete
-                          </DropdownMenuItem>
-                        </DropdownMenuContent>
-                      </DropdownMenu>
-                    </div>
-                  </div>
-                  <div className="space-y-2 text-sm text-muted-foreground">
-                    <div className="flex justify-between">
-                      <span>Created:</span>
-                      <span>{new Date(invoice.date).toLocaleDateString()}</span>
-                    </div>
-                    <div className="flex justify-between">
-                      <span>Due:</span>
-                      <span>{new Date(invoice.dueDate).toLocaleDateString()}</span>
-                    </div>
-                  </div>
-                </CardContent>
-              </Card>
-            ))}
-            {invoices.length === 0 && !loading && (
-              <div className="col-span-full text-center py-12">
-                <p className="text-muted-foreground mb-4">No invoices found</p>
-                <Button onClick={() => router.push('/admin/invoices/create')}>
-                  <Plus className="w-4 h-4 mr-2" />
-                  Create your first invoice
-                </Button>
-              </div>
-            )}
-          </div>
+                            <Trash className="h-4 w-4" />
+                          </Button>
+                        </div>
+                      </TableCell>
+                    </TableRow>
+                  ))}
+                  {filteredInvoices.length === 0 && !loading && (
+                    <TableRow>
+                      <TableCell colSpan={6} className="text-center py-12">
+                        <p className="text-muted-foreground mb-4">
+                          {searchTerm ? "No invoices found matching your search" : "No invoices found"}
+                        </p>
+                        <Button onClick={() => router.push('/admin/invoices/create')}>
+                          <Plus className="w-4 h-4 mr-2" />
+                          Create your first invoice
+                        </Button>
+                      </TableCell>
+                    </TableRow>
+                  )}
+                </TableBody>
+              </Table>
+            </CardContent>
+          </Card>
         </div>
       </main>
 

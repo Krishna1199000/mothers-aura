@@ -86,6 +86,16 @@ export default function CreateMemoPage() {
     generateMemoNumber();
   }, [session, status, router]);
 
+  // Auto-calculate due date based on payment terms
+  useEffect(() => {
+    if (formData.date && formData.paymentTerms) {
+      const days = parseInt(formData.paymentTerms) || 0;
+      const dueDate = new Date(formData.date);
+      dueDate.setDate(dueDate.getDate() + days);
+      setFormData(prev => ({ ...prev, dueDate }));
+    }
+  }, [formData.date, formData.paymentTerms]);
+
   const fetchMasters = async () => {
     try {
       const response = await fetch('/api/admin/masters');

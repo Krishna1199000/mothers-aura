@@ -1,8 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
-import prisma from "@/lib/prisma";
-const db = prisma as any;
+import db from "@/lib/prisma";
 
 export async function GET(
   request: NextRequest,
@@ -119,6 +118,7 @@ export async function PUT(
         lab: data.lab,
         pricePerCarat: parseFloat(data.pricePerCarat),
         amount: parseFloat(data.amount),
+        discountPercent: parseFloat(data.discountPercent) || 5.0,
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
         certificateUrl: data.certificateUrl,

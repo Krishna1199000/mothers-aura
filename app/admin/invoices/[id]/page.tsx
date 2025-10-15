@@ -3,13 +3,12 @@
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import React, { useEffect, useState, useCallback } from "react";
-import { AnnouncementBar } from "@/components/AnnouncementBar";
-import { AdminHeader } from "@/components/AdminHeader";
 import { Footer } from "@/components/Footer";
 import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Printer, Download } from "lucide-react";
+import Image from "next/image";
 
 interface InvoiceItem {
   id: string;
@@ -267,8 +266,6 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
   if (error || !invoice) {
     return (
       <div className="min-h-screen bg-background">
-        <AnnouncementBar />
-        
         <main className="container mx-auto px-4 py-8">
           <Alert variant="destructive">
             <AlertDescription>{error || "Invoice not found"}</AlertDescription>
@@ -282,11 +279,6 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
 
   return (
     <div className="min-h-screen bg-background">
-      <div className="no-print">
-        <AnnouncementBar />
-        <AdminHeader />
-      </div>
-      
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-4xl mx-auto space-y-6">
           {/* Header - Hidden in print */}
@@ -500,9 +492,11 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
               {/* Header */}
               <div className="text-center mb-8">
                 <div className="bg-white p-2 rounded-lg inline-block mb-2">
-                  <img 
+                  <Image 
                     src="/Logo.jpg" 
                     alt="Logo" 
+                    width={96}
+                    height={96}
                     className="mx-auto w-24 h-24 rounded-lg object-cover shadow-sm print:w-28 print:h-28"
                     style={{ backgroundColor: 'white' }}
                   />
@@ -565,13 +559,13 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
                         <td className="border border-gray-300 p-2">{item.color} {item.clarity}</td>
                         <td className="border border-gray-300 p-2 text-center">{item.lab}</td>
                         <td className="border border-gray-300 p-2 text-center">{item.reportNo}</td>
-                        <td className="border border-gray-300 p-2 text-right">{item.pricePerCarat.toFixed(2)}</td>
-                        <td className="border border-gray-300 p-2 text-right">{item.total.toFixed(2)}</td>
+                        <td className="border border-gray-300 p-2 text-right">${item.pricePerCarat.toFixed(2)}</td>
+                        <td className="border border-gray-300 p-2 text-right">${item.total.toFixed(2)}</td>
                       </tr>
                     ))}
                     <tr>
                       <td colSpan={6} className="border border-gray-300 p-2 text-right font-bold">Grand Total:</td>
-                      <td className="border border-gray-300 p-2 text-right font-bold">{invoice.subtotal.toFixed(2)}</td>
+                      <td className="border border-gray-300 p-2 text-right font-bold">${invoice.subtotal.toFixed(2)}</td>
                     </tr>
                   </tbody>
                 </table>
@@ -583,30 +577,30 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
                 <div className="space-y-2 text-sm">
                   <div className="flex justify-between">
                     <span>Subtotal:</span>
-                    <span>{invoice.subtotal.toFixed(2)}</span>
+                    <span>${invoice.subtotal.toFixed(2)}</span>
                   </div>
                   {invoice.discount > 0 && (
                     <div className="flex justify-between">
                       <span>Discount:</span>
-                      <span>{invoice.discount.toFixed(2)}</span>
+                      <span>${invoice.discount.toFixed(2)}</span>
                     </div>
                   )}
                   {invoice.crPayment > 0 && (
                     <div className="flex justify-between">
                       <span>CR Payment:</span>
-                      <span>{invoice.crPayment.toFixed(2)}</span>
+                      <span>${invoice.crPayment.toFixed(2)}</span>
                     </div>
                   )}
                   {invoice.shipmentCost > 0 && (
                     <div className="flex justify-between">
                       <span>Shipping:</span>
-                      <span>{invoice.shipmentCost.toFixed(2)}</span>
+                      <span>${invoice.shipmentCost.toFixed(2)}</span>
                     </div>
                   )}
                   <div className="border-t pt-2">
                     <div className="flex justify-between font-bold">
                       <span>Total Due:</span>
-                      <span>{invoice.totalDue.toFixed(2)}</span>
+                      <span>${invoice.totalDue.toFixed(2)}</span>
                     </div>
                   </div>
                   <div className="mt-2">

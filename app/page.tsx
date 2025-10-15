@@ -13,7 +13,7 @@ import { PartnersSection } from '@/components/PartnersSection';
 import { ReviewsSection } from '@/components/ReviewsSection';
 import { FAQSection } from '@/components/FAQSection';
 import { ContactSection } from '@/components/ContactSection';
-import { ChatWidget } from '@/components/ChatWidget';
+import { ChatWidget } from '@/components/chat/ChatWidget';
 import { OfferModal } from '@/components/OfferModal';
 import { Footer } from '@/components/Footer';
 

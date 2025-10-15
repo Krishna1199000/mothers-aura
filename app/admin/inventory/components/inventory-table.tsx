@@ -57,6 +57,7 @@ export function InventoryTable({
 }: InventoryTableProps) {
   const { toast } = useToast();
   const [selectedItems, setSelectedItems] = useState<string[]>([]);
+  const [editingItemId, setEditingItemId] = useState<string | null>(null);
 
   const handleDelete = async (id: string) => {
     try {
@@ -81,6 +82,11 @@ export function InventoryTable({
         variant: "destructive",
       });
     }
+  };
+
+  const handleEditSuccess = () => {
+    setEditingItemId(null);
+    onDelete(); // Refetch the data
   };
 
   const handleExportCSV = () => {
@@ -176,7 +182,7 @@ export function InventoryTable({
               <TableHead>Certificate</TableHead>
               <TableHead>Lab</TableHead>
               <TableHead>Price/Ct</TableHead>
-              <TableHead>Amount</TableHead>
+              <TableHead>Amount (Red Price)</TableHead>
               <TableHead>Action</TableHead>
             </TableRow>
           </TableHeader>
@@ -233,11 +239,21 @@ export function InventoryTable({
                 <TableCell>{item.certificateNo || "-"}</TableCell>
                 <TableCell>{item.lab}</TableCell>
                 <TableCell>{item.pricePerCarat}</TableCell>
-                <TableCell>{item.amount}</TableCell>
+                <TableCell>
+                  <div className="flex flex-col">
+                    <span className="font-medium">${item.amount.toLocaleString()}</span>
+                    <span className="text-red-500 text-sm font-medium">
+                      ${(item.amount * (1 - (item.discountPercent || 5) / 100)).toLocaleString()}
+                    </span>
+                  </div>
+                </TableCell>
                 <TableCell>
                   {userRole === "ADMIN" && (
                     <div className="flex items-center gap-2">
-                      <Dialog>
+                      <Dialog 
+                        open={editingItemId === item.id} 
+                        onOpenChange={(open) => setEditingItemId(open ? item.id : null)}
+                      >
                         <DialogTrigger asChild>
                           <Button variant="outline" size="icon">
                             <Pencil className="h-4 w-4" />
@@ -271,7 +287,7 @@ export function InventoryTable({
                             }}
                             isEditing
                             inventoryId={item.id}
-                            onSuccess={onDelete}
+                            onSuccess={handleEditSuccess}
                           />
                         </DialogContent>
                       </Dialog>

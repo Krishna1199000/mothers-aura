@@ -1,0 +1,375 @@
+"use client";
+
+import {
+  createContext,
+  useContext,
+  useEffect,
+  useState,
+  ReactNode,
+  useCallback,
+} from "react";
+import { useSession } from "next-auth/react";
+import { useRouter } from "next/navigation";
+import { useToast } from "@/components/ui/use-toast";
+
+interface CartItem {
+  productId: string;
+  name: string;
+  price: number;
+  quantity: number;
+  image?: string;
+}
+
+interface CartContextType {
+  items: CartItem[];
+  addItem: (item: CartItem) => void;
+  removeItem: (productId: string) => void;
+  updateQuantity: (productId: string, quantity: number) => void;
+  clearCart: () => void;
+  clearCartWithoutRestore: () => void;
+  isLoading: boolean;
+  subtotal: number;
+  checkStockAndAdd: (item: CartItem) => Promise<boolean>;
+}
+
+const CartContext = createContext<CartContextType | undefined>(undefined);
+
+export function CartProvider({ children }: { children: ReactNode }) {
+  const { data: session } = useSession();
+  const { toast } = useToast();
+  const router = useRouter();
+  const [items, setItems] = useState<CartItem[]>([]);
+  const [isLoading, setIsLoading] = useState(true);
+
+  // Calculate subtotal
+  const subtotal = items.reduce(
+    (total, item) => total + item.price * item.quantity,
+    0
+  );
+
+  // Load cart from localStorage on mount
+  useEffect(() => {
+    const savedCart = localStorage.getItem("cart");
+    if (savedCart) {
+      setItems(JSON.parse(savedCart));
+    }
+    setIsLoading(false);
+  }, []);
+
+  // Save cart to localStorage whenever it changes
+  useEffect(() => {
+    if (!isLoading) {
+      localStorage.setItem("cart", JSON.stringify(items));
+    }
+  }, [items, isLoading]);
+
+  // Sync with database when user logs in
+  useEffect(() => {
+    const syncCart = async () => {
+      if (session?.user) {
+        try {
+          setIsLoading(true);
+          
+          // First, get the user's cart from the database
+          const response = await fetch("/api/cart");
+          const dbCart = await response.json();
+          
+          // Get localStorage cart
+          const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
+          
+          // Merge localStorage cart with database cart
+          const mergedItems = [...localCart];
+          
+          dbCart.items.forEach((dbItem: CartItem) => {
+            const existingItemIndex = mergedItems.findIndex(
+              (item) => item.productId === dbItem.productId
+            );
+            
+            if (existingItemIndex >= 0) {
+              // Update quantity if item exists
+              mergedItems[existingItemIndex].quantity += dbItem.quantity;
+            } else {
+              // Add new item if it doesn't exist
+              mergedItems.push(dbItem);
+            }
+          });
+          
+          // Update database with merged cart
+          await fetch("/api/cart", {
+            method: "PUT",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ items: mergedItems }),
+          });
+          
+          setItems(mergedItems);
+        } catch (error) {
+          console.error("Error syncing cart:", error);
+          toast({
+            title: "Error",
+            description: "Failed to sync cart with your account",
+            variant: "destructive",
+          });
+        } finally {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    syncCart();
+  }, [session, toast]);
+
+  const addItem = async (newItem: CartItem) => {
+    const updatedItems = [...items];
+    const existingItemIndex = updatedItems.findIndex(
+      (item) => item.productId === newItem.productId
+    );
+
+    if (existingItemIndex >= 0) {
+      // Update quantity if item exists
+      updatedItems[existingItemIndex].quantity += newItem.quantity;
+    } else {
+      // Add new item if it doesn't exist
+      updatedItems.push(newItem);
+    }
+
+    setItems(updatedItems);
+
+    // Sync with database if user is logged in
+    if (session?.user) {
+      try {
+        await fetch("/api/cart", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: updatedItems }),
+        });
+      } catch (error) {
+        console.error("Error updating cart:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update cart",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const removeItem = async (productId: string) => {
+    // Find the item to get its quantity for stock restoration
+    const itemToRemove = items.find((item) => item.productId === productId);
+    
+    // Remove the item completely from cart
+    const updatedItems = items.filter((item) => item.productId !== productId);
+    setItems(updatedItems);
+
+    // Restore stock when item is removed
+    if (itemToRemove) {
+      try {
+        await fetch(`/api/products/${productId}/restore-stock`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantity: itemToRemove.quantity }),
+        });
+      } catch (error) {
+        console.error("Error restoring stock:", error);
+      }
+    }
+
+    // Sync with database if user is logged in
+    if (session?.user) {
+      try {
+        await fetch("/api/cart", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: updatedItems }),
+        });
+      } catch (error) {
+        console.error("Error updating cart:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update cart",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const updateQuantity = async (productId: string, newQuantity: number) => {
+    const currentItem = items.find((item) => item.productId === productId);
+    if (!currentItem) return;
+
+    const quantityDifference = newQuantity - currentItem.quantity;
+
+    const updatedItems = items.map((item) =>
+      item.productId === productId ? { ...item, quantity: newQuantity } : item
+    );
+    setItems(updatedItems);
+
+    // Update stock based on quantity change
+    if (quantityDifference !== 0) {
+      try {
+        if (quantityDifference > 0) {
+          // Reducing stock
+          await fetch(`/api/products/${productId}/check-stock`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ requestedQuantity: quantityDifference }),
+          });
+        } else {
+          // Restoring stock
+          await fetch(`/api/products/${productId}/restore-stock`, {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ quantity: Math.abs(quantityDifference) }),
+          });
+        }
+      } catch (error) {
+        console.error("Error updating stock:", error);
+      }
+    }
+
+    // Sync with database if user is logged in
+    if (session?.user) {
+      try {
+        await fetch("/api/cart", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: updatedItems }),
+        });
+      } catch (error) {
+        console.error("Error updating cart:", error);
+        toast({
+          title: "Error",
+          description: "Failed to update cart",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const clearCart = async () => {
+    // Restore stock for all items before clearing
+    for (const item of items) {
+      try {
+        await fetch(`/api/products/${item.productId}/restore-stock`, {
+          method: "POST",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ quantity: item.quantity }),
+        });
+      } catch (error) {
+        console.error("Error restoring stock for item:", item.productId, error);
+      }
+    }
+
+    setItems([]);
+
+    // Clear from database if user is logged in
+    if (session?.user) {
+      try {
+        await fetch("/api/cart", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: [] }),
+        });
+      } catch (error) {
+        console.error("Error clearing cart:", error);
+        toast({
+          title: "Error",
+          description: "Failed to clear cart",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const clearCartWithoutRestore = async () => {
+    setItems([]);
+
+    // Clear from database if user is logged in
+    if (session?.user) {
+      try {
+        await fetch("/api/cart", {
+          method: "PUT",
+          headers: { "Content-Type": "application/json" },
+          body: JSON.stringify({ items: [] }),
+        });
+      } catch (error) {
+        console.error("Error clearing cart:", error);
+        toast({
+          title: "Error",
+          description: "Failed to clear cart",
+          variant: "destructive",
+        });
+      }
+    }
+  };
+
+  const checkStockAndAdd = async (item: CartItem): Promise<boolean> => {
+    // Check if user is signed in
+    if (!session?.user) {
+      toast({
+        title: "Sign in required",
+        description: "Please sign in to add items to your cart",
+        variant: "destructive",
+      });
+      router.push("/signin?redirect=" + encodeURIComponent(window.location.pathname));
+      return false;
+    }
+
+    try {
+      // Check stock availability
+      const response = await fetch(`/api/products/${item.productId}/check-stock`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ requestedQuantity: item.quantity }),
+      });
+
+      if (!response.ok) {
+        const error = await response.json();
+        toast({
+          title: "Stock unavailable",
+          description: error.message || "Insufficient stock available",
+          variant: "destructive",
+        });
+        return false;
+      }
+
+      // Stock is available, add to cart
+      addItem(item);
+      return true;
+    } catch (error) {
+      console.error("Error checking stock:", error);
+      toast({
+        title: "Error",
+        description: "Failed to check stock availability",
+        variant: "destructive",
+      });
+      return false;
+    }
+  };
+
+  return (
+    <CartContext.Provider
+      value={{
+        items,
+        addItem,
+        removeItem,
+        updateQuantity,
+        clearCart,
+        clearCartWithoutRestore,
+        isLoading,
+        subtotal,
+        checkStockAndAdd,
+      }}
+    >
+      {children}
+    </CartContext.Provider>
+  );
+}
+
+export function useCart() {
+  const context = useContext(CartContext);
+  if (context === undefined) {
+    throw new Error("useCart must be used within a CartProvider");
+  }
+  return context;
+}

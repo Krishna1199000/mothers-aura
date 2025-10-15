@@ -9,29 +9,21 @@ interface SearchPanelProps {
   onClose: () => void;
 }
 
-interface DiamondResult {
+interface SearchResult {
   id: string;
-  stockId: string;
-  shape: string;
-  carat: number;
-  color: string;
-  clarity: string;
-  cut: string | null;
-  certificateNo: string | null;
-  lab: string;
-  pricePerCarat: number;
-  amount: number;
-  status: string;
-  imageUrl: string | null;
-  createdBy: {
-    name: string | null;
-    email: string;
-  };
+  name: string;
+  description: string;
+  price: number;
+  stock: number;
+  images: string[];
+  category: string;
+  subcategory?: string;
+  type: "ui-inventory";
 }
 
 export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
   const [query, setQuery] = useState('');
-  const [results, setResults] = useState<DiamondResult[]>([]);
+  const [results, setResults] = useState<SearchResult[]>([]);
   const [isLoading, setIsLoading] = useState(false);
   const inputRef = useRef<HTMLInputElement>(null);
   const router = useRouter();
@@ -43,7 +35,7 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
   }, [isOpen]);
 
   useEffect(() => {
-    const searchDiamonds = async () => {
+    const searchProducts = async () => {
       if (query.length < 2) {
         setResults([]);
         return;
@@ -51,7 +43,7 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
 
       setIsLoading(true);
       try {
-        const response = await fetch(`/api/diamond-search?q=${encodeURIComponent(query)}&limit=10`);
+        const response = await fetch(`/api/search?q=${encodeURIComponent(query)}&limit=10`);
         if (response.ok) {
           const data = await response.json();
           setResults(data);
@@ -66,7 +58,7 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
       }
     };
 
-    const timeoutId = setTimeout(searchDiamonds, 300);
+    const timeoutId = setTimeout(searchProducts, 300);
     return () => clearTimeout(timeoutId);
   }, [query]);
 
@@ -83,9 +75,8 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
     }
   }, [isOpen, onClose]);
 
-  const handleDiamondSelect = (diamond: DiamondResult) => {
-    // Navigate to a diamond detail page or show more info
-    router.push(`/diamond/${diamond.id}`);
+  const handleItemSelect = (item: SearchResult) => {
+    router.push(`/product/${item.id}`);
     onClose();
   };
 
@@ -100,7 +91,7 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
             <input
               ref={inputRef}
               type="text"
-              placeholder="Search diamonds by stock ID, shape, color, clarity..."
+              placeholder="Search products, rings, jewelry..."
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               className="w-full pl-12 pr-12 py-4 text-lg border border-border rounded-lg bg-background focus:outline-none focus:ring-2 focus:ring-primary"
@@ -118,7 +109,7 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
             <div className="mt-4 bg-card border border-border rounded-lg p-4">
               <div className="flex items-center space-x-2">
                 <div className="animate-spin rounded-full h-4 w-4 border-b-2 border-primary"></div>
-                <span className="text-muted-foreground">Searching diamonds...</span>
+                <span className="text-muted-foreground">Searching products...</span>
               </div>
             </div>
           )}
@@ -128,22 +119,22 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
               <div className="p-4 border-b border-border">
                 <h3 className="font-semibold flex items-center space-x-2">
                   <Sparkles size={16} className="text-primary" />
-                  <span>Diamond Results ({results.length})</span>
+                  <span>Search Results ({results.length})</span>
                 </h3>
               </div>
               <div className="max-h-96 overflow-y-auto">
-                {results.map((diamond) => (
+                {results.map((item) => (
                   <button
-                    key={diamond.id}
+                    key={item.id}
                     className="w-full px-4 py-4 text-left hover:bg-accent transition-colors border-b border-border last:border-b-0"
-                    onClick={() => handleDiamondSelect(diamond)}
+                    onClick={() => handleItemSelect(item)}
                   >
                     <div className="flex items-start space-x-4">
-                      {diamond.imageUrl && (
+                      {item.images && item.images.length > 0 && (
                         <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0">
                           <img
-                            src={diamond.imageUrl}
-                            alt={`Diamond ${diamond.stockId}`}
+                            src={item.images[0]}
+                            alt={item.name}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -151,47 +142,42 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
                       <div className="flex-1 min-w-0">
                         <div className="flex items-center justify-between">
                           <h4 className="font-medium text-sm">
-                            {diamond.stockId}
+                            {item.name}
                           </h4>
-                          <span className={`px-2 py-1 rounded-full text-xs font-medium ${
-                            diamond.status === 'AVAILABLE' 
-                              ? 'bg-green-100 text-green-800' 
-                              : 'bg-gray-100 text-gray-800'
-                          }`}>
-                            {diamond.status}
-                          </span>
+                          <div className="flex items-center gap-2">
+                            <span className={`px-2 py-1 rounded-full text-xs font-medium ${
+                              item.stock > 0 
+                                ? 'bg-green-100 text-green-800' 
+                                : 'bg-gray-100 text-gray-800'
+                            }`}>
+                              {item.stock > 0 ? 'In Stock' : 'Out of Stock'}
+                            </span>
+                            <span className="px-2 py-1 rounded-full text-xs font-medium bg-blue-100 text-blue-800">
+                              {item.category}
+                            </span>
+                          </div>
                         </div>
+                        
                         <div className="mt-1 text-sm text-muted-foreground">
-                          <div className="grid grid-cols-2 md:grid-cols-4 gap-2">
+                          {item.description && (
+                            <p className="text-xs mb-2">{item.description}</p>
+                          )}
+                          <div className="grid grid-cols-2 md:grid-cols-3 gap-2">
                             <div>
-                              <span className="font-medium">Shape:</span> {diamond.shape}
+                              <span className="font-medium">Category:</span> {item.category}
                             </div>
+                            {item.subcategory && (
+                              <div>
+                                <span className="font-medium">Type:</span> {item.subcategory}
+                              </div>
+                            )}
                             <div>
-                              <span className="font-medium">Carat:</span> {diamond.carat}
-                            </div>
-                            <div>
-                              <span className="font-medium">Color:</span> {diamond.color}
-                            </div>
-                            <div>
-                              <span className="font-medium">Clarity:</span> {diamond.clarity}
+                              <span className="font-medium">Stock:</span> {item.stock}
                             </div>
                           </div>
-                          {diamond.cut && (
-                            <div className="mt-1">
-                              <span className="font-medium">Cut:</span> {diamond.cut}
-                            </div>
-                          )}
-                          {diamond.certificateNo && (
-                            <div className="mt-1">
-                              <span className="font-medium">Certificate:</span> {diamond.certificateNo}
-                            </div>
-                          )}
                           <div className="mt-2 flex items-center justify-between">
-                            <div>
-                              <span className="font-medium">Price:</span> ${diamond.pricePerCarat}/ct
-                            </div>
                             <div className="text-lg font-bold text-primary">
-                              ${diamond.amount.toLocaleString()}
+                              ${item.price.toLocaleString()}
                             </div>
                           </div>
                         </div>
@@ -208,10 +194,10 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
             <div className="mt-4 bg-card border border-border rounded-lg p-8 text-center">
               <Search size={32} className="mx-auto text-muted-foreground mb-2" />
               <p className="text-muted-foreground">
-                No diamonds found for &quot;{query}&quot;
+                No products found for &quot;{query}&quot;
               </p>
               <p className="text-sm text-muted-foreground mt-1">
-                Try searching by stock ID, shape, color, or clarity
+                Try searching by product name, category, or description
               </p>
             </div>
           )}

@@ -1,6 +1,6 @@
 "use client";
 
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import { useToast } from "@/components/ui/use-toast";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -19,6 +19,11 @@ import {
   type InventoryFormData,
 } from "@/types/inventory";
 
+interface Master {
+  id: string;
+  companyName: string;
+}
+
 interface InventoryFormProps {
   onSuccess: () => void;
   initialData?: InventoryFormData;
@@ -34,6 +39,8 @@ export function InventoryForm({
 }: InventoryFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [masters, setMasters] = useState<Master[]>([]);
+  const [isLoadingMasters, setIsLoadingMasters] = useState(false);
   const [formData, setFormData] = useState<InventoryFormData>(
     initialData || {
       stockId: "",
@@ -50,6 +57,7 @@ export function InventoryForm({
       lab: "",
       pricePerCarat: 0,
       amount: 0,
+      discountPercent: 5.0,
       imageUrl: "",
       videoUrl: "",
       certificateUrl: "",
@@ -57,6 +65,34 @@ export function InventoryForm({
       location: "",
     }
   );
+
+  // Fetch masters for held by company dropdown
+  useEffect(() => {
+    const fetchMasters = async () => {
+      try {
+        setIsLoadingMasters(true);
+        const response = await fetch('/api/admin/masters');
+        if (!response.ok) {
+          throw new Error('Failed to fetch masters');
+        }
+        const data = await response.json();
+        setMasters(data);
+      } catch (error) {
+        console.error('Error fetching masters:', error);
+        toast({
+          title: "Error",
+          description: "Failed to load companies",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoadingMasters(false);
+      }
+    };
+
+    if (isEditing) {
+      fetchMasters();
+    }
+  }, [isEditing, toast]);
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -118,36 +154,53 @@ export function InventoryForm({
         />
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="heldByCompany">Held By Company</Label>
-        <Input
-          id="heldByCompany"
-          value={formData.heldByCompany}
-          onChange={(e) =>
-            setFormData({ ...formData, heldByCompany: e.target.value })
-          }
-        />
-      </div>
+      {/* Only show these fields when editing */}
+      {isEditing && (
+        <>
+          <div className="space-y-2">
+            <Label htmlFor="heldByCompany">Held By Company</Label>
+            <Select
+              value={formData.heldByCompany || "none"}
+              onValueChange={(value) =>
+                setFormData({ ...formData, heldByCompany: value === "none" ? "" : value })
+              }
+              disabled={isLoadingMasters}
+            >
+              <SelectTrigger>
+                <SelectValue placeholder={isLoadingMasters ? "Loading companies..." : "Select a company"} />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="none">None</SelectItem>
+                {masters.map((master) => (
+                  <SelectItem key={master.id} value={master.companyName}>
+                    {master.companyName}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+          </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="status">Status*</Label>
-        <Select
-          value={formData.status}
-          onValueChange={(value: "AVAILABLE" | "HOLD" | "MEMO" | "SOLD") =>
-            setFormData({ ...formData, status: value })
-          }
-        >
-          <SelectTrigger>
-            <SelectValue placeholder="Select status" />
-          </SelectTrigger>
-          <SelectContent>
-            <SelectItem value="AVAILABLE">Available</SelectItem>
-            <SelectItem value="HOLD">Hold</SelectItem>
-            <SelectItem value="MEMO">Memo</SelectItem>
-            <SelectItem value="SOLD">Sold</SelectItem>
-          </SelectContent>
-        </Select>
-      </div>
+          <div className="space-y-2">
+            <Label htmlFor="status">Status*</Label>
+            <Select
+              value={formData.status}
+              onValueChange={(value: "AVAILABLE" | "HOLD" | "MEMO" | "SOLD") =>
+                setFormData({ ...formData, status: value })
+              }
+            >
+              <SelectTrigger>
+                <SelectValue placeholder="Select status" />
+              </SelectTrigger>
+              <SelectContent>
+                <SelectItem value="AVAILABLE">Available</SelectItem>
+                <SelectItem value="HOLD">Hold</SelectItem>
+                <SelectItem value="MEMO">Memo</SelectItem>
+                <SelectItem value="SOLD">Sold</SelectItem>
+              </SelectContent>
+            </Select>
+          </div>
+        </>
+      )}
 
       <div className="space-y-2">
         <Label htmlFor="shape">Shape*</Label>
@@ -291,6 +344,24 @@ export function InventoryForm({
           value={formData.amount || ""}
           readOnly
         />
+      </div>
+
+      <div className="space-y-2">
+        <Label htmlFor="discountPercent">Discount Percentage (%)</Label>
+        <Input
+          id="discountPercent"
+          type="number"
+          step="0.1"
+          min="0"
+          max="100"
+          value={formData.discountPercent || 5}
+          onChange={(e) =>
+            setFormData({ ...formData, discountPercent: parseFloat(e.target.value) || 5 })
+          }
+        />
+        <p className="text-sm text-muted-foreground">
+          Default: 5%. This will be applied to calculate the red price.
+        </p>
       </div>
 
       <div className="space-y-2">

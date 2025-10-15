@@ -9,6 +9,12 @@ export interface SalesReportSummary {
       totalDue: number | null;
     };
   }>;
+  topSalesmen?: Array<{
+    salesExecutiveId: string;
+    name: string;
+    email: string;
+    totalSales: number;
+  }>;
 }
 
 export interface DailySales {

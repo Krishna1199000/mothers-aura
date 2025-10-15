@@ -24,6 +24,37 @@ enum Role {
   CUSTOMER
 }
 
+// Chat system enums
+enum AdminStatus {
+  AVAILABLE
+  BUSY
+  OFFLINE
+}
+
+enum SenderType {
+  ADMIN
+  CUSTOMER
+}
+
+enum ChatStatus {
+  ACTIVE
+  CLOSED
+  PENDING
+}
+
+enum TaskType {
+  EMPLOYEE
+  CUSTOMER
+  BOTH
+}
+
+enum TaskStatus {
+  PENDING
+  IN_PROGRESS
+  COMPLETED
+  CANCELLED
+}
+
 // -----------------
 // NextAuth.js models
 // -----------------
@@ -40,6 +71,10 @@ model User {
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
 
+  // Chat-related fields
+  adminStatus    AdminStatus  @default(OFFLINE)
+  lastActive     DateTime?
+
   accounts       Account[]
   sessions       Session[]
 
@@ -50,6 +85,20 @@ model User {
   createdReports  PerformanceReport[] @relation("PerformanceReportCreatedBy")
   createdMasters  Master[]  @relation("MasterCreatedBy")
   createdInventory Inventory[] @relation("InventoryCreatedBy")
+
+  // Chat relations
+  chats         Chat[]       @relation("AdminChats")
+  messages      Message[]    @relation("AdminMessages")
+  chatRequests  ChatRequest[] @relation("AdminChatRequests")
+
+  // Task and Notification relations
+  createdTasks    Task[]           @relation("TaskCreatedBy")
+  taskAssignments TaskAssignment[]
+  notifications   Notification[]
+
+  // Cart and Order relations
+  cart    Cart?
+  orders  Order[]
 }
 
 model Account {
@@ -149,10 +198,11 @@ model Reference {
 
 model Invoice {
   id            String    @id @default(uuid())
-  invoiceNumber String    @unique
+  invoiceNumber String    @unique  // Format: MA-0001A/date
+  sequenceNum   Int       @default(autoincrement())  // Auto-increment number
   date          DateTime?
   dueDate       DateTime?
-  paymentTerms  String?
+  paymentTerms  String?   // Format: "7 days", "30 days", etc
   emailPdf      Boolean?  @default(false)
   masterId      String
   description   String?
@@ -188,10 +238,11 @@ model InvoiceItem {
 
 model Memo {
   id           String    @id @default(uuid())
-  memoNumber   String    @unique
+  memoNumber   String    @unique  // Format: MAM-0001A/date
+  sequenceNum  Int       @default(autoincrement())  // Auto-increment number
   date         DateTime?
   dueDate      DateTime?
-  paymentTerms String?
+  paymentTerms String?   // Format: "7 days", "30 days", etc
   emailPdf     Boolean?  @default(false)
   masterId     String
   description  String?
@@ -249,6 +300,7 @@ model Inventory {
   lab             String
   pricePerCarat   Float
   amount          Float
+  discountPercent Float    @default(5.0)  // Default 5% discount
   imageUrl        String?
   videoUrl        String?
   certificateUrl  String?
@@ -292,4 +344,279 @@ model Ledger {
   invoice   Invoice? @relation(fields: [invoiceId], references: [id])
   master    Master   @relation(fields: [masterId], references: [id])
   createdBy User     @relation("LedgerCreatedBy", fields: [createdById], references: [id])
+}
+
+// -----------------
+// Chat system models
+// -----------------
+
+model Chat {
+  id          String      @id @default(uuid())
+  status      ChatStatus  @default(ACTIVE)
+  adminId     String
+  customerId  String?
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+  
+  // Relations
+  admin       User        @relation("AdminChats", fields: [adminId], references: [id])
+  messages    Message[]
+  
+  // Customer info (for non-registered customers)
+  customerName  String?
+  customerEmail String?
+
+  // Metadata
+  lastMessageAt DateTime  @default(now())
+  isAdminTyping Boolean   @default(false)
+  isCustomerTyping Boolean @default(false)
+}
+
+model Message {
+  id          String      @id @default(uuid())
+  chatId      String
+  content     String      @db.Text
+  senderType  SenderType
+  senderId    String?
+  createdAt   DateTime    @default(now())
+  
+  // Relations
+  chat        Chat        @relation(fields: [chatId], references: [id], onDelete: Cascade)
+  sender      User?       @relation("AdminMessages", fields: [senderId], references: [id])
+  
+  // Read status
+  isRead      Boolean     @default(false)
+  readAt      DateTime?
+}
+
+model ChatRequest {
+  id          String    @id @default(uuid())
+  name        String
+  email       String
+  message     String    @db.Text
+  createdAt   DateTime  @default(now())
+  status      String    @default("PENDING") // PENDING, ACCEPTED, REJECTED
+  
+  // Admin who handled the request
+  adminId     String?
+  admin       User?     @relation("AdminChatRequests", fields: [adminId], references: [id])
+  
+  // If chat was created from this request
+  chatId      String?
+  
+  // Metadata
+  ipAddress   String?
+  userAgent   String?
+  source      String?   // Where the request came from (e.g., "chat_widget", "contact_form")
+}
+
+// -----------------
+// Kyrah API models
+// -----------------
+
+model KyrahDiamond {
+  id            String   @id @default(uuid())
+  stockId       String   @unique
+  shape         String
+  carat         Float
+  color         String
+  clarity       String
+  cut           String?
+  polish        String
+  symmetry      String
+  certificateNo String?
+  lab           String
+  pricePerCarat Float
+  amount        Float
+  imageUrl      String?
+  videoUrl      String?
+  certificateUrl String?
+  measurement   String?
+  length        Float?
+  width         Float?
+  height        Float?
+  depth         Float?
+  table         Float?
+  ratio         Float?
+  status        String
+  comment       String?
+  girdle        String?
+  culet         String?
+  crownAngle    Float?
+  crownHeight   String?
+  pavilionAngle Float?
+  pavilionDepth Float?
+  fancyIntensity String?
+  fancyOvertone String?
+  fancyColor    String?
+  location      String?
+  inscription   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model KyrahSync {
+  id            String   @id @default(uuid())
+  lastSyncAt    DateTime
+  status        String
+  message       String?
+  diamondsCount Int      @default(0)
+  processed     Int      @default(0)
+  totalDiamonds Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt @default(now())
+}
+
+// -----------------
+// Cranberri API models
+// -----------------
+
+model CranberriDiamond {
+  id            String   @id @default(uuid())
+  stockId       String   @unique
+  shape         String
+  size          Float
+  color         String
+  clarity       String
+  cut           String?
+  polish        String
+  sym           String
+  lab           String
+  certificateNo String?
+  pricePerCarat Float
+  finalAmount   Float
+  imageUrl      String?
+  certUrl       String?
+  videoUrl      String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt @default(now())
+}
+
+model CranberriSync {
+  id            String   @id @default(uuid())
+  lastSyncAt    DateTime
+  status        String
+  message       String?
+  diamondsCount Int      @default(0)
+  processed     Int      @default(0)
+  totalDiamonds Int      @default(0)
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt @default(now())
+}
+
+// -----------------
+// UI Inventory models
+// -----------------
+
+enum OrderStatus {
+  PENDING
+  CONFIRMED
+  DELIVERED
+  CANCELLED
+}
+
+model Category {
+  id            String        @id @default(uuid())
+  name          String        @unique
+  slug          String        @unique
+  description   String?
+  subcategories Subcategory[]
+  products      Product[]
+  createdAt     DateTime      @default(now())
+}
+
+model Subcategory {
+  id          String      @id @default(uuid())
+  name        String
+  slug        String
+  categoryId  String
+  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products    Product[]
+  createdAt   DateTime    @default(now())
+
+  @@unique([name, categoryId])
+}
+
+model Product {
+  id            String      @id @default(uuid())
+  name          String
+  slug          String      @unique
+  description   String?
+  price         Float
+  carat         Float?
+  cut           String?
+  color         String?
+  clarity       String?
+  stock         Int         @default(0)
+  images        String[]
+  categoryId    String
+  subcategoryId String?
+  category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
+  createdAt     DateTime    @default(now())
+}
+
+model Cart {
+  id        String    @id @default(uuid())
+  userId    String?   @unique
+  user      User?     @relation(fields: [userId], references: [id])
+  items     Json      // store array of { productId, name, price, qty }
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+}
+
+model Order {
+  id           String      @id @default(uuid())
+  orderNumber  Int         @unique @default(autoincrement())
+  userId       String?
+  user         User?       @relation(fields: [userId], references: [id])
+  items        Json       // same format as cart items
+  totalAmount  Float
+  shippingInfo Json      // { name, email, phone, address }
+  status       OrderStatus @default(PENDING)
+  createdAt    DateTime    @default(now())
+}
+
+// -----------------
+// Task and Notification models
+// -----------------
+
+model Task {
+  id          String      @id @default(uuid())
+  name        String
+  description String
+  type        TaskType
+  status      TaskStatus  @default(PENDING)
+  createdById String
+  createdAt   DateTime    @default(now())
+  updatedAt   DateTime    @updatedAt
+
+  createdBy   User        @relation("TaskCreatedBy", fields: [createdById], references: [id])
+  assignments TaskAssignment[]
+}
+
+model TaskAssignment {
+  id        String   @id @default(uuid())
+  taskId    String
+  userId    String
+  isRead    Boolean  @default(false)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  task      Task     @relation(fields: [taskId], references: [id], onDelete: Cascade)
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+model Notification {
+  id        String   @id @default(uuid())
+  title     String
+  message   String
+  type      String   // TASK, OFFER, SYSTEM, etc.
+  imageUrl  String?  // Cloudinary image URL
+  isRead    Boolean  @default(false)
+  userId    String
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
 }

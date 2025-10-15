@@ -5,6 +5,7 @@ import { useQuery } from "@tanstack/react-query";
 import { PerformanceFilter } from "./performance-filter";
 import { PerformanceForm } from "./performance-form";
 import { PerformanceTable } from "./performance-table";
+import { PerformanceCharts } from "./performance-charts";
 import { Card } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Plus } from "lucide-react";
@@ -77,6 +78,10 @@ export function PerformanceContent({ userRole }: PerformanceContentProps) {
           </DialogContent>
         </Dialog>
       </div>
+
+      {userRole === "ADMIN" && data && data.length > 0 && (
+        <PerformanceCharts reports={data} />
+      )}
 
       <PerformanceTable
         isLoading={isLoading}
