@@ -134,9 +134,8 @@ function SigninInner() {
     setSuccessMessage("");
 
     try {
-      await signIn("google", {
-        callbackUrl: "/dashboard",
-      });
+      const callbackUrl = searchParams.get("callbackUrl") || "/dashboard";
+      await signIn("google", { callbackUrl });
     } catch {
       setSubmitError("Failed to sign in with Google");
       setIsGoogleLoading(false);

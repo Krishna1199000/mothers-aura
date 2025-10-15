@@ -7,7 +7,7 @@ import { Button } from "@/components/ui/button";
 import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/lib/contexts/cart-context";
-import { X, ShoppingBag, Plus, Minus, ArrowRight } from "lucide-react";
+import { ShoppingBag, Plus, Minus, ArrowRight } from "lucide-react";
 
 interface CartModalProps {
   open: boolean;
@@ -43,12 +43,15 @@ export function CartModal({ open, onClose }: CartModalProps) {
               Shopping Cart
             </SheetTitle>
             <Button
-              variant="ghost"
-              size="icon"
-              className="h-8 w-8"
-              onClick={onClose}
+              variant="outline"
+              size="sm"
+              className="h-8"
+              onClick={() => {
+                router.push("/orders/history");
+                onClose();
+              }}
             >
-              <X className="h-4 w-4" />
+              Purchase History
             </Button>
           </div>
           <div className="text-sm text-muted-foreground">
@@ -57,12 +60,22 @@ export function CartModal({ open, onClose }: CartModalProps) {
         </SheetHeader>
 
         {items.length === 0 ? (
-          <div className="flex h-[50vh] flex-col items-center justify-center gap-2 text-center">
+          <div className="flex h-[50vh] flex-col items-center justify-center gap-3 text-center">
             <ShoppingBag className="h-12 w-12 text-muted-foreground" />
             <h3 className="text-lg font-semibold">Your cart is empty</h3>
             <p className="text-sm text-muted-foreground">
               Add items to your cart to continue shopping
             </p>
+            <Button
+              variant="outline"
+              size="sm"
+              onClick={() => {
+                router.push("/orders/history");
+                onClose();
+              }}
+            >
+              View Purchase History
+            </Button>
           </div>
         ) : (
           <>
