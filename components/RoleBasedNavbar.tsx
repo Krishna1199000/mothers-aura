@@ -2,9 +2,11 @@
 
 import { useState, useRef } from "react";
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
+import { getRolePrefix } from "@/lib/get-role-prefix";
 import {
   Sheet,
   SheetContent,
@@ -27,38 +29,44 @@ const navItems: Record<string, NavItem[]> = {
   ADMIN: [
     // Core Management
     { href: "/dashboard", label: "Dashboard", group: "core" },
-    { href: "/admin/manage-users", label: "Manage Users", group: "core" },
-    { href: "/admin/masters", label: "Masters", group: "core" },
-    
+    { href: "/manage-users", label: "Manage Users", group: "core" },
+    { href: "/masters", label: "Masters", group: "core" },
+
     // Inventory & Products
-    { href: "/admin/inventory", label: "Inventory", group: "inventory" },
-    { href: "/admin/ui-inventory", label: "UI Inventory", group: "inventory" },
-    { href: "/admin/parcel-goods", label: "Parcel Goods", group: "inventory" },
-    
+    { href: "/inventory", label: "Inventory", group: "inventory" },
+    { href: "/ui-inventory", label: "UI Inventory", group: "inventory" },
+    { href: "/parcel-goods", label: "Parcel Goods", group: "inventory" },
+
     // Orders & Transactions
-    { href: "/admin/orders", label: "Orders", group: "orders" },
-    { href: "/admin/invoices", label: "Invoices", group: "orders" },
-    { href: "/admin/memos", label: "Memos", group: "orders" },
-    { href: "/admin/ledger", label: "Account Ledger", group: "orders" },
-    
+    { href: "/orders", label: "Orders", group: "orders" },
+    { href: "/invoices", label: "Invoices", group: "orders" },
+    { href: "/memos", label: "Memos", group: "orders" },
+
     // Communication
-    { href: "/admin/chats", label: "Chat", group: "communication" },
-    
+    { href: "/chats", label: "Chat", group: "communication" },
+
     // Reports & Analytics
-    { href: "/admin/reports/sales", label: "Sales Report", group: "reports" },
-    { href: "/admin/performance", label: "Performance Reports", group: "reports" },
+    { href: "/reports/sales", label: "Sales Report", group: "reports" },
+    { href: "/reports/outstanding", label: "Outstanding Report", group: "reports" },
+    { href: "/performance", label: "Performance Reports", group: "reports" },
+    { href: "/ledger", label: "Account Ledger", group: "reports" },
   ],
   EMPLOYEE: [
+    // Core
     { href: "/dashboard", label: "Dashboard", group: "core" },
-    { href: "/admin/masters", label: "Masters", group: "core" },
-    { href: "/admin/inventory", label: "Inventory", group: "inventory" },
-    { href: "/admin/ui-inventory", label: "UI Inventory", group: "inventory" },
-    { href: "/admin/parcel-goods", label: "Parcel Goods", group: "inventory" },
-    { href: "/admin/orders", label: "Orders", group: "orders" },
-    { href: "/admin/invoices", label: "Invoices", group: "orders" },
-    { href: "/admin/memos", label: "Memos", group: "orders" },
-    { href: "/admin/chats", label: "Chat", group: "communication" },
-    { href: "/admin/performance", label: "Performance Reports", group: "reports" },
+    { href: "/masters", label: "Masters", group: "core" },
+
+    // Inventory
+    { href: "/inventory", label: "Inventory", group: "inventory" },
+    { href: "/ui-inventory", label: "UI Inventory", group: "inventory" },
+    { href: "/parcel-goods", label: "Parcel Goods", group: "inventory" },
+
+    // Orders
+    { href: "/invoices", label: "Invoices", group: "orders" },
+    { href: "/memos", label: "Memos", group: "orders" },
+
+    // Reports
+    { href: "/performance", label: "Performance Reports", group: "reports" },
   ],
   CUSTOMER: [
     { href: "/dashboard", label: "Dashboard" },
@@ -72,6 +80,13 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
   const hoverTimerRef = useRef<NodeJS.Timeout | null>(null);
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const items = navItems[role] || navItems.CUSTOMER;
+  const rolePrefix = getRolePrefix(role);
+
+  // Helper to get the full path for a nav item
+  const getFullPath = (href: string) => {
+    if (href.startsWith("/dashboard")) return href;
+    return `${rolePrefix}${href}`;
+  };
 
   // Group items for desktop navigation
   const groupedItems = items.reduce((acc, item) => {
@@ -92,11 +107,16 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
           {/* Logo and Role Label */}
           <div className="flex items-center gap-3">
             <Link href="/dashboard">
-              <img
-                src="/Logo.jpg"
-                alt="Logo"
-                className="h-10 w-10 rounded-lg object-contain"
-              />
+              <div className="relative h-10 w-10">
+                <Image
+                  src="/Logo.jpg"
+                  alt="Logo"
+                  fill
+                  className="rounded-lg object-contain"
+                  sizes="40px"
+                  priority
+                />
+              </div>
             </Link>
             <span className="text-base font-semibold hidden sm:block">
               {role === "ADMIN"
@@ -124,10 +144,10 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
               >
                 {groupItems.length === 1 ? (
                   <Link
-                    href={groupItems[0].href}
+                    href={getFullPath(groupItems[0].href)}
                     className={cn(
                       "px-3 py-2 text-sm font-medium rounded-md transition-colors",
-                      pathname === groupItems[0].href
+                      pathname === getFullPath(groupItems[0].href)
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                     )}
@@ -139,7 +159,7 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
                     <button
                       className={cn(
                         "px-3 py-2 text-sm font-medium rounded-md transition-colors flex items-center gap-1",
-                        pathname.startsWith(`/admin/${group}`)
+                        pathname.startsWith(`${rolePrefix}/${group}`)
                           ? "bg-primary/10 text-primary"
                           : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                       )}
@@ -163,10 +183,10 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
                         {groupItems.map((item) => (
                           <Link
                             key={item.href}
-                            href={item.href}
+                            href={getFullPath(item.href)}
                             className={cn(
                               "block px-4 py-2 text-sm transition-colors",
-                              pathname === item.href
+                              pathname === getFullPath(item.href)
                                 ? "bg-primary/10 text-primary"
                                 : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                             )}
@@ -197,11 +217,15 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
               <SheetHeader>
                 <SheetTitle>
                   <div className="flex items-center gap-3">
-                    <img
-                      src="/Logo.jpg"
-                      alt="Logo"
-                      className="h-10 w-10 rounded-lg object-contain"
-                    />
+                    <div className="relative h-10 w-10">
+                      <Image
+                        src="/Logo.jpg"
+                        alt="Logo"
+                        fill
+                        className="rounded-lg object-contain"
+                        sizes="40px"
+                      />
+                    </div>
                     <span className="text-base font-semibold">
                       {role === "ADMIN"
                         ? "Admin Panel"
@@ -230,11 +254,11 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
                       {groupItems.map((item) => (
                         <Link
                           key={item.href}
-                          href={item.href}
+                          href={getFullPath(item.href)}
                           onClick={() => setIsOpen(false)}
                           className={cn(
                             "px-6 py-2 text-sm font-medium rounded-md transition-colors block",
-                            pathname === item.href
+                            pathname === getFullPath(item.href)
                               ? "bg-primary/10 text-primary"
                               : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                           )}
@@ -248,11 +272,11 @@ export function RoleBasedNavbar({ role }: RoleBasedNavbarProps) {
                 {groupedItems.ungrouped?.map((item) => (
                   <Link
                     key={item.href}
-                    href={item.href}
+                    href={getFullPath(item.href)}
                     onClick={() => setIsOpen(false)}
                     className={cn(
                       "px-4 py-2 text-sm font-medium rounded-md transition-colors block",
-                      pathname === item.href
+                      pathname === getFullPath(item.href)
                         ? "bg-primary/10 text-primary"
                         : "text-muted-foreground hover:text-primary hover:bg-primary/5"
                     )}

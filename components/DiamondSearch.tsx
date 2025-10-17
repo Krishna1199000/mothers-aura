@@ -63,7 +63,8 @@ export const DiamondSearch = ({ className, initialFilters = {} }: DiamondSearchP
       polishes,
       symmetries,
       fluorescences: [] as string[],
-      locations: [] as string[]
+      locations: [] as string[],
+      statuses: [] as string[]
     };
   });
 
@@ -82,6 +83,8 @@ export const DiamondSearch = ({ className, initialFilters = {} }: DiamondSearchP
   const fluorescences = ["NON", "FNT", "MED", "SL", "VSL", "STG", "VST"];
   
   const locations = ["USA", "INDIA"];
+  
+  const statuses = ["AVAILABLE", "SOLD", "MEMO", "HOLD"];
 
   const toggleFilter = (category: keyof typeof filters, value: string) => {
     setFilters(prev => ({
@@ -129,6 +132,9 @@ export const DiamondSearch = ({ className, initialFilters = {} }: DiamondSearchP
       }
       if (filters.symmetries.length > 0) {
         filters.symmetries.forEach(symmetry => params.append('symmetry', symmetry));
+      }
+      if (filters.statuses.length > 0) {
+        filters.statuses.forEach(status => params.append('status', status));
       }
 
       // Redirect to search results page with filters
@@ -371,6 +377,29 @@ export const DiamondSearch = ({ className, initialFilters = {} }: DiamondSearchP
                   </Badge>
                 ))}
               </div>
+            </div>
+          </div>
+
+          {/* Status Filter */}
+          <div>
+            <Label className="text-base font-semibold mb-3 block">Status</Label>
+            <div className="flex flex-wrap gap-2">
+              {statuses.map((status) => (
+                <Badge
+                  key={status}
+                  variant={filters.statuses.includes(status) ? "default" : "outline"}
+                  className={`cursor-pointer px-3 py-1 ${
+                    status === "AVAILABLE" ? "hover:bg-green-50 hover:border-green-300" :
+                    status === "SOLD" ? "hover:bg-red-50 hover:border-red-300" :
+                    status === "MEMO" ? "hover:bg-yellow-50 hover:border-yellow-300" :
+                    status === "HOLD" ? "hover:bg-blue-50 hover:border-blue-300" :
+                    ""
+                  }`}
+                  onClick={() => toggleFilter("statuses", status)}
+                >
+                  {status}
+                </Badge>
+              ))}
             </div>
           </div>
 

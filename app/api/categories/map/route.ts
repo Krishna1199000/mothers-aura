@@ -130,3 +130,8 @@ function formatProduct(product: any) {
     subcategory: product.subcategory?.name,
   };
 }
+
+
+
+
+

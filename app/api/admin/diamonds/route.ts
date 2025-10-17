@@ -16,7 +16,7 @@ export async function GET(request: NextRequest) {
 
     const searchParams = request.nextUrl.searchParams;
     const search = searchParams.get("search");
-    const status = searchParams.get("status");
+    const statuses = searchParams.getAll("status");
     const minCarat = searchParams.get("minCarat");
     const maxCarat = searchParams.get("maxCarat");
     const minPrice = searchParams.get("minPrice");
@@ -49,8 +49,8 @@ export async function GET(request: NextRequest) {
     }
 
     // Status filter
-    if (status) {
-      commonWhere.status = status;
+    if (statuses.length > 0) {
+      commonWhere.status = { in: statuses };
     }
 
     // Carat range filter
@@ -166,7 +166,11 @@ export async function GET(request: NextRequest) {
 
       // Fetch Kyrah diamonds
       db.kyrahDiamond.findMany({
-        where: commonWhere,
+        where: {
+          ...commonWhere,
+          // Kyrah-specific filters
+          ...(statuses.length > 0 && { status: { in: statuses } }),
+        },
       }),
 
       // Fetch Cranberri diamonds

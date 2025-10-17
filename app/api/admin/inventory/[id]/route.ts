@@ -101,6 +101,17 @@ export async function PUT(
       );
     }
 
+    // Compute pricing server-side and persist only schema fields
+    const carat = parseFloat(data.carat) || 0;
+    const pricePerCarat = parseFloat(data.pricePerCarat) || 0;
+    const askingAmount = carat * pricePerCarat;
+    const greenPercentage = parseFloat(data.greenPercentage) || 0;
+    const redPercentage = parseFloat(data.redPercentage) || 0;
+    const superRedPercentage = parseFloat(data.superRedPercentage) || 0;
+    const greenAmount = askingAmount * (1 - greenPercentage / 100);
+    const redAmount = askingAmount * (1 - redPercentage / 100);
+    const superRedAmount = askingAmount * (1 - superRedPercentage / 100);
+
     const inventory = await db.inventory.update({
       where: { id },
       data: {
@@ -108,7 +119,7 @@ export async function PUT(
         heldByCompany: data.heldByCompany,
         status: data.status,
         shape: data.shape,
-        carat: parseFloat(data.carat),
+        carat,
         color: data.color,
         clarity: data.clarity,
         cut: data.cut,
@@ -116,9 +127,10 @@ export async function PUT(
         symmetry: data.symmetry,
         certificateNo: data.certificateNo,
         lab: data.lab,
-        pricePerCarat: parseFloat(data.pricePerCarat),
-        amount: parseFloat(data.amount),
-        discountPercent: parseFloat(data.discountPercent) || 5.0,
+        askingAmount,
+        greenAmount,
+        redAmount,
+        superRedAmount,
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
         certificateUrl: data.certificateUrl,

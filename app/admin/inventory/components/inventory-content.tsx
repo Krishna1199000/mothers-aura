@@ -80,13 +80,14 @@ export function InventoryContent({ userRole }: InventoryContentProps) {
           >
             Advanced Filter
           </Button>
-          <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
-            <DialogTrigger asChild>
-              <Button>
-                <Plus className="mr-2 h-4 w-4" />
-                Add Item
-              </Button>
-            </DialogTrigger>
+          {userRole === "ADMIN" && (
+            <Dialog open={isFormOpen} onOpenChange={setIsFormOpen}>
+              <DialogTrigger asChild>
+                <Button>
+                  <Plus className="mr-2 h-4 w-4" />
+                  Add Item
+                </Button>
+              </DialogTrigger>
             <DialogContent className="sm:max-w-[600px] max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>Add Inventory Item</DialogTitle>
@@ -94,6 +95,7 @@ export function InventoryContent({ userRole }: InventoryContentProps) {
               <InventoryForm onSuccess={handleFormSuccess} />
             </DialogContent>
           </Dialog>
+          )}
         </div>
       </div>
 

@@ -9,3 +9,8 @@ declare module 'slugify' {
   function slugify(text: string, options?: SlugifyOptions): string;
   export = slugify;
 }
+
+
+
+
+

@@ -19,10 +19,6 @@ import {
   type InventoryFormData,
 } from "@/types/inventory";
 
-interface Master {
-  id: string;
-  companyName: string;
-}
 
 interface InventoryFormProps {
   onSuccess: () => void;
@@ -39,8 +35,6 @@ export function InventoryForm({
 }: InventoryFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
-  const [masters, setMasters] = useState<Master[]>([]);
-  const [isLoadingMasters, setIsLoadingMasters] = useState(false);
   const [formData, setFormData] = useState<InventoryFormData>(
     initialData || {
       stockId: "",
@@ -56,8 +50,13 @@ export function InventoryForm({
       certificateNo: "",
       lab: "",
       pricePerCarat: 0,
-      amount: 0,
-      discountPercent: 5.0,
+      askingAmount: 0,
+      greenAmount: 0,
+      redAmount: 0,
+      superRedAmount: 0,
+      greenPercentage: 0,
+      redPercentage: 0,
+      superRedPercentage: 0,
       imageUrl: "",
       videoUrl: "",
       certificateUrl: "",
@@ -66,33 +65,13 @@ export function InventoryForm({
     }
   );
 
-  // Fetch masters for held by company dropdown
+  // Update form data when initialData changes
   useEffect(() => {
-    const fetchMasters = async () => {
-      try {
-        setIsLoadingMasters(true);
-        const response = await fetch('/api/admin/masters');
-        if (!response.ok) {
-          throw new Error('Failed to fetch masters');
-        }
-        const data = await response.json();
-        setMasters(data);
-      } catch (error) {
-        console.error('Error fetching masters:', error);
-        toast({
-          title: "Error",
-          description: "Failed to load companies",
-          variant: "destructive",
-        });
-      } finally {
-        setIsLoadingMasters(false);
-      }
-    };
-
-    if (isEditing) {
-      fetchMasters();
+    if (initialData) {
+      setFormData(initialData);
     }
-  }, [isEditing, toast]);
+  }, [initialData]);
+
 
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
@@ -154,53 +133,6 @@ export function InventoryForm({
         />
       </div>
 
-      {/* Only show these fields when editing */}
-      {isEditing && (
-        <>
-          <div className="space-y-2">
-            <Label htmlFor="heldByCompany">Held By Company</Label>
-            <Select
-              value={formData.heldByCompany || "none"}
-              onValueChange={(value) =>
-                setFormData({ ...formData, heldByCompany: value === "none" ? "" : value })
-              }
-              disabled={isLoadingMasters}
-            >
-              <SelectTrigger>
-                <SelectValue placeholder={isLoadingMasters ? "Loading companies..." : "Select a company"} />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="none">None</SelectItem>
-                {masters.map((master) => (
-                  <SelectItem key={master.id} value={master.companyName}>
-                    {master.companyName}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
-          </div>
-
-          <div className="space-y-2">
-            <Label htmlFor="status">Status*</Label>
-            <Select
-              value={formData.status}
-              onValueChange={(value: "AVAILABLE" | "HOLD" | "MEMO" | "SOLD") =>
-                setFormData({ ...formData, status: value })
-              }
-            >
-              <SelectTrigger>
-                <SelectValue placeholder="Select status" />
-              </SelectTrigger>
-              <SelectContent>
-                <SelectItem value="AVAILABLE">Available</SelectItem>
-                <SelectItem value="HOLD">Hold</SelectItem>
-                <SelectItem value="MEMO">Memo</SelectItem>
-                <SelectItem value="SOLD">Sold</SelectItem>
-              </SelectContent>
-            </Select>
-          </div>
-        </>
-      )}
 
       <div className="space-y-2">
         <Label htmlFor="shape">Shape*</Label>
@@ -325,10 +257,11 @@ export function InventoryForm({
           value={formData.pricePerCarat || ""}
           onChange={(e) => {
             const price = parseFloat(e.target.value) || 0;
+            const askingAmount = price * formData.carat;
             setFormData({
               ...formData,
               pricePerCarat: price,
-              amount: price * formData.carat,
+              askingAmount: askingAmount,
             });
           }}
           required
@@ -336,32 +269,119 @@ export function InventoryForm({
       </div>
 
       <div className="space-y-2">
-        <Label htmlFor="amount">Amount</Label>
+        <Label htmlFor="askingAmount">Asking Amount</Label>
         <Input
-          id="amount"
+          id="askingAmount"
           type="number"
           step="0.01"
-          value={formData.amount || ""}
+          value={formData.askingAmount || ""}
           readOnly
         />
+        <p className="text-sm text-muted-foreground">
+          Calculated as Price/Ct × Carat
+        </p>
       </div>
 
-      <div className="space-y-2">
-        <Label htmlFor="discountPercent">Discount Percentage (%)</Label>
-        <Input
-          id="discountPercent"
-          type="number"
-          step="0.1"
-          min="0"
-          max="100"
-          value={formData.discountPercent || 5}
-          onChange={(e) =>
-            setFormData({ ...formData, discountPercent: parseFloat(e.target.value) || 5 })
-          }
-        />
-        <p className="text-sm text-muted-foreground">
-          Default: 5%. This will be applied to calculate the red price.
-        </p>
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="greenPercentage">Green Percentage (%)</Label>
+          <Input
+            id="greenPercentage"
+            type="number"
+            step="0.1"
+            min="0"
+            max="100"
+            value={formData.greenPercentage || ""}
+            onChange={(e) => {
+              const percentage = parseFloat(e.target.value) || 0;
+              const greenAmount = formData.askingAmount * (1 - percentage / 100);
+              setFormData({ 
+                ...formData, 
+                greenPercentage: percentage,
+                greenAmount: greenAmount,
+              });
+            }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="greenAmount">Green Amount</Label>
+          <Input
+            id="greenAmount"
+            type="number"
+            step="0.01"
+            value={formData.greenAmount || ""}
+            readOnly
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="redPercentage">Red Percentage (%)</Label>
+          <Input
+            id="redPercentage"
+            type="number"
+            step="0.1"
+            min="0"
+            max="100"
+            value={formData.redPercentage || ""}
+            onChange={(e) => {
+              const percentage = parseFloat(e.target.value) || 0;
+              const redAmount = formData.askingAmount * (1 - percentage / 100);
+              setFormData({ 
+                ...formData, 
+                redPercentage: percentage,
+                redAmount: redAmount,
+              });
+            }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="redAmount">Red Amount</Label>
+          <Input
+            id="redAmount"
+            type="number"
+            step="0.01"
+            value={formData.redAmount || ""}
+            readOnly
+          />
+        </div>
+      </div>
+
+      <div className="grid grid-cols-2 gap-4">
+        <div className="space-y-2">
+          <Label htmlFor="superRedPercentage">Super Red Percentage (%)</Label>
+          <Input
+            id="superRedPercentage"
+            type="number"
+            step="0.1"
+            min="0"
+            max="100"
+            value={formData.superRedPercentage || ""}
+            onChange={(e) => {
+              const percentage = parseFloat(e.target.value) || 0;
+              const superRedAmount = formData.askingAmount * (1 - percentage / 100);
+              setFormData({ 
+                ...formData, 
+                superRedPercentage: percentage,
+                superRedAmount: superRedAmount,
+              });
+            }}
+          />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="superRedAmount">Super Red Amount</Label>
+          <Input
+            id="superRedAmount"
+            type="number"
+            step="0.01"
+            value={formData.superRedAmount || ""}
+            readOnly
+          />
+        </div>
       </div>
 
       <div className="space-y-2">

@@ -28,6 +28,7 @@ export function MainNav({ userRole }: MainNavProps) {
       { href: "/admin/invoices", label: "Invoices" },
       { href: "/admin/memos", label: "Memos" },
       { href: "/admin/parcel-goods", label: "Parcel Goods" },
+      { href: "/admin/reports/outstanding", label: "Outstanding Report" },
     ],
     EMPLOYEE: [
       { href: "/admin/masters", label: "Masters" },

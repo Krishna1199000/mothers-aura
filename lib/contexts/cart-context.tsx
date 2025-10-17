@@ -8,6 +8,7 @@ import {
   ReactNode,
   useCallback,
 } from "react";
+import { useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
 import { useToast } from "@/components/ui/use-toast";
@@ -47,11 +48,35 @@ export function CartProvider({ children }: { children: ReactNode }) {
     0
   );
 
-  // Load cart from localStorage on mount
+  // Load cart from localStorage on mount (guard against StrictMode double-invoke)
+  const hasLoadedFromStorage = useRef(false);
   useEffect(() => {
+    if (hasLoadedFromStorage.current) return;
+    hasLoadedFromStorage.current = true;
+
     const savedCart = localStorage.getItem("cart");
     if (savedCart) {
-      setItems(JSON.parse(savedCart));
+      try {
+        const parsed: CartItem[] = JSON.parse(savedCart);
+        // Normalize just in case of any previous bad writes
+        const normalized = Array.isArray(parsed)
+          ? parsed.reduce<Record<string, CartItem>>((map, item) => {
+              const key = item.productId;
+              const existing = map[key];
+              if (existing) {
+                existing.quantity += item.quantity;
+              } else {
+                map[key] = { ...item };
+              }
+              return map;
+            }, {})
+          : {};
+        setItems(Object.values(normalized));
+      } catch {
+        // If parsing fails, reset the cart
+        localStorage.removeItem("cart");
+        setItems([]);
+      }
     }
     setIsLoading(false);
   }, []);
@@ -64,54 +89,53 @@ export function CartProvider({ children }: { children: ReactNode }) {
   }, [items, isLoading]);
 
   // Sync with database when user logs in
+  const hasSyncedWithDb = useRef(false);
   useEffect(() => {
     const syncCart = async () => {
-      if (session?.user) {
-        try {
-          setIsLoading(true);
-          
-          // First, get the user's cart from the database
-          const response = await fetch("/api/cart");
-          const dbCart = await response.json();
-          
-          // Get localStorage cart
-          const localCart = JSON.parse(localStorage.getItem("cart") || "[]");
-          
-          // Merge localStorage cart with database cart
-          const mergedItems = [...localCart];
-          
-          dbCart.items.forEach((dbItem: CartItem) => {
-            const existingItemIndex = mergedItems.findIndex(
-              (item) => item.productId === dbItem.productId
-            );
-            
-            if (existingItemIndex >= 0) {
-              // Update quantity if item exists
-              mergedItems[existingItemIndex].quantity += dbItem.quantity;
-            } else {
-              // Add new item if it doesn't exist
-              mergedItems.push(dbItem);
-            }
-          });
-          
-          // Update database with merged cart
+      if (!session?.user) return;
+      if (hasSyncedWithDb.current) return;
+      hasSyncedWithDb.current = true;
+      try {
+        setIsLoading(true);
+
+        // Get the user's cart from the database (if any)
+        const response = await fetch("/api/cart");
+        const dbCart = await response.json();
+
+        // Read any locally stored cart
+        const localCart: CartItem[] = JSON.parse(
+          localStorage.getItem("cart") || "[]"
+        );
+
+        let nextItems: CartItem[] = [];
+
+        if (Array.isArray(dbCart?.items) && dbCart.items.length > 0) {
+          // Prefer the database as source of truth when it has items
+          nextItems = dbCart.items as CartItem[];
+        } else if (localCart.length > 0) {
+          // If DB is empty but local has items, push local cart to DB once
+          nextItems = localCart;
           await fetch("/api/cart", {
             method: "PUT",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ items: mergedItems }),
+            body: JSON.stringify({ items: nextItems }),
           });
-          
-          setItems(mergedItems);
-        } catch (error) {
-          console.error("Error syncing cart:", error);
-          toast({
-            title: "Error",
-            description: "Failed to sync cart with your account",
-            variant: "destructive",
-          });
-        } finally {
-          setIsLoading(false);
+        } else {
+          nextItems = [];
         }
+
+        // Persist the resolved cart to localStorage and state
+        localStorage.setItem("cart", JSON.stringify(nextItems));
+        setItems(nextItems);
+      } catch (error) {
+        console.error("Error syncing cart:", error);
+        toast({
+          title: "Error",
+          description: "Failed to sync cart with your account",
+          variant: "destructive",
+        });
+      } finally {
+        setIsLoading(false);
       }
     };
 
@@ -261,6 +285,10 @@ export function CartProvider({ children }: { children: ReactNode }) {
     }
 
     setItems([]);
+    // Eagerly clear localStorage to avoid any stale reads during refreshes
+    try {
+      localStorage.setItem("cart", JSON.stringify([]));
+    } catch {}
 
     // Clear from database if user is logged in
     if (session?.user) {
@@ -283,6 +311,9 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
   const clearCartWithoutRestore = async () => {
     setItems([]);
+    try {
+      localStorage.setItem("cart", JSON.stringify([]));
+    } catch {}
 
     // Clear from database if user is logged in
     if (session?.user) {

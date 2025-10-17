@@ -84,6 +84,26 @@ export default function CreateMemoPage() {
     
     fetchMasters();
     generateMemoNumber();
+    // Prefill items from sessionStorage if present
+    try {
+      const raw = sessionStorage.getItem("prefillMemoItems");
+      if (raw) {
+        const parsed = JSON.parse(raw) as DiamondItem[];
+        if (Array.isArray(parsed) && parsed.length > 0) {
+          setItems(parsed.map(it => ({
+            description: it.description || "",
+            carat: String(it.carat ?? "0"),
+            color: it.color || "",
+            clarity: it.clarity || "",
+            lab: it.lab || "",
+            reportNo: it.reportNo || "",
+            pricePerCarat: String(it.pricePerCarat ?? "0"),
+            total: String(it.total ?? "0"),
+          })));
+        }
+        sessionStorage.removeItem("prefillMemoItems");
+      }
+    } catch {}
   }, [session, status, router]);
 
   // Auto-calculate due date based on payment terms

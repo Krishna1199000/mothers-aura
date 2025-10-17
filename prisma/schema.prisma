@@ -298,9 +298,10 @@ model Inventory {
   symmetry        String
   certificateNo   String?
   lab             String
-  pricePerCarat   Float
-  amount          Float
-  discountPercent Float    @default(5.0)  // Default 5% discount
+  askingAmount    Float    // Customer-facing price
+  greenAmount     Float    // Employee & Admin price
+  redAmount       Float    // Employee & Admin price
+  superRedAmount  Float    // Admin-only price
   imageUrl        String?
   videoUrl        String?
   certificateUrl  String?
@@ -311,6 +312,32 @@ model Inventory {
   updatedAt       DateTime @updatedAt
 
   createdBy       User     @relation("InventoryCreatedBy", fields: [createdById], references: [id])
+  history         InventoryHistory[]
+}
+
+// Tracks chronological events for each inventory stone (import, hold, memo, sold, returns, etc.)
+model InventoryHistory {
+  id            String   @id @default(uuid())
+  inventoryId   String
+  stockId       String
+  operation     String   // IMPORT, HOLD, HOLD_RETURN, MEMO, MEMO_RETURN, SOLD, etc.
+  referenceNo   String?
+  date          DateTime @default(now())
+  lotNo         String?
+  lotLocation   String?
+  createdName   String?
+  companyName   String?
+  active        Boolean?
+  closed        Boolean?
+  wgt           Float?
+  rate          Float?
+  discount      Float?
+  createdAt     DateTime @default(now())
+
+  inventory     Inventory @relation(fields: [inventoryId], references: [id], onDelete: Cascade)
+
+  @@index([inventoryId])
+  @@index([stockId])
 }
 
 model PerformanceReport {

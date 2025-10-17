@@ -184,14 +184,25 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Create inventory item
+    // Compute monetary fields server-side to avoid NaN and ensure consistency
+    const carat = parseFloat(data.carat) || 0;
+    const pricePerCarat = parseFloat(data.pricePerCarat) || 0;
+    const askingAmount = carat * pricePerCarat;
+    const greenPercentage = parseFloat(data.greenPercentage) || 0;
+    const redPercentage = parseFloat(data.redPercentage) || 0;
+    const superRedPercentage = parseFloat(data.superRedPercentage) || 0;
+    const greenAmount = askingAmount * (1 - greenPercentage / 100);
+    const redAmount = askingAmount * (1 - redPercentage / 100);
+    const superRedAmount = askingAmount * (1 - superRedPercentage / 100);
+
+    // Create inventory item with history
     const inventory = await db.inventory.create({
       data: {
         stockId: data.stockId,
         heldByCompany: data.heldByCompany,
         status: data.status || "AVAILABLE",
         shape: data.shape,
-        carat: parseFloat(data.carat),
+        carat,
         color: data.color,
         clarity: data.clarity,
         cut: data.cut,
@@ -199,15 +210,34 @@ export async function POST(request: NextRequest) {
         symmetry: data.symmetry,
         certificateNo: data.certificateNo,
         lab: data.lab,
-        pricePerCarat: parseFloat(data.pricePerCarat),
-        amount: parseFloat(data.amount),
-        discountPercent: parseFloat(data.discountPercent) || 5.0,
+        // Persist only fields that exist in schema
+        askingAmount,
+        greenAmount,
+        redAmount,
+        superRedAmount,
+        // Misc
         imageUrl: data.imageUrl,
         videoUrl: data.videoUrl,
         certificateUrl: data.certificateUrl,
         measurement: data.measurement,
         location: data.location,
         createdById: session.user.id,
+        // Create initial history entry
+        history: {
+          create: {
+            stockId: data.stockId,
+            operation: "IMPORT",
+            referenceNo: "INITIAL_IMPORT",
+            date: new Date(), // This will be the creation date
+            createdName: session.user.name || "Admin",
+            companyName: "Mother's Aura",
+            active: true,
+            closed: false,
+            wgt: carat,
+            rate: pricePerCarat,
+            discount: 0
+          }
+        }
       },
       include: {
         createdBy: {
