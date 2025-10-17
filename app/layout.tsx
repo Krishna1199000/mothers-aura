@@ -2,6 +2,7 @@ import type React from "react"
 import type { Metadata } from "next"
 import { Inter } from "next/font/google"
 import { Providers } from "@/components/Providers"
+import { LoadingProvider } from "@/app/loading-provider"
 import "./globals.css"
 
 const inter = Inter({ subsets: ["latin"] })
@@ -55,7 +56,9 @@ export default function RootLayout({
       </head>
       <body className={`antialiased ${inter.className}`}>
         <Providers>
-          {children}
+          <LoadingProvider>
+            {children}
+          </LoadingProvider>
         </Providers>
       </body>
     </html>
