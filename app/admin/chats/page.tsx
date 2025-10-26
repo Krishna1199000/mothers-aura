@@ -59,9 +59,11 @@ export default function AdminChatsPage() {
 
   // Initialize socket connection
   useEffect(() => {
-    const socketInstance = io('http://localhost:3000', {
+    const socketInstance = io(process.env.NEXT_PUBLIC_APP_URL || window.location.origin, {
       path: '/api/socket',
-      addTrailingSlash: false
+      addTrailingSlash: false,
+      withCredentials: true,
+      transports: ['websocket', 'polling']
     });
 
     socketInstance.on('connect', () => {

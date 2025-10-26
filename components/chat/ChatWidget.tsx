@@ -80,7 +80,9 @@ export function ChatWidget({ className }: ChatWidgetProps) {
   useEffect(() => {
     const socketInstance = io(process.env.NEXT_PUBLIC_APP_URL || window.location.origin, {
       path: '/api/socket',
-      addTrailingSlash: false
+      addTrailingSlash: false,
+      withCredentials: true,
+      transports: ['websocket', 'polling']
     });
 
     socketInstance.on('connect', () => {
