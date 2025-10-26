@@ -493,11 +493,12 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
               <div className="text-center mb-8">
                 <div className="bg-white p-2 rounded-lg inline-block mb-2">
                   <Image 
-                    src="/Logo.png" 
+                    src="/logo.png" 
                     alt="Logo" 
                     width={96}
                     height={96}
                     className="mx-auto w-24 h-24 object-contain print:w-28 print:h-28"
+                    unoptimized
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">

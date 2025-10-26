@@ -78,7 +78,7 @@ export const EmployeeHeader = () => {
 
             {/* Center - Logo */}
             <Link href="/dashboard" className="flex items-center">
-              <Image src="/Logo.png" alt="Mothers Aura logo" className="w-12 h-12 object-contain" unoptimized />
+              <Image src="/logo.png" alt="Mothers Aura logo" className="w-12 h-12 object-contain" unoptimized />
             </Link>
 
             {/* Right - Search, Dark Mode, Cart, Profile */}

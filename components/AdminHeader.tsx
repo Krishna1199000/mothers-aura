@@ -17,9 +17,10 @@ export function AdminHeader() {
         {!session?.user ? (
           <Link href="/" className="mr-6">
             <Image
-              src="/Logo.png"
+              src="/logo.png"
               alt="Logo"
               className="h-8 w-8 object-contain"
+              unoptimized
             />
           </Link>
         ) : (

@@ -215,11 +215,12 @@ export function RoleBasedNavbar({ role, showLogoOnly = false, showNavigationOnly
             <div className="flex items-center gap-3">
               <div className="relative h-16 w-16">
                 <Image
-                  src="/Logo.png"
+                  src="/logo.png"
                   alt="Logo"
                   fill
                   className="object-contain"
                   sizes="64px"
+                  unoptimized
                 />
               </div>
               <span className="text-lg font-semibold">

@@ -474,9 +474,10 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
               <div className="text-center mb-8">
                 <div className="bg-white p-2 rounded-lg inline-block mb-2">
                   <Image
-                    src="/Logo.png" 
+                    src="/logo.png" 
                     alt="Logo" 
                     className="mx-auto w-24 h-24 object-contain print:w-28 print:h-28"
+                    unoptimized
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">

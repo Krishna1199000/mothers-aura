@@ -14,7 +14,7 @@ export const Hero = () => {
         className="absolute inset-0 z-0"
       >
         <Image
-          src="/mothers-aura-landingimage.png"
+          src="/Mothers-aura-landingimage.png"
           alt="Luxury Diamond"
           fill
           className="object-cover object-center"
