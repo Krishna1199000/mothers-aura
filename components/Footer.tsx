@@ -3,7 +3,7 @@ import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 export const Footer = () => {
   const footerLinks = {
     'Contact Us': [
-      { name: 'info@cranberridiamonds.in', href: 'mailto:info@cranberridiamonds.in' },
+      { name: 'info@cranberridiamonds.in', href: 'mailto:info@mothersaura.com'},
       { name: '+91 845 287 2491', href: 'tel:+918452872491' }
     ],
     'Information': [
@@ -27,19 +27,19 @@ export const Footer = () => {
   ];
 
   return (
-    <footer className="bg-primary text-primary-foreground">
+    <footer className="text-white" style={{ backgroundColor: '#112158' }}>
       <div className="container mx-auto px-4 py-16">
         {/* Top Section */}
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand Section */}
           <div className="lg:col-span-1">
             <div className="flex items-center space-x-2 mb-6">
-              <div className="w-8 h-8 bg-primary-foreground rounded-sm flex items-center justify-center">
-                <div className="w-4 h-4 border-2 border-primary rotate-45"></div>
+              <div className="w-8 h-8 bg-white rounded-sm flex items-center justify-center">
+                <div className="w-4 h-4 border-2 border-[#112158] rotate-45"></div>
               </div>
               <span className="text-xl font-bold">Mothers Aura</span>
             </div>
-            <blockquote className="text-primary-foreground/80 italic leading-relaxed">
+            <blockquote className="text-white/80 italic leading-relaxed">
               &ldquo;Every diamond tells a story of time, pressure, and beauty. 
               We&apos;re here to help you find the perfect chapter for yours.&rdquo;
             </blockquote>
@@ -54,7 +54,7 @@ export const Footer = () => {
                   <li key={link.name}>
                     <a
                       href={link.href}
-                      className="text-primary-foreground/80 hover:text-primary-foreground transition-colors"
+                      className="text-white/80 hover:text-white transition-colors"
                     >
                       {link.name}
                     </a>
@@ -74,7 +74,7 @@ export const Footer = () => {
                   href={social.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-10 h-10 bg-primary-foreground/10 rounded-full flex items-center justify-center hover:bg-primary-foreground/20 transition-colors"
+                  className="w-10 h-10 bg-white/10 rounded-full flex items-center justify-center hover:bg-white/20 transition-colors"
                   aria-label={social.label}
                 >
                   <social.icon size={18} />
@@ -85,12 +85,12 @@ export const Footer = () => {
         </div>
 
         {/* Bottom Section */}
-        <div className="border-t border-primary-foreground/20 pt-8">
+        <div className="border-t border-white/20 pt-8">
           <div className="flex flex-col md:flex-row justify-between items-center">
-            <p className="text-primary-foreground/80 text-sm">
+            <p className="text-white/80 text-sm">
               © 2025 Mothers Aura. All rights reserved.
             </p>
-            <p className="text-primary-foreground/60 text-xs mt-4 md:mt-0">
+            <p className="text-white/60 text-xs mt-4 md:mt-0">
             Designed with love by krishna
             </p>
           </div>

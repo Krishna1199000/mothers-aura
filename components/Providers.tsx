@@ -5,6 +5,7 @@ import { ThemeProvider } from "next-themes";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState } from "react";
 import { CartProvider } from "@/lib/contexts/cart-context";
+import { WishlistProvider } from "@/lib/contexts/wishlist-context";
 
 interface ProvidersProps {
   children: React.ReactNode;
@@ -28,7 +29,9 @@ export function Providers({ children }: ProvidersProps) {
       <QueryClientProvider client={queryClient}>
         <ThemeProvider attribute="class" defaultTheme="system" enableSystem>
           <CartProvider>
-            {children}
+            <WishlistProvider>
+              {children}
+            </WishlistProvider>
           </CartProvider>
         </ThemeProvider>
       </QueryClientProvider>

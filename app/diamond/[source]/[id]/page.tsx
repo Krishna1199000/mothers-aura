@@ -13,6 +13,7 @@ import {
   DropdownMenuTrigger,
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
+import Image from "next/image";
 
 interface Diamond {
   id: string;
@@ -212,7 +213,7 @@ export default function DiamondPage() {
                     Your browser does not support the video tag.
                   </video>
                 ) : diamond.imageUrl ? (
-                  <img 
+                  <Image
                     src={diamond.imageUrl} 
                     alt={`${diamond.shape} Diamond ${diamond.carat}ct`}
                     className="w-full rounded-lg"

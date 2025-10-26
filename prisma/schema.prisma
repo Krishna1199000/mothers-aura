@@ -96,9 +96,10 @@ model User {
   taskAssignments TaskAssignment[]
   notifications   Notification[]
 
-  // Cart and Order relations
-  cart    Cart?
-  orders  Order[]
+  // Cart, Order, and Wishlist relations
+  cart      Cart?
+  orders    Order[]
+  wishlist  WishlistItem[]
 }
 
 model Account {
@@ -542,45 +543,36 @@ enum OrderStatus {
   CANCELLED
 }
 
-model Category {
-  id            String        @id @default(uuid())
-  name          String        @unique
-  slug          String        @unique
-  description   String?
-  subcategories Subcategory[]
-  products      Product[]
-  createdAt     DateTime      @default(now())
-}
-
-model Subcategory {
-  id          String      @id @default(uuid())
-  name        String
-  slug        String
-  categoryId  String
-  category    Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  products    Product[]
-  createdAt   DateTime    @default(now())
-
-  @@unique([name, categoryId])
-}
 
 model Product {
-  id            String      @id @default(uuid())
-  name          String
-  slug          String      @unique
-  description   String?
-  price         Float
-  carat         Float?
-  cut           String?
-  color         String?
-  clarity       String?
-  stock         Int         @default(0)
-  images        String[]
-  categoryId    String
-  subcategoryId String?
-  category      Category    @relation(fields: [categoryId], references: [id], onDelete: Cascade)
-  subcategory   Subcategory? @relation(fields: [subcategoryId], references: [id])
-  createdAt     DateTime    @default(now())
+  id              String    @id @default(uuid())
+  name            String
+  slug            String    @unique
+  description     String?
+  price           Float
+  shape           String
+  carat           Float
+  color           String
+  clarity         String
+  cut             String?
+  polish          String?
+  symmetry        String?
+  certificateNo   String?
+  lab             String?
+  stock           Int       @default(0)
+  images          String[]  // Media links (images or videos) - up to 5
+  videoUrl        String?   // Video URL
+  certificateUrl  String?   // Certificate URL
+  threeSixtyView  String?   // 360 view URL
+  additionalMedia String[]  // Additional media (images/videos)
+  createdAt       DateTime  @default(now())
+  updatedAt       DateTime  @updatedAt
+
+  // Relations
+  categoryId      String?
+  subcategoryId   String?
+  category        Category?    @relation(fields: [categoryId], references: [id])
+  subcategory     Subcategory? @relation(fields: [subcategoryId], references: [id])
 }
 
 model Cart {
@@ -602,6 +594,25 @@ model Order {
   shippingInfo Json      // { name, email, phone, address }
   status       OrderStatus @default(PENDING)
   createdAt    DateTime    @default(now())
+}
+
+model WishlistItem {
+  id          String   @id @default(uuid())
+  userId      String
+  productId   String
+  productName String
+  productPrice Float
+  productImage String
+  productCategory String
+  addedAt     DateTime @default(now())
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  user        User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  @@unique([userId, productId]) // Prevent duplicate items per user
+  @@index([userId])
+  @@index([productId])
 }
 
 // -----------------
@@ -646,4 +657,34 @@ model Notification {
   updatedAt DateTime @updatedAt
 
   user      User     @relation(fields: [userId], references: [id], onDelete: Cascade)
+}
+
+// -----------------
+// Category models
+// -----------------
+
+model Category {
+  id            String   @id @default(uuid())
+  name          String
+  slug          String   @unique
+  description   String?
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+
+  subcategories Subcategory[]
+  products      Product[]
+}
+
+model Subcategory {
+  id         String   @id @default(uuid())
+  name       String
+  slug       String   @unique
+  categoryId String
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+
+  category   Category  @relation(fields: [categoryId], references: [id], onDelete: Cascade)
+  products   Product[]
+
+  @@index([categoryId])
 }

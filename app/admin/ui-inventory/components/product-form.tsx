@@ -16,6 +16,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, X } from "lucide-react";
 import { ImageUpload } from "@/components/ui/image-upload";
+import Image from "next/image";
 
 interface Category {
   id: string;
@@ -303,7 +304,7 @@ export function ProductForm({
         <div className="grid grid-cols-3 gap-4">
           {watch("images").map((image, index) => (
             <div key={index} className="relative">
-              <img
+              <Image
                 src={image}
                 alt={`Product image ${index + 1}`}
                 className="w-full h-32 object-cover rounded-lg"

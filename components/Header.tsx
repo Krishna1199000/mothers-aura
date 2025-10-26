@@ -2,9 +2,11 @@
 
 import { useState, useEffect } from 'react';
 import Link from 'next/link';
+import Image from 'next/image';
+import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Phone, Search, ShoppingCart, Menu } from 'lucide-react';
+import { Phone, Search, ShoppingCart, Menu, Heart, MessageCircle } from 'lucide-react';
 import { MegaMenu } from './MegaMenu';
 import { SearchPanel } from './SearchPanel';
 import { ModeToggle } from './ModeToggle';
@@ -34,67 +36,105 @@ export const Header = () => {
 
   return (
     <>
-      {/* Top Bar */}
-      <div className="bg-background border-b border-border">
-        <div className="container mx-auto px-4 h-16 flex items-center justify-between">
-          {/* Phone */}
-          <div className="flex items-center space-x-2">
-            <Phone size={16} className="text-muted-foreground" />
-            <a 
-              href="tel:877-914-2877" 
-              className="text-sm font-medium hover:text-primary transition-colors"
-            >
-              877-914-2877
-            </a>
-          </div>
+      {/* Main Header */}
+      <div className="bg-white border-b border-gray-100">
+        <div className="container mx-auto px-4 py-1">
+          <div className="flex items-center justify-between">
+            {/* Left Section */}
+            <div className="flex items-center space-x-4">
+              <div className="flex items-center space-x-1">
+                <span className="text-xs text-gray-600">USD</span>
+                <span className="text-xs">▼</span>
+              </div>
+              <div className="flex items-center space-x-1">
+                <Phone size={14} className="text-gray-600" />
+                <a 
+                  href="tel:+852-537-5554-1" 
+                  className="text-xs text-gray-600 hover:text-gray-800 transition-colors"
+                >
+                  +852-537-5554-1
+                </a>
+              </div>
+              <button
+                onClick={() => setIsSearchOpen(!isSearchOpen)}
+                className="text-gray-600 hover:text-gray-800 transition-colors"
+                aria-label="Search"
+              >
+                <Search size={14} />
+              </button>
+            </div>
 
-          {/* Logo */}
-          <Link href="/" className="flex items-center">
-            <img src="/Logo.jpg" alt="Logo" className="h-12 w-12 rounded-lg object-cover" />
-          </Link>
+            {/* Center Section - Logo */}
+            <Link href="/" className="flex flex-col items-center">
+              <motion.div 
+                className="relative group"
+                initial={{ scale: 0.8, opacity: 0 }}
+                animate={{ scale: 1, opacity: 1 }}
+                transition={{ duration: 0.5, ease: "easeOut" }}
+                whileHover={{ scale: 1.02 }}
+              >
+                <div className="relative h-16 w-auto">
+                  <Image
+                    src="/logobg.png"
+                    alt="Mothers Aura Logo"
+                    width={240}
+                    height={64}
+                    className="h-full w-auto object-contain"
+                    priority
+                  />
+                </div>
+              </motion.div>
+            </Link>
 
-          {/* Right Actions */}
-          <div className="flex items-center space-x-4">
-            <button
-              onClick={() => setIsSearchOpen(!isSearchOpen)}
-              className="hover:text-primary transition-colors"
-              aria-label="Search"
-            >
-              <Search size={20} />
-            </button>
-            
-            <ModeToggle />
+            {/* Right Section */}
+            <div className="flex items-center space-x-4">
+              <button 
+                onClick={() => setIsCartOpen(true)}
+                className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors" 
+                aria-label="Shopping cart"
+              >
+                <ShoppingCart size={14} />
+                <span className="text-xs">Shopping Cart</span>
+                {totalItems > 0 && (
+                  <span className="bg-gray-800 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                    {totalItems}
+                  </span>
+                )}
+              </button>
+              
+              <Link 
+                href="/wishlist"
+                className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors"
+              >
+                <Heart size={14} />
+                <span className="text-xs">WishList</span>
+              </Link>
+              
+              <button className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors">
+                <MessageCircle size={14} />
+                <span className="text-xs">Live Chat</span>
+              </button>
 
-            <button 
-              onClick={() => setIsCartOpen(true)}
-              className="relative hover:text-primary transition-colors" 
-              aria-label="Shopping cart"
-            >
-              <ShoppingCart size={20} />
-              {totalItems > 0 && (
-                <span className="absolute -top-2 -right-2 bg-primary text-primary-foreground text-xs rounded-full w-5 h-5 flex items-center justify-center animate-pulse">
-                  {totalItems}
-                </span>
-              )}
-            </button>
-
-            <button
-              onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-              className="md:hidden hover:text-primary transition-colors"
-              aria-label="Menu"
-            >
-              <Menu size={20} />
-            </button>
+              <button
+                onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
+                className="md:hidden text-gray-600 hover:text-gray-800 transition-colors"
+                aria-label="Menu"
+              >
+                <Menu size={18} />
+              </button>
+            </div>
           </div>
         </div>
       </div>
 
       {/* Navigation */}
-      <nav className={`sticky top-0 z-40 bg-background border-b border-border transition-all duration-300 ${
-        isScrolled ? 'shadow-luxury' : ''
+      <nav className={`sticky top-0 z-40 bg-white border-b border-gray-100 transition-all duration-300 ${
+        isScrolled ? 'shadow-sm' : ''
       }`}>
         <div className="container mx-auto px-4">
-          <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
+          <div className="py-2">
+            <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
+          </div>
         </div>
       </nav>
 

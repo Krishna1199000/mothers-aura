@@ -10,6 +10,7 @@ import { DropdownMenu, DropdownMenuContent, DropdownMenuItem, DropdownMenuSepara
 import { Avatar, AvatarFallback, AvatarImage } from '@/components/ui/avatar';
 import { MegaMenu } from './MegaMenu';
 import { SearchPanel } from './SearchPanel';
+import Image from 'next/image';
 
 export const AuthenticatedHeader = () => {
   const { data: session } = useSession();
@@ -81,7 +82,7 @@ export const AuthenticatedHeader = () => {
 
             {/* Center - Logo */}
             <Link href="/dashboard" className="flex items-center">
-              <img src="/Logo.jpg" alt="Mothers Aura logo" className="w-12 h-12 rounded-lg object-cover shadow-sm" />
+              <Image src="/Logo.png" alt="Mothers Aura logo" className="w-12 h-12 object-contain" />
             </Link>
 
             {/* Right - Search, Dark Mode, Cart, Profile */}

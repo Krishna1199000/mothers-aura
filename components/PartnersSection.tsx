@@ -1,34 +1,74 @@
+"use client";
+
+import Image from 'next/image';
+
 export const PartnersSection = () => {
-    const partners = [
-      { name: 'Razorpay', logo: 'R' },
-      { name: 'Payoneer', logo: 'P' },
-      { name: 'PayPal', logo: 'PP' },
-      { name: 'Wise', logo: 'W' },
-      { name: 'Remitly', logo: 'R' }
-    ];
-  
-    return (
-      <section className="py-16 bg-muted/30">
-        <div className="container mx-auto px-4">
-          <div className="text-center mb-12">
-            <h3 className="text-xl font-semibold text-muted-foreground mb-4">
-              Trusted Payment Partners
-            </h3>
-          </div>
-  
-          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12 opacity-60">
-            {partners.map((partner, index) => (
+  const paymentPartners = [
+    { name: 'Razorpay', image: '/Mothers-aura-Razorpay.png' },
+    { name: 'Remitly', image: '/Mothers-aura-Remitly.png' },
+    { name: 'Wise', image: '/Mothers-aura-Wise.png' },
+    { name: 'PayPal', image: '/Mothers-aura-paypal.png' },
+    { name: 'Payoneer', image: '/mothers-aura-payoneer.png' }
+  ];
+
+  const certificationPartners = [
+    { name: 'GCAL', image: '/Mothers-aura-GCAL.png' },
+    { name: 'GIA', image: '/Mothers-aura-GIA.png' },
+    { name: 'IGI', image: '/Mothers-aura-IGI.png' },
+    { name: 'IGII', image: '/Mothers-aura-IGII.png' }
+  ];
+
+  return (
+    <section className="py-24 bg-muted/30">
+      <div className="container mx-auto px-4">
+        {/* Payment Partners Grid */}
+        <div className="text-center mb-20">
+          <h3 className="text-3xl font-bold text-muted-foreground mb-12">
+            Trusted Payment Partners
+          </h3>
+          
+          <div className="flex flex-wrap justify-center items-center gap-8 md:gap-12">
+            {paymentPartners.map((partner, index) => (
               <div
                 key={index}
-                className="flex items-center justify-center w-20 h-20 bg-background rounded-lg border border-border shadow-sm hover:shadow-md transition-shadow"
+                className="flex items-center justify-center p-6 bg-background rounded-xl border border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
-                <span className="text-2xl font-bold text-muted-foreground">
-                  {partner.logo}
-                </span>
+                <Image
+                  src={partner.image}
+                  alt={partner.name}
+                  width={200}
+                  height={80}
+                  className="max-h-16 w-auto object-contain"
+                />
               </div>
             ))}
           </div>
         </div>
-      </section>
-    );
-  };
+
+        {/* Certification Partners */}
+        <div className="text-center">
+          <h3 className="text-3xl font-bold text-muted-foreground mb-12">
+            Certified by Leading Laboratories
+          </h3>
+          
+          <div className="flex flex-wrap justify-center items-center gap-12 md:gap-16">
+            {certificationPartners.map((partner, index) => (
+              <div
+                key={index}
+                className="flex items-center justify-center p-8 bg-background rounded-xl border border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+              >
+                <Image
+                  src={partner.image}
+                  alt={partner.name}
+                  width={200}
+                  height={80}
+                  className="max-h-20 w-auto object-contain"
+                />
+              </div>
+            ))}
+          </div>
+        </div>
+      </div>
+    </section>
+  );
+};

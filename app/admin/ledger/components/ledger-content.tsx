@@ -84,7 +84,7 @@ export function LedgerContent() {
         balance={data?.summary.balance}
       />
 
-      <LedgerTable isLoading={isLoading} entries={data?.entries} />
+      <LedgerTable isLoading={isLoading} entries={data?.entries} onRefresh={refetch} />
     </div>
   );
 }

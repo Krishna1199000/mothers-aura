@@ -11,23 +11,18 @@ export async function GET(
 ) {
   try {
     const { id } = await params;
-    const product = await prisma.product.findUnique({
+    
+    // Try to find by ID first
+    let product = await prisma.product.findUnique({
       where: { id },
-      include: {
-        category: {
-          select: {
-            name: true,
-            slug: true,
-          },
-        },
-        subcategory: {
-          select: {
-            name: true,
-            slug: true,
-          },
-        },
-      },
     });
+
+    // If not found by ID, try to find by slug
+    if (!product) {
+      product = await prisma.product.findUnique({
+        where: { slug: id },
+      });
+    }
 
     if (!product) {
       return new NextResponse("Product not found", { status: 404 });

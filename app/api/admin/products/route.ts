@@ -10,25 +10,9 @@ const prisma = new PrismaClient({
 
 export async function GET() {
   try {
-    const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
-      return new NextResponse("Unauthorized", { status: 401 });
-    }
-
+    // Allow public access to read products
     const products = await prisma.product.findMany({
       orderBy: { createdAt: "desc" },
-      include: {
-        category: {
-          select: {
-            name: true,
-          },
-        },
-        subcategory: {
-          select: {
-            name: true,
-          },
-        },
-      },
     });
 
     return NextResponse.json(products);
@@ -41,8 +25,13 @@ export async function GET() {
 export async function POST(req: Request) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    // Only admins can create products
+    if (session.user.role !== "ADMIN") {
+      return new NextResponse("Forbidden", { status: 403 });
     }
 
     const body = await req.json();
@@ -50,23 +39,33 @@ export async function POST(req: Request) {
       name,
       description,
       price,
+      shape,
       carat,
-      cut,
       color,
       clarity,
+      cut,
+      polish,
+      symmetry,
+      certificateNo,
+      lab,
       stock,
       images,
-      categoryId,
-      subcategoryId,
     } = body;
 
-    if (!name || !price || !categoryId) {
-      return new NextResponse("Name, price, and category are required", {
+    // Validate required fields
+    if (!name || !price || !shape || !carat || !color || !clarity) {
+      return new NextResponse("Name, price, shape, carat, color, and clarity are required", {
         status: 400,
       });
     }
 
-    // Check if product with same name exists (case insensitive)
+    if (!images || images.length === 0) {
+      return new NextResponse("At least one image is required", {
+        status: 400,
+      });
+    }
+
+    // Check if product with same name exists
     const existingProduct = await prisma.product.findFirst({
       where: {
         name: {
@@ -82,32 +81,25 @@ export async function POST(req: Request) {
       });
     }
 
+    const slug = slugify(name, { lower: true, strict: true });
+
     const product = await prisma.product.create({
       data: {
         name,
-        slug: slugify(name, { lower: true }),
+        slug,
         description,
         price: parseFloat(price),
-        carat: carat ? parseFloat(carat) : undefined,
-        cut,
+        shape,
+        carat: parseFloat(carat),
         color,
         clarity,
-        stock: parseInt(stock),
+        cut: cut || undefined,
+        polish: polish || undefined,
+        symmetry: symmetry || undefined,
+        certificateNo: certificateNo || undefined,
+        lab: lab || undefined,
+        stock: parseInt(stock || "1"),
         images,
-        categoryId,
-        subcategoryId,
-      },
-      include: {
-        category: {
-          select: {
-            name: true,
-          },
-        },
-        subcategory: {
-          select: {
-            name: true,
-          },
-        },
       },
     });
 

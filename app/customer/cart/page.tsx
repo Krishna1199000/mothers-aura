@@ -12,6 +12,7 @@ import { DashboardHeader } from "@/components/DashboardHeader";
 import { Card, CardContent } from "@/components/ui/card";
 import { Separator } from "@/components/ui/separator";
 import { Badge } from "@/components/ui/badge";
+import Image from "next/image";
 
 export default function CustomerCartPage() {
   const { data: session, status } = useSession();
@@ -110,7 +111,7 @@ export default function CustomerCartPage() {
                       >
                         {/* Product Image */}
                         <div className="w-24 h-24 flex-shrink-0 overflow-hidden rounded-lg border bg-muted">
-                          <img
+                          <Image
                             src={item.image || "/placeholder.jpg"}
                             alt={item.name}
                             className="w-full h-full object-cover"

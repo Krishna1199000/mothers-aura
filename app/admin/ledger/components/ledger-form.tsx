@@ -26,10 +26,12 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 import { Textarea } from "@/components/ui/textarea";
-import type { LedgerFormData } from "@/types/ledger";
+import type { LedgerFormData, LedgerEntry } from "@/types/ledger";
 
 interface LedgerFormProps {
   onSuccess: () => void;
+  initialData?: LedgerEntry;
+  isEditing?: boolean;
 }
 
 async function fetchInvoices() {
@@ -38,18 +40,25 @@ async function fetchInvoices() {
   return response.json();
 }
 
-export function LedgerForm({ onSuccess }: LedgerFormProps) {
+async function fetchMasters() {
+  const response = await fetch("/api/admin/masters");
+  if (!response.ok) throw new Error("Failed to fetch masters");
+  return response.json();
+}
+
+export function LedgerForm({ onSuccess, initialData, isEditing = false }: LedgerFormProps) {
   const { toast } = useToast();
   const [isSubmitting, setIsSubmitting] = useState(false);
   const [selectedMasterId, setSelectedMasterId] = useState<string>();
   
   // Form state
   const [formData, setFormData] = useState<LedgerFormData>({
-    date: new Date(),
-    type: "CREDIT",
-    amount: 0,
-    description: "",
-    masterId: "",
+    date: initialData ? new Date(initialData.date) : new Date(),
+    type: initialData?.type || "CREDIT",
+    amount: initialData?.amount || 0,
+    description: initialData?.description || "",
+    masterId: initialData?.masterId || "",
+    invoiceId: initialData?.invoiceId,
   });
 
   const { data: invoices } = useQuery({
@@ -58,13 +67,38 @@ export function LedgerForm({ onSuccess }: LedgerFormProps) {
     enabled: formData.type === "CREDIT",
   });
 
+  const { data: masters } = useQuery({
+    queryKey: ["masters"],
+    queryFn: fetchMasters,
+  });
+
+  // Fetch remaining amount for selected invoice
+  const { data: invoiceRemaining } = useQuery({
+    queryKey: ["invoice-remaining", formData.invoiceId],
+    queryFn: async () => {
+      if (!formData.invoiceId) return null;
+      const response = await fetch(`/api/admin/ledger/invoice-remaining/${formData.invoiceId}`);
+      if (!response.ok) return null;
+      return response.json();
+    },
+    enabled: !!formData.invoiceId,
+  });
+
   const handleSubmit = async (e: React.FormEvent) => {
     e.preventDefault();
     
+    console.log("Form data:", formData); // Debug log
+    
     if (!formData.date || !formData.type || !formData.amount || !formData.masterId) {
+      const missingFields = [];
+      if (!formData.date) missingFields.push("Date");
+      if (!formData.type) missingFields.push("Type");
+      if (!formData.amount || formData.amount <= 0) missingFields.push("Amount");
+      if (!formData.masterId) missingFields.push("Master/Company");
+      
       toast({
         title: "Error",
-        description: "Please fill in all required fields",
+        description: `Please fill in: ${missingFields.join(", ")}`,
         variant: "destructive",
       });
       return;
@@ -72,20 +106,23 @@ export function LedgerForm({ onSuccess }: LedgerFormProps) {
 
     try {
       setIsSubmitting(true);
-      const response = await fetch("/api/admin/ledger", {
-        method: "POST",
+      const url = isEditing ? `/api/admin/ledger/${initialData?.id}` : "/api/admin/ledger";
+      const method = isEditing ? "PUT" : "POST";
+      
+      const response = await fetch(url, {
+        method,
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify(formData),
       });
 
       if (!response.ok) {
         const error = await response.json();
-        throw new Error(error.error || "Failed to create ledger entry");
+        throw new Error(error.error || `Failed to ${isEditing ? 'update' : 'create'} ledger entry`);
       }
 
       toast({
         title: "Success",
-        description: "Ledger entry created successfully",
+        description: `Ledger entry ${isEditing ? 'updated' : 'created'} successfully`,
       });
       
       // Reset form
@@ -144,6 +181,27 @@ export function LedgerForm({ onSuccess }: LedgerFormProps) {
         </Select>
       </div>
 
+      <div className="space-y-2">
+        <Label htmlFor="masterId">Master/Company</Label>
+        <Select
+          value={formData.masterId}
+          onValueChange={(value) =>
+            setFormData({ ...formData, masterId: value })
+          }
+        >
+          <SelectTrigger>
+            <SelectValue placeholder="Select a company" />
+          </SelectTrigger>
+          <SelectContent>
+            {masters?.map((master: any) => (
+              <SelectItem key={master.id} value={master.id}>
+                {master.companyName}
+              </SelectItem>
+            ))}
+          </SelectContent>
+        </Select>
+      </div>
+
       {formData.type === "CREDIT" && (
         <div className="space-y-2">
           <Label htmlFor="invoiceId">Invoice</Label>
@@ -154,9 +212,8 @@ export function LedgerForm({ onSuccess }: LedgerFormProps) {
               setFormData({
                 ...formData,
                 invoiceId: value || undefined,
-                masterId: invoice?.masterId || "",
-                amount: invoice?.totalDue || 0,
-                description: `Payment for invoice ${invoice?.invoiceNumber}` || "",
+                amount: 0, // Reset amount to 0 when selecting invoice
+                description: invoice ? `Payment for invoice ${invoice.invoiceNumber}` : "",
               });
             }}
           >
@@ -187,6 +244,13 @@ export function LedgerForm({ onSuccess }: LedgerFormProps) {
           }
           required
         />
+        {formData.type === "CREDIT" && formData.invoiceId && invoiceRemaining && (
+          <p className="text-sm text-muted-foreground">
+            Invoice total: ${invoiceRemaining.totalDue} | 
+            Already credited: ${invoiceRemaining.creditedAmount} | 
+            Remaining: ${invoiceRemaining.remainingAmount}
+          </p>
+        )}
       </div>
 
       <div className="space-y-2">
@@ -203,7 +267,10 @@ export function LedgerForm({ onSuccess }: LedgerFormProps) {
       </div>
 
       <Button type="submit" className="w-full" disabled={isSubmitting}>
-        {isSubmitting ? "Creating..." : "Create Entry"}
+        {isSubmitting 
+          ? (isEditing ? "Updating..." : "Creating...") 
+          : (isEditing ? "Update Entry" : "Create Entry")
+        }
       </Button>
     </form>
   );

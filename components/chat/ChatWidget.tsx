@@ -7,7 +7,7 @@ import { Textarea } from '@/components/ui/textarea';
 import { Card, CardContent, CardHeader, CardTitle } from '@/components/ui/card';
 import { Badge } from '@/components/ui/badge';
 import { ScrollArea } from '@/components/ui/scroll-area';
-import { Loader2, MessageCircle, Send, X, MinusCircle, RefreshCw } from 'lucide-react';
+import { Loader2, MessageCircle, Send, X, MinusCircle, RefreshCw, Phone, HelpCircle } from 'lucide-react';
 import { motion, AnimatePresence } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
 import { useToast } from '@/components/ui/use-toast';
@@ -46,8 +46,35 @@ export function ChatWidget({ className }: ChatWidgetProps) {
   const [isConnected, setIsConnected] = useState(false);
   const [isAdminTyping, setIsAdminTyping] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
+  const [showOptions, setShowOptions] = useState(false);
+  const [showFAQ, setShowFAQ] = useState(false);
+  const [showChatOptions, setShowChatOptions] = useState(false);
+  const [selectedFAQ, setSelectedFAQ] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
+
+  const faqData = [
+    {
+      question: "What are your shipping policies?",
+      answer: "We offer free shipping on orders over $100. Standard shipping takes 3-5 business days, while express shipping takes 1-2 business days. International shipping is available to select countries."
+    },
+    {
+      question: "How do I track my order?",
+      answer: "Once your order ships, you&apos;ll receive a tracking number via email. You can track your package using our tracking page or the carrier&apos;s website with the provided tracking number."
+    },
+    {
+      question: "What is your return policy?",
+      answer: "We offer a 30-day return policy for all items. Items must be in original condition with tags attached. Returns are free within the US, and we&apos;ll process your refund within 5-7 business days."
+    },
+    {
+      question: "How do I care for my jewelry?",
+      answer: "Store your jewelry in a cool, dry place. Clean with a soft cloth and avoid contact with perfumes, lotions, and harsh chemicals. Remove jewelry before swimming or exercising."
+    },
+    {
+      question: "What payment methods do you accept?",
+      answer: "We accept all major credit cards (Visa, MasterCard, American Express), PayPal, Apple Pay, Google Pay, and bank transfers. All transactions are secure and encrypted."
+    }
+  ];
 
   // Initialize socket connection
   useEffect(() => {
@@ -410,7 +437,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
               exit={{ opacity: 0, y: 20 }}
               className="absolute bottom-16 right-0"
             >
-              <Card className="w-[350px] shadow-xl">
+              <Card className="w-[350px] max-h-[600px] shadow-xl">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
                   <CardTitle className="text-xl font-semibold">
                     Chat with Us
@@ -441,7 +468,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                   </div>
                 </CardHeader>
 
-                <CardContent className={`p-4 ${isMinimized ? 'hidden' : ''}`}>
+                <CardContent className={`p-4 max-h-[500px] overflow-y-auto ${isMinimized ? 'hidden' : ''}`}>
                   {isLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin" />
@@ -496,7 +523,143 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                         </Badge>
                       </div>
 
-                      <ScrollArea className="h-[300px] pr-4">
+                      {/* Quick Options */}
+                      <div className="space-y-2">
+                        <div className="text-sm font-medium text-muted-foreground">Quick Options:</div>
+                        <div className="grid grid-cols-1 gap-2">
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="justify-start"
+                            onClick={() => {
+                              setShowOptions(!showOptions);
+                              setShowChatOptions(false);
+                              setShowFAQ(false);
+                            }}
+                          >
+                            <HelpCircle className="h-4 w-4 mr-2" />
+                            FAQ
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="justify-start"
+                            onClick={() => {
+                              window.open('tel:+852-537-5554-1');
+                              setShowChatOptions(false);
+                              setShowFAQ(false);
+                            }}
+                          >
+                            <Phone className="h-4 w-4 mr-2" />
+                            Call Us: +852-537-5554-1
+                          </Button>
+                          <Button
+                            variant="outline"
+                            size="sm"
+                            className="justify-start"
+                            onClick={() => {
+                              setShowOptions(false);
+                              setShowFAQ(false);
+                              setShowChatOptions(!showChatOptions);
+                            }}
+                          >
+                            <MessageCircle className="h-4 w-4 mr-2" />
+                            Chat with Us
+                          </Button>
+                        </div>
+                      </div>
+
+                      {/* Chat Options - Show when Chat with Us is clicked */}
+                      {showChatOptions && (
+                        <div className="space-y-2 p-3 bg-muted rounded-lg">
+                          <div className="text-sm font-medium">Choose how you&apos;d like to get help:</div>
+                          <div className="grid grid-cols-1 gap-2">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="justify-start"
+                              onClick={() => {
+                                setShowChatOptions(false);
+                                setShowOptions(true);
+                                setShowFAQ(false);
+                              }}
+                            >
+                              <HelpCircle className="h-4 w-4 mr-2" />
+                              Browse FAQ
+                            </Button>
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="justify-start"
+                              onClick={() => {
+                                window.open('tel:+852-537-5554-1');
+                                setShowChatOptions(false);
+                              }}
+                            >
+                              <Phone className="h-4 w-4 mr-2" />
+                              Call Us: +852-537-5554-1
+                            </Button>
+                            <Button
+                              variant="default"
+                              size="sm"
+                              className="justify-start"
+                              onClick={() => {
+                                setShowChatOptions(false);
+                                setShowOptions(false);
+                                setShowFAQ(false);
+                                setChatStep('message');
+                              }}
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              Start Live Chat
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* FAQ Options */}
+                      {showOptions && (
+                        <div className="space-y-2 p-3 bg-muted rounded-lg">
+                          <div className="text-sm font-medium">Frequently Asked Questions:</div>
+                          <div className="space-y-2 text-sm">
+                            {faqData.map((faq, index) => (
+                              <div key={index} className="border-b border-gray-200 pb-2 last:border-b-0">
+                                <div 
+                                  className="cursor-pointer hover:text-primary font-medium"
+                                  onClick={() => setSelectedFAQ(selectedFAQ === faq.question ? null : faq.question)}
+                                >
+                                  • {faq.question}
+                                </div>
+                                {selectedFAQ === faq.question && (
+                                  <div className="mt-2 p-2 bg-white rounded text-gray-700 text-xs">
+                                    {faq.answer}
+                                  </div>
+                                )}
+                              </div>
+                            ))}
+                          </div>
+                          <div className="pt-2 border-t border-gray-200">
+                            <Button
+                              variant="outline"
+                              size="sm"
+                              className="w-full justify-start"
+                              onClick={() => {
+                                setShowOptions(false);
+                                setShowChatOptions(true);
+                                setShowFAQ(false);
+                              }}
+                            >
+                              <MessageCircle className="h-4 w-4 mr-2" />
+                              Still need help? Chat with Us
+                            </Button>
+                          </div>
+                        </div>
+                      )}
+
+                      {/* Chat Interface - Only show when chat is active */}
+                      {chatStep === 'message' && (
+                        <>
+                          <ScrollArea className="h-[250px] pr-4">
                         <div className="space-y-4">
                           {messages.map((message) => (
                             <div
@@ -532,13 +695,8 @@ export function ChatWidget({ className }: ChatWidgetProps) {
 
                       <div className="flex items-center gap-2">
                         <Input
-                          placeholder={
-                            chatStep === 'welcome' ? "Type your message..." :
-                            chatStep === 'name' ? "Enter your name..." :
-                            chatStep === 'email' ? "Enter your email..." :
-                            "Type your message..."
-                          }
-                          type={chatStep === 'email' ? 'email' : 'text'}
+                              placeholder="Type your message..."
+                              type="text"
                           value={newMessage}
                           onChange={(e) => {
                             setNewMessage(e.target.value);
@@ -553,11 +711,13 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                         <Button
                           size="icon"
                           onClick={handleSendMessage}
-                          disabled={!newMessage.trim() || (chatStep === 'email' && !newMessage.includes('@'))}
+                              disabled={!newMessage.trim()}
                         >
                           <Send className="h-4 w-4" />
                         </Button>
                       </div>
+                        </>
+                      )}
                     </div>
                   )}
                 </CardContent>

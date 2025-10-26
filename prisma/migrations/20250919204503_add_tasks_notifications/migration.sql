@@ -62,3 +62,10 @@ ALTER TABLE "Notification" ADD CONSTRAINT "Notification_userId_fkey" FOREIGN KEY
 
 
 
+
+
+
+
+
+
+

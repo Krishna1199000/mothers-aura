@@ -1,92 +1,98 @@
-import { Star } from 'lucide-react';
+import { Star, ChevronRight, Quote } from 'lucide-react';
+import Image from 'next/image';
 
 export const ReviewsSection = () => {
   const reviews = [
     {
       id: 1,
-      name: 'Sarah M.',
-      location: 'London',
+      name: 'Cameron Williamson',
       rating: 5,
-      review: 'Absolutely stunning diamond ring! The quality exceeded my expectations and the service was exceptional. Highly recommend Mothers Aura.',
-      date: '2 weeks ago'
+      review: 'Best product ever. I will definitely buy again..thanks Mothers Aura. All these years but they were either more sweeter or not tasty at all. It easily gets mixed with water n what a taste you will definitely like it. after having the supplement I got nice sleep n felt very satisfied.',
+      productImage: '/elegant-diamond-engagement-ring.jpg'
     },
     {
       id: 2,
-      name: 'James R.',
-      location: 'Manchester',
+      name: 'Ronald Richards',
       rating: 5,
-      review: 'Perfect engagement ring at an honest price. The certification process was transparent and the diamond is absolutely brilliant.',
-      date: '1 month ago'
+      review: 'Great product, love this diamond brand. Likes: Good packaging, provided with certification, container quality is good, quantity value for money, mixes well with any setting but you have to choose carefully. Dislikes: for me, it\'s too expensive & a bit of premium feel which I don\'t like much.',
+      productImage: '/luxury-diamond-ring-collection.jpg'
     },
     {
       id: 3,
-      name: 'Emma K.',
-      location: 'Birmingham',
+      name: 'Darlene Robertson',
       rating: 5,
-      review: 'Love my lab-grown diamond earrings! They sparkle beautifully and I feel good about the ethical sourcing. Will definitely shop here again.',
-      date: '3 weeks ago'
-    },
-    {
-      id: 4,
-      name: 'Michael T.',
-      location: 'Glasgow',
-      rating: 5,
-      review: 'Outstanding customer service and beautiful jewellery. The 30-day return policy gave me confidence in my purchase.',
-      date: '2 months ago'
+      review: 'I got to know how important diamonds are for jewelry I am a minimalist so it\'s difficult for my style. Hence, i have opted for diamonds from Mothers Aura. It is great in quality. It is brilliant and its not heavy so it feels like natural jewelry. The combination of cut and clarity is great hence I wear it every day.',
+      productImage: '/diamond-pendant-necklace.jpg'
     }
   ];
 
   return (
-    <section className="py-24 bg-background">
+    <section className="py-24 bg-white">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            What Our Customers Say
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">
+            Customer Testimonials
           </h2>
-          <p className="text-xl text-muted-foreground">
-            Real reviews from real customers (sample testimonials)
-          </p>
+          <div className="flex items-center justify-center space-x-2 mb-4">
+            <div className="flex space-x-1">
+              {[...Array(5)].map((_, i) => (
+                <Star
+                  key={i}
+                  size={20}
+                  className="text-yellow-400 fill-current"
+                />
+              ))}
+            </div>
+            <span className="text-lg text-gray-600">
+              (350+ Reviews)
+            </span>
+          </div>
         </div>
 
-        <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-2 gap-8 max-w-4xl mx-auto">
+        <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
           {reviews.map((review) => (
             <div
               key={review.id}
-              className="bg-card p-8 rounded-xl shadow-luxury hover:shadow-premium transition-shadow duration-300"
+              className="bg-white p-6 rounded-xl shadow-lg relative"
             >
-              <div className="flex items-center mb-4">
-                <div className="flex space-x-1">
-                  {[...Array(5)].map((_, i) => (
-                    <Star
-                      key={i}
-                      size={16}
-                      className="text-yellow-400 fill-current"
-                    />
-                  ))}
-                </div>
-                <span className="ml-2 text-sm text-muted-foreground">
-                  {review.date}
-                </span>
-              </div>
-
-              <blockquote className="text-foreground mb-6 leading-relaxed">
-                &ldquo;{review.review}&rdquo;
+              {/* Quote Icon */}
+              <Quote size={32} className="text-black mb-4" />
+              
+              {/* Review Text */}
+              <blockquote className="text-black mb-6 leading-relaxed text-sm">
+                {review.review}
               </blockquote>
 
-              <div className="flex items-center">
-                <div className="w-10 h-10 bg-primary/10 rounded-full flex items-center justify-center mr-3">
-                  <span className="text-primary font-semibold">
-                    {review.name.charAt(0)}
-                  </span>
-                </div>
+              {/* Product Image */}
+              <div className="mb-4">
+                <Image
+                  src={review.productImage}
+                  alt="Product"
+                  width={64}
+                  height={64}
+                  className="w-16 h-16 object-cover rounded border-2 border-white shadow-sm"
+                />
+              </div>
+
+              {/* Reviewer Info */}
+              <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold text-foreground">
+                  <div className="font-semibold text-black text-sm">
                     {review.name}
                   </div>
-                  <div className="text-sm text-muted-foreground">
-                    {review.location}
+                  <div className="flex space-x-1 mt-1">
+                    {[...Array(5)].map((_, i) => (
+                      <Star
+                        key={i}
+                        size={12}
+                        className="text-yellow-400 fill-current"
+                      />
+                    ))}
                   </div>
                 </div>
+                
+                {/* Navigation Arrow */}
+                <ChevronRight size={20} className="text-black" />
               </div>
             </div>
           ))}

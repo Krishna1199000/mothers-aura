@@ -8,6 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useCart } from "@/lib/contexts/cart-context";
 import { Loader2, Minus, Plus, Trash2 } from "lucide-react";
+import Image from "next/image";
 
 export default function CartPage() {
   const { data: session } = useSession();
@@ -74,7 +75,7 @@ export default function CartPage() {
                 >
                   {/* Product Image */}
                   <div className="w-24 h-24">
-                    <img
+                    <Image
                       src={item.image || "/placeholder.jpg"}
                       alt={item.name}
                       className="w-full h-full object-cover rounded-md"
@@ -178,6 +179,10 @@ export default function CartPage() {
     </div>
   );
 }
+
+
+
+
 
 
 

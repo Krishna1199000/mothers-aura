@@ -99,7 +99,7 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // If invoice is selected, validate amount
+    // If invoice is selected, validate amount against total credits
     if (data.invoiceId) {
       const invoice = await prisma.invoice.findUnique({
         where: { id: data.invoiceId },
@@ -113,9 +113,23 @@ export async function POST(request: NextRequest) {
         );
       }
 
-      if (data.amount > (invoice.totalDue || 0)) {
+      // Calculate total credits for this invoice
+      const totalCredits = await prisma.ledger.aggregate({
+        where: {
+          invoiceId: data.invoiceId,
+          type: "CREDIT",
+        },
+        _sum: { amount: true },
+      });
+
+      const currentTotalCredits = (totalCredits._sum.amount || 0) + data.amount;
+
+      if (invoice.totalDue && currentTotalCredits > invoice.totalDue) {
+        const remainingAmount = invoice.totalDue - (totalCredits._sum.amount || 0);
         return Response.json(
-          { error: "Amount cannot exceed invoice total" },
+          { 
+            error: `Cannot credit $${data.amount}. Invoice total is $${invoice.totalDue}, already credited $${totalCredits._sum.amount || 0}. Maximum additional credit allowed: $${remainingAmount}` 
+          },
           { status: 400 }
         );
       }

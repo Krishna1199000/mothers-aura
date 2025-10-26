@@ -6,14 +6,18 @@ import slugify from "slugify";
 
 const prisma = new PrismaClient();
 
-export async function PATCH(
+export async function PUT(
   req: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    if (session.user.role !== "ADMIN") {
+      return new NextResponse("Forbidden", { status: 403 });
     }
 
     const body = await req.json();
@@ -21,24 +25,34 @@ export async function PATCH(
       name,
       description,
       price,
+      shape,
       carat,
-      cut,
       color,
       clarity,
+      cut,
+      polish,
+      symmetry,
+      certificateNo,
+      lab,
       stock,
       images,
-      categoryId,
-      subcategoryId,
     } = body;
 
-    if (!name || !price || !categoryId) {
-      return new NextResponse("Name, price, and category are required", {
+    if (!name || !price || !shape || !carat || !color || !clarity) {
+      return new NextResponse("Name, price, shape, carat, color, and clarity are required", {
         status: 400,
       });
     }
 
-    // Check if another product with same name exists (case insensitive)
+    if (!images || images.length === 0) {
+      return new NextResponse("At least one image is required", {
+        status: 400,
+      });
+    }
+
     const { id } = await params;
+    
+    // Check if another product with same name exists
     const existingProduct = await prisma.product.findFirst({
       where: {
         name: {
@@ -57,39 +71,32 @@ export async function PATCH(
       });
     }
 
+    const slug = slugify(name, { lower: true, strict: true });
+
     const product = await prisma.product.update({
       where: { id },
       data: {
         name,
-        slug: slugify(name, { lower: true }),
+        slug,
         description,
         price: parseFloat(price),
-        carat: carat ? parseFloat(carat) : undefined,
-        cut,
+        shape,
+        carat: parseFloat(carat),
         color,
         clarity,
-        stock: parseInt(stock),
+        cut: cut || undefined,
+        polish: polish || undefined,
+        symmetry: symmetry || undefined,
+        certificateNo: certificateNo || undefined,
+        lab: lab || undefined,
+        stock: parseInt(stock || "1"),
         images,
-        categoryId,
-        subcategoryId,
-      },
-      include: {
-        category: {
-          select: {
-            name: true,
-          },
-        },
-        subcategory: {
-          select: {
-            name: true,
-          },
-        },
       },
     });
 
     return NextResponse.json(product);
   } catch (error) {
-    console.error("[PRODUCT_PATCH]", error);
+    console.error("[PRODUCT_PUT]", error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }
@@ -100,8 +107,12 @@ export async function DELETE(
 ) {
   try {
     const session = await getServerSession(authOptions);
-    if (!session || session.user.role !== "ADMIN") {
+    if (!session) {
       return new NextResponse("Unauthorized", { status: 401 });
+    }
+
+    if (session.user.role !== "ADMIN") {
+      return new NextResponse("Forbidden", { status: 403 });
     }
 
     const { id } = await params;

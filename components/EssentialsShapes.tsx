@@ -3,6 +3,7 @@
 import { useRouter } from 'next/navigation';
 import { ArrowRight, Loader2 } from 'lucide-react';
 import { useState } from 'react';
+import Image from 'next/image';
 
 const essentials = [
   {
@@ -92,8 +93,8 @@ export const EssentialsSection = () => {
               className="group text-left"
             >
               <div className="relative overflow-hidden rounded-xl bg-card shadow-luxury hover:shadow-premium transition-all duration-500 hover:-translate-y-2">
-                <div className="aspect-square overflow-hidden">
-                  <img
+                <div className="aspect-square overflow-hidden relative">
+                  <Image
                     src={essential.image}
                     alt={essential.title}
                     className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
@@ -101,11 +102,15 @@ export const EssentialsSection = () => {
                     width={400}
                     height={400}
                   />
+                  {/* Add subtle dark gradient for traditional jewelry to match other cards */}
+                  {essential.type === 'traditional' && (
+                    <div className="absolute inset-0 bg-gradient-to-b from-black/20 via-transparent to-black/30 pointer-events-none" />
+                  )}
                 </div>
                 
                 <div className="absolute inset-0 bg-gradient-to-t from-black/70 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
                 
-                <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+                <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-full opacity-0 group-hover:translate-y-0 group-hover:opacity-100 transition-all duration-300">
                   <h3 className="text-xl font-bold mb-2">{essential.title}</h3>
                   <p className="text-white/90 text-sm mb-4">{essential.description}</p>
                   <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors">

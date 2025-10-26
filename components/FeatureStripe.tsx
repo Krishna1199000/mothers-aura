@@ -10,19 +10,23 @@ export const FeatureStripe = () => {
     { icon: Sparkles, label: 'Custom' }
   ];
 
+  // Duplicate features for seamless infinite scroll
+  const duplicatedFeatures = [...features, ...features];
+
   return (
-    <section className="py-16 border-y border-border bg-background">
-      <div className="container mx-auto px-4">
-        <div className="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-6 gap-8">
-          {features.map((feature, index) => (
+    <section className="py-8 border-y border-border bg-background overflow-hidden">
+      <div className="relative">
+        {/* Infinite sliding container */}
+        <div className="flex animate-scroll">
+          {duplicatedFeatures.map((feature, index) => (
             <div
               key={index}
-              className="flex flex-col items-center text-center group cursor-pointer"
+              className="flex-shrink-0 flex flex-col items-center text-center mx-8 min-w-[120px]"
             >
-              <div className="w-12 h-12 mb-4 flex items-center justify-center rounded-full bg-primary/10 group-hover:bg-primary/20 transition-colors duration-300">
-                <feature.icon className="w-6 h-6 text-primary group-hover:animate-diamond-sparkle" />
+              <div className="w-12 h-12 mb-3 flex items-center justify-center rounded-full bg-blue-100">
+                <feature.icon className="w-6 h-6 text-blue-600" />
               </div>
-              <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
+              <span className="text-sm font-medium text-gray-700">
                 {feature.label}
               </span>
             </div>

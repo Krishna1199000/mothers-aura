@@ -17,6 +17,7 @@ import {
   MapPin,
   MessageSquare
 } from "lucide-react";
+import Image from "next/image";
 
 export default function ContactPage() {
   const { toast } = useToast();
@@ -112,7 +113,7 @@ export default function ContactPage() {
                 <CardTitle>Company Image</CardTitle>
               </CardHeader>
               <CardContent>
-                <img
+                <Image
                   src="/placeholder.jpg"
                   alt="Company"
                   className="w-full h-48 object-cover rounded-lg"

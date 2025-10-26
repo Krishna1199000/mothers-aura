@@ -5,6 +5,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { useToast } from "@/components/ui/use-toast";
 import { Upload, X, Loader2 } from "lucide-react";
+import Image from "next/image";
 
 interface ImageUploadProps {
   onUpload: (url: string) => void;
@@ -151,7 +152,7 @@ export function ImageUpload({ onUpload, currentImageUrl }: ImageUploadProps) {
 
       {currentImageUrl && (
         <div className="mt-4 relative">
-          <img
+          <Image
             src={currentImageUrl}
             alt="Uploaded"
             className="w-full h-32 object-cover rounded-lg"

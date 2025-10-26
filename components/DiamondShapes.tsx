@@ -1,93 +1,192 @@
 "use client";
 
-import { useRouter } from 'next/navigation';
-import { useState } from 'react';
-import { Loader2 } from 'lucide-react';
-
-const shapes = [
-  { name: 'Round', type: 'round', svg: 'M12 3L21 12L12 21L3 12Z' },
-  { name: 'Princess', type: 'princess', svg: 'M3 3H21V21H3Z' },
-  { name: 'Cushion', type: 'cushion', svg: 'M6 3H18C19.5 3 21 4.5 21 6V18C21 19.5 19.5 21 18 21H6C4.5 21 3 19.5 3 18V6C3 4.5 4.5 3 6 3Z' },
-  { name: 'Oval', type: 'oval', svg: 'M12 3C16.5 3 21 6.5 21 12C21 17.5 16.5 21 12 21C7.5 21 3 17.5 3 12C3 6.5 7.5 3 12 3Z' },
-  { name: 'Emerald', type: 'emerald', svg: 'M6 3H18L21 6V18L18 21H6L3 18V6Z' },
-  { name: 'Pear', type: 'pear', svg: 'M12 3C16.5 3 21 7.5 21 12C21 16.5 16.5 21 12 21C9.5 21 7 19.5 5.5 17C4 14.5 4 9.5 5.5 7C7 4.5 9.5 3 12 3Z' },
-  { name: 'Marquise', type: 'marquise', svg: 'M3 12L12 3L21 12L12 21Z' },
-  { name: 'Radiant', type: 'radiant', svg: 'M6 3H18L21 6V18L18 21H6L3 18V6Z' },
-  { name: 'Asscher', type: 'asscher', svg: 'M7 3H17L21 7V17L17 21H7L3 17V7Z' },
-  { name: 'Heart', type: 'heart', svg: 'M12 21C12 21 21 14 21 8C21 5 19 3 16.5 3C14.5 3 12.5 4 12 6C11.5 4 9.5 3 7.5 3C5 3 3 5 3 8C3 14 12 21 12 21Z' }
-];
+import { useEffect, useState } from 'react';
+import { motion, AnimatePresence } from 'framer-motion';
+import { ChevronLeft, ChevronRight } from 'lucide-react';
 
 export const DiamondShapes = () => {
-  const router = useRouter();
-  const [isLoading, setIsLoading] = useState(false);
+  const [currentIndex, setCurrentIndex] = useState(0);
+  const [isAutoPlaying, setIsAutoPlaying] = useState(true);
+  const [isVideoLoading, setIsVideoLoading] = useState(true);
 
-  const handleShapeClick = async (type: string) => {
-    try {
-      setIsLoading(true);
+  const shapes = [
+    { name: 'Round', video: '/Mothers-aura-Round.mp4' },
+    { name: 'Princess', video: '/Mothers-aura-princess.mp4' },
+    { name: 'Cushion', video: '/Mothers-aura-Cushion.mp4' },
+    { name: 'Oval', video: '/Mothers-aura-Oval.mp4' },
+    { name: 'Emerald', video: '/Mothers-aura-emerald.mp4' },
+    { name: 'Pear', video: '/Mothers-aura-pear.mp4' },
+    { name: 'Marquise', video: '/Mothers-aura-marquise.mp4' },
+    { name: 'Radiant', video: '/Mothers-aura-radiant.mp4' },
+    { name: 'Asscher', video: '/Mothers-aura-Asscher.mp4' },
+    { name: 'Heart', video: '/Mothers-aura-heart.mp4' }
+  ];
 
-      // Fetch mapped products
-      const response = await fetch(`/api/categories/map?type=${type}`);
-      if (!response.ok) throw new Error("Failed to map category");
-      const data = await response.json();
-
-      // Store the results in localStorage for the target page
-      localStorage.setItem("categoryResults", JSON.stringify(data));
-
-      // Navigate to the category page
-      router.push(`/category/diamonds?type=${type}`);
-    } catch (error) {
-      console.error("Error mapping diamond shape:", error);
-      router.push(`/category/diamonds?type=${type}`); // Fallback to direct navigation
-    } finally {
-      setIsLoading(false);
-    }
+  // Get the three videos to display (previous, current, next)
+  const getVisibleVideos = () => {
+    const prevIndex = (currentIndex - 1 + shapes.length) % shapes.length;
+    const nextIndex = (currentIndex + 1) % shapes.length;
+    
+    return [
+      { ...shapes[prevIndex], index: prevIndex, position: 'prev' },
+      { ...shapes[currentIndex], index: currentIndex, position: 'current' },
+      { ...shapes[nextIndex], index: nextIndex, position: 'next' }
+    ];
   };
 
-  if (isLoading) {
-    return (
-      <section className="py-24 bg-background">
-        <div className="container mx-auto px-4 text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading diamonds...</p>
-        </div>
-      </section>
-    );
-  }
+  useEffect(() => {
+    let interval: NodeJS.Timeout;
+    if (isAutoPlaying) {
+      interval = setInterval(() => {
+        setIsVideoLoading(true);
+        setCurrentIndex((prev) => (prev + 1) % shapes.length);
+      }, 5000); // Change slide every 5 seconds
+    }
+    return () => clearInterval(interval);
+  }, [isAutoPlaying, shapes.length]);
+
+  // Reset loading state when currentIndex changes
+  useEffect(() => {
+    setIsVideoLoading(true);
+  }, [currentIndex]);
+
+  const nextSlide = () => {
+    setIsAutoPlaying(false);
+    setIsVideoLoading(true);
+    setCurrentIndex((prev) => (prev + 1) % shapes.length);
+  };
+
+  const prevSlide = () => {
+    setIsAutoPlaying(false);
+    setIsVideoLoading(true);
+    setCurrentIndex((prev) => (prev - 1 + shapes.length) % shapes.length);
+  };
 
   return (
-    <section className="py-24 bg-background">
+    <section className="py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
+        <motion.div 
+          className="text-center mb-16"
+          initial={{ opacity: 0, y: 20 }}
+          whileInView={{ opacity: 1, y: 0 }}
+          viewport={{ once: true }}
+          transition={{ duration: 0.8 }}
+        >
           <h2 className="text-4xl md:text-5xl font-bold mb-6">
-            Shop Diamonds by Shape
+            Experience Diamond Brilliance
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Each diamond shape offers its own unique brilliance and character
+            Watch our diamonds come to life in stunning detail
           </p>
-        </div>
+        </motion.div>
 
-        <div className="grid grid-cols-2 md:grid-cols-5 gap-6 max-w-4xl mx-auto">
-          {shapes.map((shape, index) => (
-            <button
-              key={index}
-              onClick={() => handleShapeClick(shape.type)}
-              className="group flex flex-col items-center p-6 rounded-xl border border-border hover:border-primary hover:shadow-hover transition-all duration-300 hover:-translate-y-1"
-            >
-              <div className="w-16 h-16 mb-4 flex items-center justify-center">
-                <svg
-                  viewBox="0 0 24 24"
-                  className="w-12 h-12 stroke-current text-muted-foreground group-hover:text-primary transition-colors duration-300"
-                  fill="none"
-                  strokeWidth="1.5"
+        <div className="relative max-w-6xl mx-auto">
+          {/* Three Video Slider */}
+          <div className="relative h-[400px] md:h-[500px] flex items-center justify-center gap-4 px-8">
+            {getVisibleVideos().map((shape, index) => {
+              const isCenter = shape.position === 'current';
+              const isPrev = shape.position === 'prev';
+              const isNext = shape.position === 'next';
+              
+              return (
+                <motion.div
+                  key={`${shape.index}-${shape.position}`}
+                  className={`relative rounded-xl overflow-hidden shadow-lg transition-all duration-500 ${
+                    isCenter 
+                      ? 'w-[280px] md:w-[350px] h-[350px] md:h-[450px] z-20' 
+                      : 'w-[120px] md:w-[150px] h-[200px] md:h-[250px] z-10 opacity-70 hover:opacity-90'
+                  }`}
+                  initial={{ 
+                    opacity: 0, 
+                    scale: 0.8,
+                    x: isPrev ? -100 : isNext ? 100 : 0
+                  }}
+                  animate={{ 
+                    opacity: isCenter ? 1 : 0.7, 
+                    scale: 1,
+                    x: 0
+                  }}
+                  transition={{ duration: 0.6, ease: "easeOut" }}
+                  onClick={() => {
+                    if (!isCenter) {
+                      setIsAutoPlaying(false);
+                      setIsVideoLoading(true);
+                      setCurrentIndex(shape.index);
+                    }
+                  }}
+                  style={{ cursor: !isCenter ? 'pointer' : 'default' }}
                 >
-                  <path d={shape.svg} />
-                </svg>
-              </div>
-              <span className="text-sm font-medium text-muted-foreground group-hover:text-foreground transition-colors">
-                {shape.name}
-              </span>
-            </button>
-          ))}
+                  <video
+                    autoPlay
+                    muted
+                    loop
+                    playsInline
+                    preload="metadata"
+                    className="w-full h-full object-cover bg-black"
+                    style={{ 
+                      objectPosition: 'center',
+                      objectFit: 'cover'
+                    }}
+                    onLoadStart={() => setIsVideoLoading(true)}
+                    onCanPlay={() => setIsVideoLoading(false)}
+                    onError={(e) => {
+                      console.error('Video failed to load:', shape.video);
+                      setIsVideoLoading(false);
+                    }}
+                  >
+                    <source src={shape.video} type="video/mp4" />
+                    Your browser does not support the video tag.
+                  </video>
+                  
+                  {/* Loading indicator */}
+                  {isVideoLoading && isCenter && (
+                    <div className="absolute inset-0 flex items-center justify-center bg-black/50">
+                      <div className="w-6 h-6 border-2 border-white border-t-transparent rounded-full animate-spin"></div>
+                    </div>
+                  )}
+                  
+                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 to-transparent pointer-events-none" />
+                  
+                </motion.div>
+              );
+            })}
+          </div>
+
+          {/* Navigation Buttons - positioned outside the video container */}
+          <button
+            onClick={prevSlide}
+            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-black/90 p-3 rounded-full shadow-lg hover:scale-110 transition-transform z-30"
+            aria-label="Previous shape"
+          >
+            <ChevronLeft className="w-6 h-6" />
+          </button>
+          <button
+            onClick={nextSlide}
+            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-black/90 p-3 rounded-full shadow-lg hover:scale-110 transition-transform z-30"
+            aria-label="Next shape"
+          >
+            <ChevronRight className="w-6 h-6" />
+          </button>
+
+          {/* Progress Indicators */}
+          <div className="absolute -bottom-12 left-1/2 -translate-x-1/2 flex gap-2 mt-4">
+            {shapes.map((_, index) => (
+              <button
+                key={index}
+                onClick={() => {
+                  setIsAutoPlaying(false);
+                  setIsVideoLoading(true);
+                  setCurrentIndex(index);
+                }}
+                className={`w-2 h-2 rounded-full transition-all duration-300 ${
+                  index === currentIndex
+                    ? 'bg-primary w-6'
+                    : 'bg-gray-300 hover:bg-gray-400'
+                }`}
+                aria-label={`Go to slide ${index + 1}`}
+              />
+            ))}
+          </div>
         </div>
       </div>
     </section>

@@ -11,100 +11,66 @@ export async function GET(req: Request) {
     const category = searchParams.get("category");
     const subcategory = searchParams.get("subcategory");
     const type = searchParams.get("type");
+    const searchTerm = searchParams.get("search");
 
     // Build the where clause
     const where: any = {};
+    const orConditions: any[] = [];
 
-    // First try exact match
+    // Add search conditions
     if (category) {
-      where.OR = [
-        // Direct category match
-        {
-          category: {
-            name: { contains: category, mode: "insensitive" }
-          }
-        },
-        // Category in name or description
+      orConditions.push(
         { name: { contains: category, mode: "insensitive" } },
-        { description: { contains: category, mode: "insensitive" } },
-      ];
+        { description: { contains: category, mode: "insensitive" } }
+      );
     }
 
     if (subcategory) {
-      where.OR = [
-        // Direct subcategory match
-        {
-          subcategory: {
-            name: { contains: subcategory, mode: "insensitive" }
-          }
-        },
-        // Subcategory in name or description
+      orConditions.push(
         { name: { contains: subcategory, mode: "insensitive" } },
-        { description: { contains: subcategory, mode: "insensitive" } },
-      ];
+        { description: { contains: subcategory, mode: "insensitive" } }
+      );
     }
 
     if (type) {
-      where.OR = [
-        // Type in name or description
+      orConditions.push(
         { name: { contains: type, mode: "insensitive" } },
-        { description: { contains: type, mode: "insensitive" } },
-      ];
+        { description: { contains: type, mode: "insensitive" } }
+      );
+    }
+
+    if (searchTerm) {
+      orConditions.push(
+        { name: { contains: searchTerm, mode: "insensitive" } },
+        { description: { contains: searchTerm, mode: "insensitive" } }
+      );
+    }
+
+    if (orConditions.length > 0) {
+      where.OR = orConditions;
     }
 
     // Fetch matching products
     const products = await prisma.product.findMany({
       where,
-      include: {
-        category: true,
-        subcategory: true,
-      },
       orderBy: {
         createdAt: "desc",
       },
     });
 
-    // If no exact matches found, return all products from the closest matching category
-    if (products.length === 0 && category) {
-      const fallbackProducts = await prisma.product.findMany({
-        where: {
-          category: {
-            name: { contains: category.split(" ")[0], mode: "insensitive" }
-          }
-        },
-        include: {
-          category: true,
-          subcategory: true,
-        },
+    // If no matches found, return all products
+    if (products.length === 0) {
+      const allProducts = await prisma.product.findMany({
         orderBy: {
           createdAt: "desc",
         },
+        take: 20,
       });
 
-      // If still no matches, return all products
-      if (fallbackProducts.length === 0) {
-        const allProducts = await prisma.product.findMany({
-          include: {
-            category: true,
-            subcategory: true,
-          },
-          orderBy: {
-            createdAt: "desc",
-          },
-          take: 20,
-        });
-
-        return NextResponse.json({
-          products: allProducts.map(formatProduct),
-          isExactMatch: false,
-          message: "No exact matches found. Showing our other items.",
-        });
-      }
-
       return NextResponse.json({
-        products: fallbackProducts.map(formatProduct),
+        products: allProducts.map(formatProduct),
         isExactMatch: false,
-        message: `No exact matches found. Showing similar items from ${fallbackProducts[0].category.name}.`,
+        message: "No exact matches found. Showing our other items.",
       });
     }
 
@@ -122,14 +88,22 @@ function formatProduct(product: any) {
   return {
     id: product.id,
     name: product.name,
+    slug: product.slug,
     description: product.description,
     price: product.price,
     stock: product.stock,
     images: product.images,
-    category: product.category.name,
-    subcategory: product.subcategory?.name,
+    shape: product.shape,
+    carat: product.carat,
+    color: product.color,
+    clarity: product.clarity,
   };
 }
+
+
+
+
+
 
 
 

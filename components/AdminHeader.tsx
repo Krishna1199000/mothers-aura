@@ -5,6 +5,7 @@ import Link from "next/link";
 import { MainNav } from "@/components/MainNav";
 import { UserNav } from "@/components/UserNav";
 import { ModeToggle } from "@/components/ModeToggle";
+import Image from "next/image";
 
 export function AdminHeader() {
   const { data: session } = useSession();
@@ -15,10 +16,10 @@ export function AdminHeader() {
         {/* Hide logo after sign-in */}
         {!session?.user ? (
           <Link href="/" className="mr-6">
-            <img
-              src="/Logo.jpg"
+            <Image
+              src="/Logo.png"
               alt="Logo"
-              className="h-8 w-8 rounded-lg object-cover"
+              className="h-8 w-8 object-contain"
             />
           </Link>
         ) : (

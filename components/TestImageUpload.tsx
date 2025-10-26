@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { ImageUpload } from "@/components/ui/image-upload";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 
 export function TestImageUpload() {
   const [imageUrl, setImageUrl] = useState<string>("");
@@ -23,7 +24,7 @@ export function TestImageUpload() {
           
           <div className="mt-4">
             <p className="text-sm font-medium mb-2">Preview:</p>
-            <img 
+            <Image
               src={imageUrl} 
               alt="Test upload" 
               className="w-full h-40 object-cover rounded-lg border"

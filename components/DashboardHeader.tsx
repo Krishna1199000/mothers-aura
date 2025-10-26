@@ -12,15 +12,20 @@ export function DashboardHeader() {
   const userRole = (session?.user?.role as "ADMIN" | "EMPLOYEE" | "CUSTOMER") || "CUSTOMER";
 
   return (
-    <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
-      <div className="container flex h-14 items-center justify-between px-4">
-        {/* Left side - Role-based navigation */}
-        <div className="flex-1">
-          <RoleBasedNavbar role={userRole as "ADMIN" | "EMPLOYEE" | "CUSTOMER"} />
+    <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
+      <div className="container flex h-20 items-center px-4">
+        {/* Left side - Logo and Role Label */}
+        <div className="flex items-center gap-3 flex-shrink-0">
+          <RoleBasedNavbar role={userRole as "ADMIN" | "EMPLOYEE" | "CUSTOMER"} showLogoOnly />
         </div>
 
-        {/* Right side - Theme toggle and user menu */}
-        <div className="flex items-center gap-2">
+        {/* Center - Navigation */}
+        <div className="hidden md:flex items-center justify-center flex-1 px-8">
+          <RoleBasedNavbar role={userRole as "ADMIN" | "EMPLOYEE" | "CUSTOMER"} showNavigationOnly />
+        </div>
+
+        {/* Right side - Personal items */}
+        <div className="flex items-center gap-2 flex-shrink-0">
           <NotificationBar />
           <CartButton />
           <ModeToggle />

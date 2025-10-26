@@ -2,6 +2,7 @@
 
 import { useState, useEffect } from 'react';
 import { useSession, signOut } from "next-auth/react";
+import Image from 'next/image';
 import Link from "next/link";
 import { Phone, Search, ShoppingCart, Menu, Sun, Moon, User, LogOut, Settings } from 'lucide-react';
 import { Button } from '@/components/ui/button';
@@ -77,7 +78,7 @@ export const EmployeeHeader = () => {
 
             {/* Center - Logo */}
             <Link href="/dashboard" className="flex items-center">
-              <img src="/Logo.jpg" alt="Mothers Aura logo" className="w-12 h-12 rounded-lg object-cover shadow-sm" />
+              <Image src="/Logo.png" alt="Mothers Aura logo" className="w-12 h-12 object-contain" />
             </Link>
 
             {/* Right - Search, Dark Mode, Cart, Profile */}

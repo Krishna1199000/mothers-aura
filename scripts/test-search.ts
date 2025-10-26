@@ -16,7 +16,7 @@ async function testSearch() {
     });
     console.log(`Found ${allProducts.length} products`);
     allProducts.forEach(p => {
-      console.log(`- ${p.name} (${p.category.name})`);
+      console.log(`- ${p.name} (${p.category?.name || 'No category'})`);
     });
 
     // Test 2: Search for "ring"
@@ -35,7 +35,7 @@ async function testSearch() {
     });
     console.log(`Found ${ringResults.length} results for 'ring'`);
     ringResults.forEach(p => {
-      console.log(`- ${p.name} (${p.category.name})`);
+      console.log(`- ${p.name} (${p.category?.name || 'No category'})`);
     });
 
     // Test 3: Search by category
@@ -53,7 +53,7 @@ async function testSearch() {
     });
     console.log(`Found ${categoryResults.length} results for category 'rings'`);
     categoryResults.forEach(p => {
-      console.log(`- ${p.name} (${p.category.name})`);
+      console.log(`- ${p.name} (${p.category?.name || 'No category'})`);
     });
 
   } catch (error) {
@@ -64,6 +64,10 @@ async function testSearch() {
 }
 
 testSearch();
+
+
+
+
 
 
 

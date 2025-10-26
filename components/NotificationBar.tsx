@@ -22,6 +22,7 @@ import {
 import { useToast } from "@/components/ui/use-toast";
 import { useSession } from "next-auth/react";
 import { ImageUpload } from "@/components/ui/image-upload";
+import Image from "next/image";
 
 interface Notification {
   id: string;
@@ -409,7 +410,7 @@ export function NotificationBar() {
                               
                               {notification.imageUrl && (
                                 <div className="mt-3">
-                                  <img 
+                                  <Image
                                     src={notification.imageUrl} 
                                     alt="Notification" 
                                     className="w-full h-40 object-cover rounded-lg border shadow-sm hover:shadow-md transition-shadow"
@@ -470,7 +471,7 @@ export function NotificationBar() {
                               
                               {notification.imageUrl && (
                                 <div className="mt-3">
-                                  <img 
+                                  <Image
                                     src={notification.imageUrl} 
                                     alt="Notification" 
                                     className="w-full h-40 object-cover rounded-lg border shadow-sm hover:shadow-md transition-shadow"
@@ -565,7 +566,7 @@ export function NotificationBar() {
                           
                           {notification.imageUrl && notification.imageUrl !== '' && (
                             <div className="mt-3">
-                              <img 
+                              <Image
                                 src={notification.imageUrl} 
                                 alt="Notification" 
                                 className="w-full h-40 object-cover rounded-lg border shadow-sm hover:shadow-md transition-shadow"

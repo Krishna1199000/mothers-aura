@@ -12,7 +12,8 @@ import {
 } from "@/components/ui/dialog";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Label } from "@/components/ui/label";
+import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import {
   Table,
@@ -22,61 +23,60 @@ import {
   TableHeader,
   TableRow,
 } from "@/components/ui/table";
-import { Plus, Pencil, Trash2, Loader2, Search } from "lucide-react";
-import { CategoryForm } from "./components/category-form";
-import { SubcategoryForm } from "./components/subcategory-form";
-import { ProductForm } from "./components/product-form";
-
-interface Category {
-  id: string;
-  name: string;
-  description?: string;
-  createdAt: string;
-}
-
-interface Subcategory {
-  id: string;
-  name: string;
-  categoryId: string;
-  category: { name: string };
-  createdAt: string;
-}
+import { Plus, Pencil, Trash2, Loader2, Search, X } from "lucide-react";
 
 interface Product {
   id: string;
   name: string;
+  slug: string;
   description?: string;
   price: number;
-  carat?: number;
+  shape: string;
+  carat: number;
+  color: string;
+  clarity: string;
   cut?: string;
-  color?: string;
-  clarity?: string;
+  polish?: string;
+  symmetry?: string;
+  certificateNo?: string;
+  lab?: string;
   stock: number;
   images: string[];
-  categoryId: string;
-  subcategoryId?: string;
-  category: { name: string };
-  subcategory?: { name: string };
-  createdAt: string;
+  videoUrl?: string;
+  certificateUrl?: string;
+  threeSixtyView?: string;
+  additionalMedia?: string[];
 }
 
 export default function UIInventoryPage() {
   const { data: session, status } = useSession();
   const router = useRouter();
   const { toast } = useToast();
-  const [activeTab, setActiveTab] = useState("categories");
   const [isLoading, setIsLoading] = useState(true);
   const [searchTerm, setSearchTerm] = useState("");
-
-  // Data states
-  const [categories, setCategories] = useState<Category[]>([]);
-  const [subcategories, setSubcategories] = useState<Subcategory[]>([]);
   const [products, setProducts] = useState<Product[]>([]);
-
-  // Modal states
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [modalMode, setModalMode] = useState<"create" | "edit">("create");
-  const [selectedItem, setSelectedItem] = useState<any>(null);
+  const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
+
+  const [formData, setFormData] = useState({
+    name: "",
+    description: "",
+    price: "",
+    shape: "",
+    carat: "",
+    color: "",
+    clarity: "",
+    cut: "",
+    polish: "",
+    symmetry: "",
+    certificateNo: "",
+    lab: "",
+    stock: "",
+    images: [] as string[],
+  });
+
+  const [mediaInputs, setMediaInputs] = useState(["", "", "", "", ""]);
 
   useEffect(() => {
     if (status === "loading") return;
@@ -84,52 +84,20 @@ export default function UIInventoryPage() {
       router.push("/signin");
       return;
     }
-
-    fetchData();
+    fetchProducts();
   }, [session, status, router]);
 
-  const fetchData = async () => {
+  const fetchProducts = async () => {
     try {
       setIsLoading(true);
-      const [categoriesRes, subcategoriesRes, productsRes] = await Promise.all([
-        fetch("/api/admin/categories"),
-        fetch("/api/admin/subcategories"),
-        fetch("/api/admin/products"),
-      ]);
-
-      if (!categoriesRes.ok) {
-        const error = await categoriesRes.text();
-        console.error("Categories API Error:", error);
-        throw new Error(`Categories API Error: ${error}`);
-      }
-
-      if (!subcategoriesRes.ok) {
-        const error = await subcategoriesRes.text();
-        console.error("Subcategories API Error:", error);
-        throw new Error(`Subcategories API Error: ${error}`);
-      }
-
-      if (!productsRes.ok) {
-        const error = await productsRes.text();
-        console.error("Products API Error:", error);
-        throw new Error(`Products API Error: ${error}`);
-      }
-
-      const [categoriesData, subcategoriesData, productsData] = await Promise.all([
-        categoriesRes.json(),
-        subcategoriesRes.json(),
-        productsRes.json(),
-      ]);
-
-      setCategories(categoriesData);
-      setSubcategories(subcategoriesData);
-      setProducts(productsData);
+      const response = await fetch("/api/admin/products");
+      if (!response.ok) throw new Error("Failed to fetch products");
+      const data = await response.json();
+      setProducts(data);
     } catch (error) {
-      console.error("Error fetching data:", error);
-      const message = error instanceof Error ? error.message : String(error);
       toast({
         title: "Error",
-        description: `Failed to fetch data: ${message}`,
+        description: "Failed to fetch products",
         variant: "destructive",
       });
     } finally {
@@ -137,53 +105,141 @@ export default function UIInventoryPage() {
     }
   };
 
-  const handleDelete = async (type: string, id: string) => {
-    if (!confirm("Are you sure you want to delete this item?")) return;
+  const handleAddProduct = () => {
+    setModalMode("create");
+    setSelectedProduct(null);
+    setFormData({
+      name: "",
+      description: "",
+      price: "",
+      shape: "",
+      carat: "",
+      color: "",
+      clarity: "",
+      cut: "",
+      polish: "",
+      symmetry: "",
+      certificateNo: "",
+      lab: "",
+      stock: "",
+      images: [],
+    });
+    setMediaInputs(["", "", "", "", ""]);
+    setIsModalOpen(true);
+  };
 
+  const handleEditProduct = (product: Product) => {
+    setModalMode("edit");
+    setSelectedProduct(product);
+    setFormData({
+      name: product.name,
+      description: product.description || "",
+      price: product.price.toString(),
+      shape: product.shape,
+      carat: product.carat.toString(),
+      color: product.color,
+      clarity: product.clarity,
+      cut: product.cut || "",
+      polish: product.polish || "",
+      symmetry: product.symmetry || "",
+      certificateNo: product.certificateNo || "",
+      lab: product.lab || "",
+      stock: product.stock.toString(),
+      images: product.images,
+    });
+    
+    // Set media inputs (combining all media sources)
+    const allMedia = [
+      ...product.images,
+      product.videoUrl,
+      product.certificateUrl,
+      product.threeSixtyView,
+      ...(product.additionalMedia || []),
+    ].filter(Boolean) as string[];
+    
+    const medInputs = [...allMedia];
+    while (medInputs.length < 5) medInputs.push("");
+    setMediaInputs(medInputs.slice(0, 5));
+    
+    setIsModalOpen(true);
+  };
+
+  const handleSaveProduct = async () => {
     try {
-      const response = await fetch(`/api/admin/${type}/${id}`, {
-        method: "DELETE",
+      const media = mediaInputs.filter((url) => url.trim() !== "");
+      const images = media; // All media will be treated as images
+      
+      const data = {
+        ...formData,
+        price: parseFloat(formData.price),
+        carat: parseFloat(formData.carat),
+        stock: parseInt(formData.stock),
+        images,
+      };
+
+      const url = modalMode === "create" 
+        ? "/api/admin/products" 
+        : `/api/admin/products/${selectedProduct?.id}`;
+      
+      const method = modalMode === "create" ? "POST" : "PUT";
+
+      const response = await fetch(url, {
+        method,
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify(data),
       });
 
-      if (!response.ok) {
-        throw new Error("Failed to delete item");
-      }
+      if (!response.ok) throw new Error("Failed to save product");
 
       toast({
         title: "Success",
-        description: "Item deleted successfully",
+        description: `Product ${modalMode === "create" ? "created" : "updated"} successfully`,
       });
 
-      fetchData();
+      setIsModalOpen(false);
+      fetchProducts();
     } catch (error) {
-      console.error("Error deleting item:", error);
       toast({
         title: "Error",
-        description: "Failed to delete item",
+        description: "Failed to save product",
         variant: "destructive",
       });
     }
   };
 
-  const filteredData = {
-    categories: categories.filter((cat) =>
-      cat.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-    subcategories: subcategories.filter((sub) =>
-      sub.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
-    products: products.filter((prod) =>
-      prod.name.toLowerCase().includes(searchTerm.toLowerCase())
-    ),
+  const handleDeleteProduct = async (id: string) => {
+    if (!confirm("Are you sure you want to delete this product?")) return;
+
+    try {
+      const response = await fetch(`/api/admin/products/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) throw new Error("Failed to delete product");
+
+      toast({
+        title: "Success",
+        description: "Product deleted successfully",
+      });
+
+      fetchProducts();
+    } catch (error) {
+      toast({
+        title: "Error",
+        description: "Failed to delete product",
+        variant: "destructive",
+      });
+    }
   };
 
-  if (status === "loading" || isLoading) {
+  const filteredProducts = products.filter((product) =>
+    product.name.toLowerCase().includes(searchTerm.toLowerCase())
+  );
+
+  if (isLoading) {
     return (
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading...</p>
-        </div>
+      <div className="min-h-screen flex items-center justify-center">
+        <Loader2 className="h-8 w-8 animate-spin" />
       </div>
     );
   }
@@ -194,182 +250,63 @@ export default function UIInventoryPage() {
         <div>
           <h1 className="text-3xl font-bold">UI Inventory</h1>
           <p className="text-muted-foreground">
-            Manage your categories, subcategories, and products
+            Manage your products
           </p>
         </div>
-      </div>
-
-      <Tabs value={activeTab} onValueChange={setActiveTab}>
-        <div className="flex items-center justify-between mb-6">
-          <TabsList>
-            <TabsTrigger value="categories">Categories</TabsTrigger>
-            <TabsTrigger value="subcategories">Subcategories</TabsTrigger>
-            <TabsTrigger value="products">Products</TabsTrigger>
-          </TabsList>
-
           <div className="flex items-center gap-4">
             <div className="relative">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
               <Input
-                placeholder="Search..."
+              placeholder="Search products..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
                 className="pl-9"
               />
             </div>
-            <Button
-              onClick={() => {
-                setModalMode("create");
-                setSelectedItem(null);
-                setIsModalOpen(true);
-              }}
-            >
+          <Button onClick={handleAddProduct}>
               <Plus className="h-4 w-4 mr-2" />
-              Add New
+            Add Product
             </Button>
           </div>
         </div>
 
-        <TabsContent value="categories" className="mt-0">
           <div className="rounded-md border">
             <Table>
               <TableHeader>
                 <TableRow>
                   <TableHead>Name</TableHead>
-                  <TableHead>Description</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredData.categories.map((category) => (
-                  <TableRow key={category.id}>
-                    <TableCell>{category.name}</TableCell>
-                    <TableCell>{category.description || "-"}</TableCell>
-                    <TableCell>
-                      {new Date(category.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => {
-                            setModalMode("edit");
-                            setSelectedItem(category);
-                            setIsModalOpen(true);
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={() => handleDelete("categories", category.id)}
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="subcategories" className="mt-0">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Created At</TableHead>
-                  <TableHead className="text-right">Actions</TableHead>
-                </TableRow>
-              </TableHeader>
-              <TableBody>
-                {filteredData.subcategories.map((subcategory) => (
-                  <TableRow key={subcategory.id}>
-                    <TableCell>{subcategory.name}</TableCell>
-                    <TableCell>{subcategory.category.name}</TableCell>
-                    <TableCell>
-                      {new Date(subcategory.createdAt).toLocaleDateString()}
-                    </TableCell>
-                    <TableCell className="text-right">
-                      <div className="flex justify-end gap-2">
-                        <Button
-                          variant="outline"
-                          size="icon"
-                          onClick={() => {
-                            setModalMode("edit");
-                            setSelectedItem(subcategory);
-                            setIsModalOpen(true);
-                          }}
-                        >
-                          <Pencil className="h-4 w-4" />
-                        </Button>
-                        <Button
-                          variant="destructive"
-                          size="icon"
-                          onClick={() =>
-                            handleDelete("subcategories", subcategory.id)
-                          }
-                        >
-                          <Trash2 className="h-4 w-4" />
-                        </Button>
-                      </div>
-                    </TableCell>
-                  </TableRow>
-                ))}
-              </TableBody>
-            </Table>
-          </div>
-        </TabsContent>
-
-        <TabsContent value="products" className="mt-0">
-          <div className="rounded-md border">
-            <Table>
-              <TableHeader>
-                <TableRow>
-                  <TableHead>Name</TableHead>
-                  <TableHead>Category</TableHead>
-                  <TableHead>Subcategory</TableHead>
+              <TableHead>Shape</TableHead>
+              <TableHead>Carat</TableHead>
+              <TableHead>Color</TableHead>
+              <TableHead>Clarity</TableHead>
                   <TableHead>Price</TableHead>
                   <TableHead>Stock</TableHead>
-                  <TableHead>Created At</TableHead>
                   <TableHead className="text-right">Actions</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
-                {filteredData.products.map((product) => (
+            {filteredProducts.map((product) => (
                   <TableRow key={product.id}>
-                    <TableCell>{product.name}</TableCell>
-                    <TableCell>{product.category.name}</TableCell>
-                    <TableCell>{product.subcategory?.name || "-"}</TableCell>
+                <TableCell className="font-medium">{product.name}</TableCell>
+                <TableCell>{product.shape}</TableCell>
+                <TableCell>{product.carat}</TableCell>
+                <TableCell>{product.color}</TableCell>
+                <TableCell>{product.clarity}</TableCell>
                     <TableCell>${product.price.toLocaleString()}</TableCell>
                     <TableCell>{product.stock}</TableCell>
-                    <TableCell>
-                      {new Date(product.createdAt).toLocaleDateString()}
-                    </TableCell>
                     <TableCell className="text-right">
                       <div className="flex justify-end gap-2">
                         <Button
                           variant="outline"
                           size="icon"
-                          onClick={() => {
-                            setModalMode("edit");
-                            setSelectedItem(product);
-                            setIsModalOpen(true);
-                          }}
+                      onClick={() => handleEditProduct(product)}
                         >
                           <Pencil className="h-4 w-4" />
                         </Button>
                         <Button
                           variant="destructive"
                           size="icon"
-                          onClick={() => handleDelete("products", product.id)}
+                      onClick={() => handleDeleteProduct(product.id)}
                         >
                           <Trash2 className="h-4 w-4" />
                         </Button>
@@ -380,56 +317,171 @@ export default function UIInventoryPage() {
               </TableBody>
             </Table>
           </div>
-        </TabsContent>
-      </Tabs>
 
-      <AnimatePresence>
-        {isModalOpen && (
+      {/* Product Form Dialog */}
           <Dialog open={isModalOpen} onOpenChange={setIsModalOpen}>
-            <DialogContent>
+        <DialogContent className="max-w-4xl max-h-[90vh] overflow-y-auto">
               <DialogHeader>
                 <DialogTitle>
-                  {modalMode === "create" ? "Create" : "Edit"}{" "}
-                  {activeTab.slice(0, -1)}
+              {modalMode === "create" ? "Add New Product" : "Edit Product"}
                 </DialogTitle>
               </DialogHeader>
-              {activeTab === "categories" && (
-                <CategoryForm
-                  initialData={selectedItem}
-                  onSuccess={() => {
-                    setIsModalOpen(false);
-                    fetchData();
-                  }}
-                  onCancel={() => setIsModalOpen(false)}
+
+          <div className="space-y-6">
+            <div>
+              <Label>Diamond Name *</Label>
+              <Input
+                value={formData.name}
+                onChange={(e) => setFormData({ ...formData, name: e.target.value })}
+                placeholder="e.g., New Beginnings Diamond Band"
+              />
+            </div>
+
+            <div>
+              <Label>Description</Label>
+              <Textarea
+                value={formData.description}
+                onChange={(e) => setFormData({ ...formData, description: e.target.value })}
+                placeholder="Product description"
+              />
+            </div>
+
+            <div>
+              <Label>Price *</Label>
+              <Input
+                type="number"
+                value={formData.price}
+                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
+                placeholder="3800"
+              />
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Shape *</Label>
+                <Input
+                  value={formData.shape}
+                  onChange={(e) => setFormData({ ...formData, shape: e.target.value })}
+                  placeholder="Round"
                 />
-              )}
-              {activeTab === "subcategories" && (
-                <SubcategoryForm
-                  categories={categories}
-                  initialData={selectedItem}
-                  onSuccess={() => {
-                    setIsModalOpen(false);
-                    fetchData();
-                  }}
-                  onCancel={() => setIsModalOpen(false)}
+              </div>
+              <div>
+                <Label>Carat *</Label>
+                <Input
+                  type="number"
+                  step="0.01"
+                  value={formData.carat}
+                  onChange={(e) => setFormData({ ...formData, carat: e.target.value })}
+                  placeholder="1.50"
                 />
-              )}
-              {activeTab === "products" && (
-                <ProductForm
-                  categories={categories}
-                  subcategories={subcategories}
-                  initialData={selectedItem}
-                  onSuccess={() => {
-                    setIsModalOpen(false);
-                    fetchData();
-                  }}
-                  onCancel={() => setIsModalOpen(false)}
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Color *</Label>
+                <Input
+                  value={formData.color}
+                  onChange={(e) => setFormData({ ...formData, color: e.target.value })}
+                  placeholder="F"
                 />
-              )}
+              </div>
+              <div>
+                <Label>Clarity *</Label>
+                <Input
+                  value={formData.clarity}
+                  onChange={(e) => setFormData({ ...formData, clarity: e.target.value })}
+                  placeholder="VS1"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-3 gap-4">
+              <div>
+                <Label>Cut</Label>
+                <Input
+                  value={formData.cut}
+                  onChange={(e) => setFormData({ ...formData, cut: e.target.value })}
+                  placeholder="Excellent"
+                />
+              </div>
+              <div>
+                <Label>Polish</Label>
+                <Input
+                  value={formData.polish}
+                  onChange={(e) => setFormData({ ...formData, polish: e.target.value })}
+                  placeholder="Excellent"
+                />
+              </div>
+              <div>
+                <Label>Symmetry</Label>
+                <Input
+                  value={formData.symmetry}
+                  onChange={(e) => setFormData({ ...formData, symmetry: e.target.value })}
+                  placeholder="Excellent"
+                />
+              </div>
+            </div>
+
+            <div className="grid grid-cols-2 gap-4">
+              <div>
+                <Label>Certificate No</Label>
+                <Input
+                  value={formData.certificateNo}
+                  onChange={(e) => setFormData({ ...formData, certificateNo: e.target.value })}
+                  placeholder="12345"
+                />
+              </div>
+              <div>
+                <Label>Lab</Label>
+                <Input
+                  value={formData.lab}
+                  onChange={(e) => setFormData({ ...formData, lab: e.target.value })}
+                  placeholder="GIA"
+                />
+              </div>
+            </div>
+
+            <div>
+              <Label>Stock</Label>
+              <Input
+                type="number"
+                value={formData.stock}
+                onChange={(e) => setFormData({ ...formData, stock: e.target.value })}
+                placeholder="1"
+              />
+            </div>
+
+            <div className="space-y-2">
+              <Label>Media Links (up to 5) *</Label>
+              <p className="text-sm text-muted-foreground mb-2">
+                Add image or video URLs (supports .jpg, .png, .gif, .mp4, .webm, etc.)
+              </p>
+              {mediaInputs.map((url, index) => (
+                <Input
+                  key={index}
+                  value={url}
+                  onChange={(e) => {
+                    const newInputs = [...mediaInputs];
+                    newInputs[index] = e.target.value;
+                    setMediaInputs(newInputs);
+                  }}
+                  placeholder={`https://example.com/media-${index + 1}.jpg`}
+                />
+              ))}
+            </div>
+
+            <div className="flex justify-end gap-4">
+              <Button variant="outline" onClick={() => setIsModalOpen(false)}>
+                Cancel
+              </Button>
+              <Button onClick={handleSaveProduct}>
+                {modalMode === "create" ? "Create Product" : "Update Product"}
+              </Button>
+            </div>
+          </div>
             </DialogContent>
           </Dialog>
-        )}
-      </AnimatePresence>
     </div>
   );
 }

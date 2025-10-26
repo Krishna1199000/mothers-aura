@@ -8,6 +8,7 @@ import { ScrollArea } from "@/components/ui/scroll-area";
 import { Separator } from "@/components/ui/separator";
 import { useCart } from "@/lib/contexts/cart-context";
 import { ShoppingBag, Plus, Minus, ArrowRight } from "lucide-react";
+import Image from "next/image";
 
 interface CartModalProps {
   open: boolean;
@@ -93,7 +94,7 @@ export function CartModal({ open, onClose }: CartModalProps) {
                       <div className="flex gap-4">
                         {/* Product Image */}
                         <div className="h-24 w-24 flex-shrink-0 overflow-hidden rounded-lg border bg-muted">
-                          <img
+                          <Image
                             src={item.image || "/placeholder.jpg"}
                             alt={item.name}
                             className="h-full w-full object-cover"

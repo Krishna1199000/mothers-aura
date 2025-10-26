@@ -493,12 +493,11 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
               <div className="text-center mb-8">
                 <div className="bg-white p-2 rounded-lg inline-block mb-2">
                   <Image 
-                    src="/Logo.jpg" 
+                    src="/Logo.png" 
                     alt="Logo" 
                     width={96}
                     height={96}
-                    className="mx-auto w-24 h-24 rounded-lg object-cover shadow-sm print:w-28 print:h-28"
-                    style={{ backgroundColor: 'white' }}
+                    className="mx-auto w-24 h-24 object-contain print:w-28 print:h-28"
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">

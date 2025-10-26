@@ -19,6 +19,7 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Alert, AlertDescription } from "@/components/ui/alert";
 import { ArrowLeft, Printer, Download } from "lucide-react";
+import Image from "next/image";
 
 interface MemoItem {
   id: string;
@@ -472,11 +473,10 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
               {/* Header */}
               <div className="text-center mb-8">
                 <div className="bg-white p-2 rounded-lg inline-block mb-2">
-                  <img 
-                    src="/Logo.jpg" 
+                  <Image
+                    src="/Logo.png" 
                     alt="Logo" 
-                    className="mx-auto w-24 h-24 rounded-lg object-cover shadow-sm print:w-28 print:h-28"
-                    style={{ backgroundColor: 'white' }}
+                    className="mx-auto w-24 h-24 object-contain print:w-28 print:h-28"
                   />
                 </div>
                 <p className="text-sm text-muted-foreground">

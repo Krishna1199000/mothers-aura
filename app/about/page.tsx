@@ -3,6 +3,7 @@
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, Diamond, Users, Star } from "lucide-react";
+import Image from "next/image";
 
 export default function AboutPage() {
   const stats = [
@@ -58,14 +59,14 @@ export default function AboutPage() {
           <Card>
             <CardContent className="p-6 sm:p-8 flex flex-col md:flex-row gap-8 items-center">
               <div className="w-full md:w-1/3">
-                <img
-                  src="/placeholder-user.jpg"
-                  alt="Company Owner"
-                  className="rounded-lg w-full aspect-square object-cover"
+                <Image
+                  src="/Mothers-aura-Aboutus.jpg"
+                  alt="About Mothers Aura"
+                  className="rounded-lg w-full object-cover"
                 />
               </div>
               <div className="w-full md:w-2/3 space-y-4">
-                <h2 className="text-3xl font-bold">John Smith</h2>
+                <h2 className="text-3xl font-bold">Tejas Vilas Bhosle</h2>
                 <p className="text-muted-foreground italic">Founder & CEO</p>
                 <p className="text-muted-foreground">
                   With over 25 years of experience in the diamond industry, John Smith has built

@@ -3,6 +3,7 @@
 import { useState, useEffect, useRef } from 'react';
 import { Search, X, Sparkles, ExternalLink } from 'lucide-react';
 import { useRouter } from 'next/navigation';
+import Image from 'next/image';
 
 interface SearchPanelProps {
   isOpen: boolean;
@@ -132,7 +133,7 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
                     <div className="flex items-start space-x-4">
                       {item.images && item.images.length > 0 && (
                         <div className="w-16 h-16 bg-muted rounded-lg overflow-hidden flex-shrink-0">
-                          <img
+                          <Image
                             src={item.images[0]}
                             alt={item.name}
                             className="w-full h-full object-cover"
