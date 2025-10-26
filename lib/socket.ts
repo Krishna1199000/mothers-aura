@@ -19,8 +19,13 @@ export const ioHandler = async (req: any, res: NextApiResponseServerIO) => {
       path: '/api/socket',
       addTrailingSlash: false,
       cors: {
-        origin: process.env.NEXT_PUBLIC_APP_URL || 'http://localhost:3000',
+        origin: [
+          'https://mothersauradiamonds.com',
+          'https://www.mothersauradiamonds.com',
+          'http://localhost:3000'
+        ],
         methods: ['GET', 'POST'],
+        credentials: true
       },
     });
 

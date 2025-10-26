@@ -82,7 +82,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
       path: '/api/socket',
       addTrailingSlash: false,
       withCredentials: true,
-      transports: ['websocket', 'polling']
+      transports: ['polling']
     });
 
     socketInstance.on('connect', () => {

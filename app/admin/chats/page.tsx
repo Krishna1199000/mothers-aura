@@ -63,7 +63,7 @@ export default function AdminChatsPage() {
       path: '/api/socket',
       addTrailingSlash: false,
       withCredentials: true,
-      transports: ['websocket', 'polling']
+      transports: ['polling']
     });
 
     socketInstance.on('connect', () => {
