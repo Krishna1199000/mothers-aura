@@ -20,6 +20,7 @@ export const Hero = () => {
           className="object-cover object-center"
           priority
           sizes="100vw"
+          unoptimized
           style={{
             objectPosition: 'center center'
           }}
