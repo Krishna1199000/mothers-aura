@@ -111,7 +111,7 @@ export default function DiamondPage() {
     
     switch (type) {
       case 'whatsapp':
-        window.open(`https://wa.me/?text=${encodeURIComponent(`${title}\n${url}`)}`);
+        window.open(`https://wa.me/918657585167?text=${encodeURIComponent(`${title}\n${url}`)}`);
         break;
       case 'email':
         window.open(`mailto:?subject=${encodeURIComponent(title)}&body=${encodeURIComponent(url)}`);

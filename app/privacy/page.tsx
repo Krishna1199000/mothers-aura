@@ -52,7 +52,7 @@ export default function PrivacyPage() {
     },
     {
       title: "Contact Us",
-      content: "If you have any questions or concerns about this Privacy Policy, please contact us at info@mothersaura.co.uk or +44 20 7123 4567"
+      content: "If you have any questions or concerns about this Privacy Policy, please contact us at admintejas@mothersauradiamonds.com or +91 86575 85167"
     }
   ];
 

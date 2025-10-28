@@ -9,6 +9,8 @@ import { AnimatePresence, motion } from "framer-motion"
 interface MegaMenuProps {
   isMobileOpen: boolean
   setIsMobileOpen: (isOpen: boolean) => void
+  // Optional: explicit navbar height in px for correct dropdown positioning
+  navbarHeight?: number
 }
 
 interface MenuItem {
@@ -461,7 +463,7 @@ const menuItems: MenuItem[] = [
   },
 ]
 
-export function MegaMenu({ isMobileOpen, setIsMobileOpen }: MegaMenuProps) {
+export function MegaMenu({ isMobileOpen, setIsMobileOpen, navbarHeight = 56 }: MegaMenuProps) {
   const router = useRouter()
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
 
@@ -507,7 +509,7 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   }, [activeMenu])
 
   return (
-    <div className="relative mega-menu-container w-full flex justify-center" style={{ '--navbar-height': '120px' } as React.CSSProperties}>
+    <div className="relative mega-menu-container w-full flex justify-center" style={{ '--navbar-height': `${navbarHeight}px` } as React.CSSProperties}>
       {/* Desktop Navigation */}
       <div className="hidden md:flex items-center justify-center space-x-12 w-full max-w-[1400px]">
         {menuItems.map((item, index) => (
@@ -517,19 +519,19 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
             onMouseEnter={() => setActiveMenu(item.label)}
             onMouseLeave={() => setActiveMenu(null)}
           >
-            <button className="flex items-center space-x-1 py-2 text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors">
+            <button className="flex items-center space-x-1 py-2 text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-gray-600 dark:hover:text-white transition-colors">
               <span>{item.label}</span>
               <ChevronDown className="h-3 w-3" />
             </button>
 
             {activeMenu === item.label && (
-              <div className="fixed left-0 right-0 top-[calc(var(--navbar-height)+0.5rem)] z-50 bg-white shadow-2xl border-b border-gray-100 max-h-[70vh] overflow-y-auto">
+              <div className="fixed left-0 right-0 top-[calc(var(--navbar-height)+3.4rem)] z-[60] bg-white dark:bg-gray-950 shadow-2xl border-b border-gray-100 dark:border-gray-800 max-h-[70vh] overflow-y-auto">
                 <div className="container mx-auto px-4 py-4">
                   <div className="grid grid-cols-4 gap-4">
                     {item.items.map((section, idx) => (
-                      <div key={idx} className="min-w-0 w-full px-2 py-1">
+                      <div key={idx} className="min-w-0 w-full px-2 py-2 rounded-md transition-colors hover:bg-gray-50 dark:hover:bg-gray-800/70">
                         {section.section && (
-                          <h3 className="font-bold text-xs mb-2 text-gray-800 uppercase tracking-wider border-b pb-1">
+                          <h3 className="font-bold text-xs mb-2 text-gray-800 dark:text-gray-100 uppercase tracking-wider border-b pb-1 border-gray-200 dark:border-gray-700">
                             {section.section}
                           </h3>
                         )}
@@ -538,12 +540,12 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
                             <li key={linkIdx}>
                               <button
                                 onClick={() => handleItemClick(link.href, link.product)}
-                                className="text-sm text-gray-600 hover:text-gray-800 transition-colors w-full text-left flex items-center gap-2 py-1"
+                                className="text-sm text-gray-700 dark:text-gray-200 hover:text-gray-900 dark:hover:text-white hover:bg-gray-100 dark:hover:bg-gray-700 transition-colors w-full text-left flex items-center gap-2 py-1.5 px-2 rounded"
                               >
                                 {link.icon ? (
                                   <span className="flex-shrink-0">{link.icon}</span>
                                 ) : (
-                                  link.label !== "Explore All" && <span className="w-2 h-2 rounded-full bg-gray-300 flex-shrink-0"></span>
+                                  link.label !== "Explore All" && <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0"></span>
                                 )}
                                 <span>{link.label}</span>
                               </button>
@@ -579,13 +581,13 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
         ))}
         <button
           onClick={() => handleItemClick("/about")}
-          className="py-2 text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors"
+          className="py-2 text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-gray-600 dark:hover:text-white transition-colors"
         >
           About us
         </button>
         <button
           onClick={() => handleItemClick("/trending")}
-          className="py-2 text-sm font-medium text-gray-800 hover:text-gray-600 transition-colors"
+          className="py-2 text-sm font-medium text-gray-800 dark:text-gray-200 hover:text-gray-600 dark:hover:text-white transition-colors"
         >
           Trending
         </button>
@@ -593,7 +595,7 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
 
       {/* Mobile Navigation */}
       <div
-        className={`md:hidden fixed inset-0 bg-white z-50 transform transition-transform duration-300 ${
+        className={`md:hidden fixed inset-0 bg-white dark:bg-gray-900 z-50 transform transition-transform duration-300 ${
           isMobileOpen ? "translate-x-0" : "-translate-x-full"
         }`}
       >
@@ -602,7 +604,7 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
             <div className="flex justify-end mb-2">
               <button
                 aria-label="Close menu"
-                className="p-2 rounded-md hover:bg-gray-100"
+                className="p-2 rounded-md hover:bg-gray-100 dark:hover:bg-gray-800"
                 onClick={() => setIsMobileOpen(false)}
               >
                 <X className="h-5 w-5" />
@@ -612,7 +614,7 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
               <div key={`${item.label}-${index}`} className="mb-6">
                 <button
                   onClick={() => setActiveMenu(activeMenu === item.label ? null : item.label)}
-                  className="flex items-center justify-between w-full py-2 text-lg font-medium text-gray-800"
+                  className="flex items-center justify-between w-full py-2 text-lg font-medium text-gray-800 dark:text-gray-100"
                 >
                   <span>{item.label}</span>
                   <ChevronDown
@@ -628,19 +630,19 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
                       {item.items.map((section, idx) => (
                         <div key={idx} className="mb-3">
                           {section.section && (
-                            <h3 className="font-semibold text-sm mb-2 text-gray-800 uppercase tracking-wider border-b pb-2">{section.section}</h3>
+                            <h3 className="font-semibold text-sm mb-2 text-gray-800 dark:text-gray-100 uppercase tracking-wider border-b pb-2 border-gray-200 dark:border-gray-700">{section.section}</h3>
                           )}
                           <ul className="space-y-1 max-h-[200px] overflow-y-auto">
                             {section.links.map((link, linkIdx) => (
                               <li key={linkIdx}>
                                 <button
                                   onClick={() => handleItemClick(link.href)}
-                                  className="text-sm text-gray-700 font-medium hover:text-black transition-all flex items-center gap-2"
+                                  className="text-sm text-gray-700 dark:text-gray-300 font-medium hover:text-black dark:hover:text-white transition-all flex items-center gap-2"
                                 >
                                   {link.icon ? (
                                     <span className="flex-shrink-0">{link.icon}</span>
                                   ) : (
-                                    link.label !== "Explore All" && <span className="w-2 h-2 rounded-full bg-gray-300 flex-shrink-0"></span>
+                                    link.label !== "Explore All" && <span className="w-2 h-2 rounded-full bg-gray-300 dark:bg-gray-600 flex-shrink-0"></span>
                                   )}
                                   {link.label}
                                 </button>
@@ -655,10 +657,10 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
               </div>
             ))}
             <div className="mt-2 space-y-4">
-              <button onClick={() => handleItemClick("/about")} className="block text-lg font-medium text-gray-800">
+              <button onClick={() => handleItemClick("/about")} className="block text-lg font-medium text-gray-800 dark:text-gray-100">
                 About us
               </button>
-              <button onClick={() => handleItemClick("/trending")} className="block text-lg font-medium text-gray-800">
+              <button onClick={() => handleItemClick("/trending")} className="block text-lg font-medium text-gray-800 dark:text-gray-100">
                 Trending
               </button>
             </div>

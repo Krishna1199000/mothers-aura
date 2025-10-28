@@ -3,8 +3,8 @@ import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
 export const Footer = () => {
   const footerLinks = {
     'Contact Us': [
-      { name: 'info@cranberridiamonds.in', href: 'mailto:info@mothersaura.com'},
-      { name: '+91 845 287 2491', href: 'tel:+918452872491' }
+      { name: 'admintejas@mothersauradiamonds.com', href: 'mailto:admintejas@mothersauradiamonds.com'},
+      { name: '+91 86575 85167', href: 'tel:+918657585167' }
     ],
     'Information': [
       { name: 'Terms & Conditions', href: '/terms' },
@@ -21,9 +21,10 @@ export const Footer = () => {
   };
 
   const socialLinks = [
-    { icon: Facebook, href: 'https://facebook.com/cranberridiamonds', label: 'Facebook' },
-    { icon: Instagram, href: 'https://instagram.com/cranberridiamonds', label: 'Instagram' },
-    { icon: Twitter, href: 'https://twitter.com/cranberridiamonds', label: 'Twitter' }
+    { icon: Facebook, href: 'https://facebook.com/mothersaura', label: 'Facebook' },
+    { icon: Instagram, href: 'https://www.instagram.com/mothers_aura?igsh=MWhydGR5dHZxaXRsdw%3D%3D&utm_source=qr', label: 'Instagram' },
+    { icon: Linkedin, href: 'https://linkedin.com/in/mother-s-aura-6991a7395', label: 'LinkedIn' },
+    { icon: Twitter, href: 'https://x.com/MOTHERSAURA007', label: 'Twitter' }
   ];
 
   return (

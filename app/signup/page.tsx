@@ -78,7 +78,7 @@ export default function SignupPage() {
     setIsLoading(true);
 
     try {
-      const response = await fetch("/api/auth/signup", {
+      const response = await fetch("/api/auth/signup/initiate", {
         method: "POST",
         headers: {
           "Content-Type": "application/json",
@@ -97,8 +97,8 @@ export default function SignupPage() {
         throw new Error(data.error || "Something went wrong");
       }
 
-      // Redirect to signin page after successful signup
-      router.push("/signin?message=Account created successfully. Please sign in.");
+      // Redirect to OTP verification page
+      router.push(`/signup/verify?email=${encodeURIComponent(formData.email)}`);
     } catch (error) {
       setSubmitError(error instanceof Error ? error.message : "Something went wrong");
     } finally {
@@ -258,6 +258,7 @@ export default function SignupPage() {
     </div>
   );
 }
+
 
 
 

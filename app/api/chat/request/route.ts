@@ -1,9 +1,13 @@
 import { NextRequest, NextResponse } from 'next/server';
 import db from '@/lib/prisma';
+import { sendChatNotification } from '@/lib/email';
 
 export async function POST(request: NextRequest) {
   try {
     const { name, email, message } = await request.json();
+
+    // Send email notification
+    await sendChatNotification(name, email, message);
 
     // Create chat request
     const chatRequest = await db.chatRequest.create({

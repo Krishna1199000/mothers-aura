@@ -104,7 +104,7 @@ export default function AdminChatsPage() {
     return () => {
       socketInstance.disconnect();
     };
-  }, [selectedChat]);
+  }, [selectedChat, toast]);
 
   // Load initial data
   useEffect(() => {
@@ -155,7 +155,7 @@ export default function AdminChatsPage() {
     }, 2000);
 
     return () => clearInterval(interval);
-  }, [selectedChat]);
+  }, [selectedChat, toast]);
 
   const handleStatusToggle = async () => {
     try {

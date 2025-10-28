@@ -27,10 +27,10 @@ export const ReviewsSection = () => {
   ];
 
   return (
-    <section className="py-24 bg-white">
+    <section className="py-24 bg-white dark:bg-gray-950">
       <div className="container mx-auto px-4">
         <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black">
+          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black dark:text-white">
             Customer Testimonials
           </h2>
           <div className="flex items-center justify-center space-x-2 mb-4">
@@ -43,7 +43,7 @@ export const ReviewsSection = () => {
                 />
               ))}
             </div>
-            <span className="text-lg text-gray-600">
+            <span className="text-lg text-gray-600 dark:text-gray-300">
               (350+ Reviews)
             </span>
           </div>
@@ -53,13 +53,13 @@ export const ReviewsSection = () => {
           {reviews.map((review) => (
             <div
               key={review.id}
-              className="bg-white p-6 rounded-xl shadow-lg relative"
+              className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg relative border border-transparent dark:border-gray-800"
             >
               {/* Quote Icon */}
-              <Quote size={32} className="text-black mb-4" />
+              <Quote size={32} className="text-black dark:text-white mb-4" />
               
               {/* Review Text */}
-              <blockquote className="text-black mb-6 leading-relaxed text-sm">
+              <blockquote className="text-black dark:text-gray-200 mb-6 leading-relaxed text-sm">
                 {review.review}
               </blockquote>
 
@@ -70,14 +70,14 @@ export const ReviewsSection = () => {
                   alt="Product"
                   width={64}
                   height={64}
-                  className="w-16 h-16 object-cover rounded border-2 border-white shadow-sm"
+                  className="w-16 h-16 object-cover rounded border-2 border-white dark:border-gray-800 shadow-sm"
                 />
               </div>
 
               {/* Reviewer Info */}
               <div className="flex items-center justify-between">
                 <div>
-                  <div className="font-semibold text-black text-sm">
+                  <div className="font-semibold text-black dark:text-white text-sm">
                     {review.name}
                   </div>
                   <div className="flex space-x-1 mt-1">
@@ -92,7 +92,7 @@ export const ReviewsSection = () => {
                 </div>
                 
                 {/* Navigation Arrow */}
-                <ChevronRight size={20} className="text-black" />
+                <ChevronRight size={20} className="text-black dark:text-white" />
               </div>
             </div>
           ))}

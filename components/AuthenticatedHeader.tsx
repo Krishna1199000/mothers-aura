@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import { useSession, signOut } from "next-auth/react";
 // import { useRouter } from "next/navigation";
 import Link from "next/link";
@@ -19,6 +19,9 @@ export const AuthenticatedHeader = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isDarkMode, setIsDarkMode] = useState(false);
+  const [navbarHeight, setNavbarHeight] = useState(56);
+  const utilityRef = useRef<HTMLDivElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -36,6 +39,19 @@ export const AuthenticatedHeader = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  useEffect(() => {
+    const recalc = () => {
+      const util = utilityRef.current;
+      const nav = navRef.current;
+      const utilH = util ? util.getBoundingClientRect().height : 0;
+      const navH = nav ? nav.getBoundingClientRect().height : 0;
+      setNavbarHeight(Math.round(utilH + navH));
+    };
+    recalc();
+    window.addEventListener('resize', recalc);
+    return () => window.removeEventListener('resize', recalc);
   }, []);
 
   const toggleDarkMode = () => {
@@ -66,17 +82,17 @@ export const AuthenticatedHeader = () => {
   return (
     <>
       {/* Utility Header */}
-      <header className="border-b border-border bg-background">
+      <header className="border-b border-border bg-background" ref={utilityRef}>
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Left - Contact */}
             <div className="flex items-center space-x-2">
               <Phone size={16} className="text-muted-foreground" />
               <a 
-                href="tel:877-914-2877" 
+                href="tel:+918657585167" 
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
-                877-914-2877
+                +91 86575 85167
               </a>
             </div>
 
@@ -172,7 +188,7 @@ export const AuthenticatedHeader = () => {
       </header>
 
       {/* Primary Navigation */}
-      <nav className={`sticky top-0 z-40 bg-background border-b border-border transition-all duration-300 ${
+      <nav ref={navRef} className={`sticky top-0 z-40 bg-background border-b border-border transition-all duration-300 ${
         isScrolled ? 'shadow-luxury' : ''
       }`}>
         <div className="container mx-auto px-4">
@@ -191,7 +207,7 @@ export const AuthenticatedHeader = () => {
               >
                 Dashboard
               </Link>
-              <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
+              <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} navbarHeight={navbarHeight} />
             </div>
 
             {/* Mobile menu for authenticated nav */}

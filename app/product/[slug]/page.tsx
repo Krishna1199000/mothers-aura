@@ -373,7 +373,7 @@ export default function ProductDetailPage() {
           <div className="mt-8 text-sm text-muted-foreground">
             <h4 className="font-semibold text-foreground mb-2">Processing Time</h4>
             <p>
-              In stock items will be processed within 1-2 business days. Custom pieces have potential for a rush order, please email info@mothersaura.com to accommodate your request.
+              In stock items will be processed within 1-2 business days. Custom pieces have potential for a rush order, please email admintejas@mothersauradiamonds.com to accommodate your request.
             </p>
           </div>
         </div>

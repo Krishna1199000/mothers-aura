@@ -12,6 +12,7 @@ import {
   Facebook,
   Instagram,
   Twitter,
+  Linkedin,
   Mail,
   Phone,
   MapPin,
@@ -47,13 +48,19 @@ export default function ContactPage() {
     {
       name: "Instagram",
       icon: Instagram,
-      href: "https://instagram.com/mothersaura",
+      href: "https://www.instagram.com/mothers_aura?igsh=MWhydGR5dHZxaXRsdw%3D%3D&utm_source=qr",
       color: "text-pink-600"
+    },
+    {
+      name: "LinkedIn",
+      icon: Linkedin,
+      href: "https://linkedin.com/in/mother-s-aura-6991a7395",
+      color: "text-blue-700"
     },
     {
       name: "Twitter",
       icon: Twitter,
-      href: "https://twitter.com/mothersaura",
+      href: "https://x.com/MOTHERSAURA007",
       color: "text-blue-400"
     }
   ];
@@ -62,26 +69,26 @@ export default function ContactPage() {
     {
       icon: Phone,
       label: "Phone",
-      value: "+44 20 7123 4567",
-      href: "tel:+442071234567"
+      value: "+91 86575 85167",
+      href: "tel:+918657585167"
     },
     {
       icon: Mail,
       label: "Email",
-      value: "info@mothersaura.co.uk",
-      href: "mailto:info@mothersaura.co.uk"
+      value: "admintejas@mothersauradiamonds.com",
+      href: "mailto:admintejas@mothersauradiamonds.com"
     },
     {
       icon: MapPin,
       label: "Address",
-      value: "123 Diamond Street, London, UK",
+      value: "Bhav Residency, Flat 203, 2nd Floor, Bldg No. 09, 2532/17, Near Datta Mandir, Kalher, Thane - 421302, Maharashtra, India",
       href: "https://maps.google.com"
     },
     {
       icon: MessageSquare,
       label: "WhatsApp",
-      value: "+44 20 7123 4567",
-      href: "https://wa.me/442071234567"
+      value: "+91 86575 85167",
+      href: "https://wa.me/918657585167"
     }
   ];
 
@@ -116,6 +123,8 @@ export default function ContactPage() {
                 <Image
                   src="/placeholder.jpg"
                   alt="Company"
+                  width={400}
+                  height={192}
                   className="w-full h-48 object-cover rounded-lg"
                 />
               </CardContent>

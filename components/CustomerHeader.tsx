@@ -69,10 +69,10 @@ export const CustomerHeader = () => {
             <div className="flex items-center space-x-2">
               <Phone size={16} className="text-muted-foreground" />
               <a 
-                href="tel:877-914-2877" 
+                href="tel:+918657585167" 
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
-                877-914-2877
+                +91 86575 85167
               </a>
             </div>
 

@@ -143,6 +143,26 @@ export async function POST(request: NextRequest) {
       },
     });
 
+    // If emailPdf is true, send the invoice email
+    if (invoice.emailPdf && invoice.master.email) {
+      try {
+        const response = await fetch(`${request.nextUrl.origin}/api/admin/invoices/send-email`, {
+          method: 'POST',
+          headers: {
+            'Content-Type': 'application/json',
+            Cookie: request.headers.get('cookie') || '',
+          },
+          body: JSON.stringify({ invoiceId: invoice.id }),
+        });
+
+        if (!response.ok) {
+          console.error('Failed to send invoice email:', await response.text());
+        }
+      } catch (error) {
+        console.error('Error sending invoice email:', error);
+      }
+    }
+
     return NextResponse.json({
       message: "Invoice created successfully",
       invoice,

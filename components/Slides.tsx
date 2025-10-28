@@ -35,7 +35,7 @@ export default function LuxurySplitScreen() {
 
   return (
     <div 
-      className="relative w-full h-screen overflow-hidden select-none bg-white"
+      className="relative w-full h-screen overflow-hidden select-none bg-white dark:bg-gray-950"
       ref={containerRef}
       onMouseMove={handleMouseMove}
       onMouseUp={handleMouseUp}
@@ -44,22 +44,22 @@ export default function LuxurySplitScreen() {
       onTouchEnd={handleMouseUp}
     >
       {/* Right Side - Ring (Base Layer) */}
-      <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100">
-        <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pr-16 md:pr-32 flex flex-col items-center">
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif text-gray-900 mb-12 text-right leading-tight">
-            Create<br />The Perfect<br />Ring
+      <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
+        <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pr-8 md:pr-16 flex flex-col items-end max-w-sm">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-gray-900 dark:text-white mb-6 text-right leading-tight">
+            Classic<br />Diamond Ring
           </h2>
-          <button className="bg-stone-700 hover:bg-stone-800 text-white px-10 py-4 text-sm font-medium tracking-widest transition-all duration-300 hover:shadow-xl">
+          <button className="bg-stone-700 hover:bg-stone-800 text-white px-8 py-3 text-sm font-medium tracking-widest transition-all duration-300 hover:shadow-xl">
             SHOP NOW
           </button>
         </div>
         
         {/* Ring Image - Right Side */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-y-1/2 pointer-events-none">
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <Image
-            src="https://images.unsplash.com/photo-1515562141207-7a88fb7ce338?w=800&q=80" 
-            alt="Ring" 
-            width={256}
+            src="/diamond2.png" 
+            alt="Classic Diamond Ring" 
+            width={256} 
             height={256}
             className="w-48 h-48 md:w-64 md:h-64 object-contain drop-shadow-2xl"
             style={{ filter: 'brightness(1.05)' }}
@@ -67,27 +67,27 @@ export default function LuxurySplitScreen() {
         </div>
       </div>
 
-      {/* Left Side - Diamond (Overlay Layer) */}
+      {/* Left Side - Ring (Overlay Layer) */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-stone-50 to-stone-100"
+        className="absolute inset-0 bg-gradient-to-br from-stone-50 to-stone-100 dark:from-gray-800 dark:to-gray-700"
         style={{ 
           clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)`
         }}
       >
-        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 pl-16 md:pl-32 flex flex-col items-center">
-          <h2 className="text-5xl md:text-6xl lg:text-7xl font-serif text-gray-900 mb-12 text-left leading-tight">
-            Discover Your<br />Prefect Diamond
+        <div className="absolute left-0 top-1/2 transform -translate-y-1/2 pl-8 md:pl-16 flex flex-col items-start max-w-sm">
+          <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-gray-900 dark:text-white mb-6 text-left leading-tight">
+            Premium<br />Diamond Ring
           </h2>
-          <button className="bg-stone-700 hover:bg-stone-800 text-white px-10 py-4 text-sm font-medium tracking-widest transition-all duration-300 hover:shadow-xl">
+          <button className="bg-stone-700 hover:bg-stone-800 text-white px-8 py-3 text-sm font-medium tracking-widest transition-all duration-300 hover:shadow-xl">
             SHOP NOW
           </button>
         </div>
         
-        {/* Diamond Image - Left Side */}
-        <div className="absolute top-1/2 left-1/2 transform -translate-y-1/2 pointer-events-none">
+        {/* Ring Image - Left Side */}
+        <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <Image
-            src="https://images.unsplash.com/photo-1605100804763-247f67b3557e?w=800&q=80" 
-            alt="Diamond" 
+            src="/diamond3.png" 
+            alt="Premium Diamond Ring" 
             width={256}
             height={256}
             className="w-48 h-48 md:w-64 md:h-64 object-contain drop-shadow-2xl opacity-95"
@@ -98,7 +98,7 @@ export default function LuxurySplitScreen() {
 
       {/* Vertical Divider Line */}
       <div 
-        className="absolute top-0 h-full w-px bg-gray-400 opacity-40 pointer-events-none z-20"
+        className="absolute top-0 h-full w-px bg-gray-400 dark:bg-gray-600 opacity-40 pointer-events-none z-20"
         style={{ left: `${sliderPosition}%` }}
       />
 
@@ -109,18 +109,12 @@ export default function LuxurySplitScreen() {
         onMouseDown={handleMouseDown}
         onTouchStart={handleMouseDown}
       >
-        <div className="bg-gray-900 rounded-full w-14 h-14 flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-200 border-2 border-white">
-          <ChevronLeft className="w-5 h-5 text-white absolute left-2" />
-          <ChevronRight className="w-5 h-5 text-white absolute right-2" />
+        <div className="bg-gray-900 dark:bg-white rounded-full w-14 h-14 flex items-center justify-center shadow-2xl hover:scale-110 transition-transform duration-200 border-2 border-white dark:border-gray-900">
+          <ChevronLeft className="w-5 h-5 text-white dark:text-gray-900 absolute left-2" />
+          <ChevronRight className="w-5 h-5 text-white dark:text-gray-900 absolute right-2" />
         </div>
       </div>
 
-      {/* Navigation Dots */}
-      <div className="absolute bottom-10 left-1/2 transform -translate-x-1/2 flex space-x-3 z-20">
-        <button className="w-2.5 h-2.5 rounded-full bg-gray-900" />
-        <button className="w-2.5 h-2.5 rounded-full bg-gray-400 opacity-50" />
-        <button className="w-2.5 h-2.5 rounded-full bg-gray-400 opacity-50" />
-      </div>
     </div>
   );
 }

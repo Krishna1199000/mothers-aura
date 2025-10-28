@@ -41,7 +41,7 @@ export const AnnouncementBar = ({ forceShow = false }: AnnouncementBarProps) => 
   if (!forceShow && status !== "loading" && session?.user) return null;
 
   return (
-    <div className="bg-gray-50 text-gray-800 py-2 px-4 text-sm overflow-hidden">
+    <div className="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 py-2 px-4 text-sm overflow-hidden">
       <div className="container mx-auto">
         <div className="flex justify-center items-center relative">
           <div className="flex items-center min-h-[32px]">
@@ -52,12 +52,13 @@ export const AnnouncementBar = ({ forceShow = false }: AnnouncementBarProps) => 
                 animation: 'fadeInSlide 0.5s ease-in-out'
               }}
             >
-              <p className="text-center">{announcements[currentIndex].text}</p>
+              <p className="text-center truncate max-w-[180px] sm:max-w-none text-xs sm:text-sm">{announcements[currentIndex].text}</p>
               <button 
                 onClick={announcements[currentIndex].buttonAction}
-                className="ml-4 px-3 py-1 border border-gray-300 text-gray-800 text-xs uppercase tracking-wide hover:bg-gray-100 transition-colors"
+                className="ml-2 sm:ml-4 px-2 py-1 sm:px-3 sm:py-1 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-100 text-xs uppercase tracking-wide hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
               >
-                {announcements[currentIndex].buttonText}
+                <span className="hidden sm:inline">{announcements[currentIndex].buttonText}</span>
+                <span className="sm:hidden">SHOP</span>
               </button>
             </div>
           </div>

@@ -1,12 +1,12 @@
 "use client";
 
-import { useState, useEffect } from 'react';
+import { useState, useEffect, useRef } from 'react';
 import Link from 'next/link';
 import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Phone, Search, ShoppingCart, Menu, Heart, MessageCircle } from 'lucide-react';
+import { Phone, Search, ShoppingCart, Menu, Heart, Calendar } from 'lucide-react';
 import { MegaMenu } from './MegaMenu';
 import { SearchPanel } from './SearchPanel';
 import { ModeToggle } from './ModeToggle';
@@ -18,6 +18,9 @@ export const Header = () => {
   const [isSearchOpen, setIsSearchOpen] = useState(false);
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [navbarHeight, setNavbarHeight] = useState(56);
+  const utilityRef = useRef<HTMLDivElement | null>(null);
+  const navRef = useRef<HTMLDivElement | null>(null);
   const { items } = useCart();
   const router = useRouter();
   const { data: session } = useSession();
@@ -34,30 +37,43 @@ export const Header = () => {
     return () => window.removeEventListener('scroll', handleScroll);
   }, []);
 
+  useEffect(() => {
+    const recalc = () => {
+      const util = utilityRef.current;
+      const nav = navRef.current;
+      const utilH = util ? util.getBoundingClientRect().height : 0;
+      const navH = nav ? nav.getBoundingClientRect().height : 0;
+      setNavbarHeight(Math.round(utilH + navH));
+    };
+    recalc();
+    window.addEventListener('resize', recalc);
+    return () => window.removeEventListener('resize', recalc);
+  }, []);
+
   return (
     <>
       {/* Main Header */}
-      <div className="bg-white border-b border-gray-100">
+      <div className="bg-background border-b border-border" ref={utilityRef}>
         <div className="container mx-auto px-4 py-1">
           <div className="flex items-center justify-between">
             {/* Left Section */}
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-1">
-                <span className="text-xs text-gray-600">USD</span>
+                <span className="text-xs text-muted-foreground">USD</span>
                 <span className="text-xs">▼</span>
               </div>
-              <div className="flex items-center space-x-1">
-                <Phone size={14} className="text-gray-600" />
+              <div className="hidden md:flex items-center space-x-1">
+                <Phone size={14} className="text-muted-foreground" />
                 <a 
-                  href="tel:+852-537-5554-1" 
-                  className="text-xs text-gray-600 hover:text-gray-800 transition-colors"
+                  href="tel:+918657585167" 
+                  className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  +852-537-5554-1
+                  +91 86575 85167
                 </a>
               </div>
               <button
                 onClick={() => setIsSearchOpen(!isSearchOpen)}
-                className="text-gray-600 hover:text-gray-800 transition-colors"
+                className="text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Search"
               >
                 <Search size={14} />
@@ -88,36 +104,39 @@ export const Header = () => {
 
             {/* Right Section */}
             <div className="flex items-center space-x-4">
-              <button 
-                onClick={() => setIsCartOpen(true)}
-                className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors" 
-                aria-label="Shopping cart"
-              >
-                <ShoppingCart size={14} />
-                <span className="text-xs">Shopping Cart</span>
-                {totalItems > 0 && (
-                  <span className="bg-gray-800 text-white text-xs rounded-full w-4 h-4 flex items-center justify-center">
-                    {totalItems}
-                  </span>
-                )}
-              </button>
-              
-              <Link 
-                href="/wishlist"
-                className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors"
-              >
-                <Heart size={14} />
-                <span className="text-xs">WishList</span>
-              </Link>
-              
-              <button className="flex items-center space-x-1 text-gray-600 hover:text-gray-800 transition-colors">
-                <MessageCircle size={14} />
-                <span className="text-xs">Live Chat</span>
-              </button>
-
+              <div className="hidden md:flex items-center space-x-4">
+                <button 
+                  onClick={() => setIsCartOpen(true)}
+                  className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-colors" 
+                  aria-label="Shopping cart"
+                >
+                  <ShoppingCart size={14} />
+                  <span className="text-xs">Shopping Cart</span>
+                  {totalItems > 0 && (
+                    <span className="bg-primary text-primary-foreground text-xs rounded-full w-4 h-4 flex items-center justify-center">
+                      {totalItems}
+                    </span>
+                  )}
+                </button>
+                <Link 
+                  href="/wishlist"
+                  className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Heart size={14} />
+                  <span className="text-xs">WishList</span>
+                </Link>
+                <Link 
+                  href="/appointment"
+                  className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-colors"
+                >
+                  <Calendar size={14} />
+                  <span className="text-xs">Book Appointment</span>
+                </Link>
+                <ModeToggle />
+              </div>
               <button
                 onClick={() => setIsMobileMenuOpen(!isMobileMenuOpen)}
-                className="md:hidden text-gray-600 hover:text-gray-800 transition-colors"
+                className="md:hidden text-muted-foreground hover:text-foreground transition-colors"
                 aria-label="Menu"
               >
                 <Menu size={18} />
@@ -128,12 +147,12 @@ export const Header = () => {
       </div>
 
       {/* Navigation */}
-      <nav className={`sticky top-0 z-40 bg-white border-b border-gray-100 transition-all duration-300 ${
+      <nav ref={navRef} className={`sticky top-0 z-40 bg-background border-b border-border transition-all duration-300 ${
         isScrolled ? 'shadow-sm' : ''
       }`}>
         <div className="container mx-auto px-4">
           <div className="py-2">
-            <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
+            <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} navbarHeight={navbarHeight} />
           </div>
         </div>
       </nav>
