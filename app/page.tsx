@@ -9,6 +9,7 @@ import { TrustSection } from '@/components/TrustSection';
 import { FeatureStripe } from '@/components/FeatureStripe';
 import { DiamondShapes } from '@/components/DiamondShapes';
 import { EssentialsSection } from '@/components/EssentialsShapes';
+import { MonthsSection } from '@/components/MonthsSection';
 import { PartnersSection } from '@/components/PartnersSection';
 import { ReviewsSection } from '@/components/ReviewsSection';
 import { ContactSection } from '@/components/ContactSection';
@@ -79,11 +80,7 @@ const Home = () => {
       animate="visible"
       variants={staggerChildren}
     >
-      {/* Progress Bar */}
-      <motion.div
-        className="fixed top-0 left-0 right-0 h-1 bg-primary z-50 origin-left"
-        style={{ scaleX }}
-      />
+      {/* Progress Bar removed per request */}
 
       {/* Skip to content link for accessibility */}
       <a 
@@ -136,6 +133,15 @@ const Home = () => {
           variants={scaleUp}
         >
           <EssentialsSection />
+        </motion.div>
+
+        <motion.div
+          initial="hidden"
+          whileInView="visible"
+          viewport={{ once: true, margin: "-20%" }}
+          variants={fadeInUp}
+        >
+          <MonthsSection />
         </motion.div>
 
         <motion.div

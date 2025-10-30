@@ -133,7 +133,7 @@ export default function VerifyPage() {
 
           <div className="space-y-4">
             <div className="flex justify-center">
-              <OtpInput value={otp} onChange={setOTP} maxLength={6} />
+              <OtpInput value={otp} onChange={setOTP} length={6} />
             </div>
 
             <Button

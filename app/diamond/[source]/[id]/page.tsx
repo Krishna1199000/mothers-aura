@@ -14,6 +14,8 @@ import {
 } from "@/components/ui/dropdown-menu";
 import { useToast } from "@/components/ui/use-toast";
 import Image from "next/image";
+import { RoleBasedHeader } from "@/components/RoleBasedHeader";
+import { Footer } from "@/components/Footer";
 
 interface Diamond {
   id: string;
@@ -154,7 +156,9 @@ export default function DiamondPage() {
   }
 
   return (
-    <div className="min-h-screen bg-background py-8 px-4 sm:px-6 lg:px-8">
+    <div className="min-h-screen bg-background">
+      <RoleBasedHeader />
+      <div className="py-8 px-4 sm:px-6 lg:px-8">
       <div className="max-w-7xl mx-auto">
         <div className="flex justify-between items-start mb-8">
           <div>
@@ -338,7 +342,7 @@ export default function DiamondPage() {
                 <div className="space-y-4">
                   <div className="flex justify-between items-center">
                     <p className="text-muted-foreground">Price per Carat</p>
-                    <p className="font-medium">${diamond.pricePerCarat.toLocaleString()}</p>
+                    <p className="font-medium">${Number(diamond.pricePerCarat ?? (diamond.finalAmount && (diamond.carat || diamond.size) ? (diamond.finalAmount / (diamond.carat || diamond.size)!) : 0)).toLocaleString()}</p>
                   </div>
                   <div className="flex justify-between items-center border-t pt-4">
                     <p className="font-medium">Total Price</p>
@@ -360,6 +364,8 @@ export default function DiamondPage() {
           </div>
         </div>
       </div>
+      </div>
+      <Footer />
     </div>
   );
 }

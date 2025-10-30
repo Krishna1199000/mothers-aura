@@ -17,7 +17,7 @@ import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/lib/contexts/cart-context";
 import { useToast } from "@/hooks/use-toast";
 import { Loader2 } from "lucide-react";
-import { MegaMenu } from "@/components/MegaMenu";
+import { Header } from "@/components/Header";
 
 interface Product {
   id: string;
@@ -106,7 +106,7 @@ export default function ProductDetailPage() {
   if (isLoading) {
     return (
       <div className="min-h-screen">
-        <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
+        <Header />
         <div className="flex items-center justify-center h-[calc(100vh-4rem)]">
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
@@ -117,7 +117,7 @@ export default function ProductDetailPage() {
   if (!product && !isLoading) {
     return (
       <div className="min-h-screen">
-        <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
+        <Header />
         <div className="container mx-auto py-8">
         <div className="text-center mb-8">
           <h1 className="text-2xl font-bold mb-2">Product not found</h1>
@@ -177,7 +177,7 @@ export default function ProductDetailPage() {
 
   return (
     <div className="min-h-screen">
-      <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
+      <Header />
       <div className="container mx-auto px-4 py-8">
       <div className="grid grid-cols-1 md:grid-cols-2 gap-8">
         {/* Left Column - Images */}
@@ -218,8 +218,14 @@ export default function ProductDetailPage() {
                           </div>
                         </div>
                       )}
-                      <div className="image-fallback" style={{ display: 'none' }}>
-                        <Image src={image} alt={`${product.name} - View ${index + 1}`} className="w-full h-full object-cover rounded-lg" />
+                      <div className="image-fallback absolute inset-0" style={{ display: 'none' }}>
+                        <Image 
+                          src={image} 
+                          alt={`${product.name} - View ${index + 1}`} 
+                          fill 
+                          sizes="(max-width: 768px) 100vw, 600px"
+                          className="object-cover rounded-lg" 
+                        />
                       </div>
                     </div>
                   </CarouselItem>
@@ -378,6 +384,46 @@ export default function ProductDetailPage() {
           </div>
         </div>
       </div>
+
+      {/* You May Also Love Section */}
+      {allProducts.length > 0 && (
+        <div className="mt-16 mb-8">
+          <h2 className="text-3xl font-bold mb-8 text-center">You may also love...</h2>
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
+            {allProducts
+              .filter(item => item.id !== product.id) // Exclude current product
+              .slice(0, 8)
+              .map((item) => (
+                <motion.div
+                  key={item.id}
+                  initial={{ opacity: 0, y: 20 }}
+                  whileInView={{ opacity: 1, y: 0 }}
+                  viewport={{ once: true }}
+                  transition={{ duration: 0.3 }}
+                  className="border rounded-lg overflow-hidden hover:shadow-lg transition-shadow cursor-pointer"
+                  onClick={() => router.push(`/product/${item.slug}`)}
+                >
+                  <div className="aspect-square relative">
+                    <Image
+                      src={item.images[0] || '/placeholder.jpg'}
+                      alt={item.name}
+                      fill
+                      className="object-cover hover:scale-105 transition-transform duration-300"
+                      sizes="(max-width: 768px) 100vw, (max-width: 1200px) 50vw, 25vw"
+                    />
+                  </div>
+                  <div className="p-4">
+                    <h3 className="font-semibold line-clamp-2 mb-2">{item.name}</h3>
+                    <p className="text-sm text-muted-foreground mb-2">
+                      {item.shape} • {item.carat}ct • {item.color} • {item.clarity}
+                    </p>
+                    <p className="text-xl font-bold">${item.price.toLocaleString()}</p>
+                  </div>
+                </motion.div>
+              ))}
+          </div>
+        </div>
+      )}
       </div>
     </div>
   );

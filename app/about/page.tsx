@@ -21,7 +21,7 @@ export default function AboutPage() {
     },
     {
       icon: Award,
-      value: "25+",
+      value: "10+",
       label: "Years Experience",
       description: "Expertise in diamond industry"
     },
@@ -62,14 +62,17 @@ export default function AboutPage() {
                 <Image
                   src="/Mothers-aura-Aboutus.jpg"
                   alt="About Mothers Aura"
+                  width={800}
+                  height={600}
+                  sizes="(max-width: 768px) 100vw, 33vw"
                   className="rounded-lg w-full object-cover"
                 />
               </div>
               <div className="w-full md:w-2/3 space-y-4">
-                <h2 className="text-3xl font-bold">Tejas Vilas Bhosle</h2>
+                <h2 className="text-3xl font-bold">Tejas Bhosle</h2>
                 <p className="text-muted-foreground italic">Founder & CEO</p>
                 <p className="text-muted-foreground">
-                  With over 25 years of experience in the diamond industry, John Smith has built
+                  With over 10 years of experience in the diamond industry, Tejas Bhosle has built
                   Mothers Aura Diamonds from the ground up. His passion for excellence and commitment
                   to customer satisfaction has made us one of the most trusted names in the industry.
                 </p>
@@ -120,21 +123,13 @@ export default function AboutPage() {
             </CardHeader>
             <CardContent className="space-y-4">
               <p className="text-muted-foreground">
-                Founded in 1998, Mothers Aura Diamonds has been at the forefront of the diamond industry,
-                providing exceptional quality diamonds and jewelry to customers worldwide. Our journey
-                began with a simple mission: to make premium quality diamonds accessible while
-                maintaining the highest standards of transparency and customer service.
+                Strength. Precision. Aura. Coming from the world of professional lifting and technology, I’ve learned that true strength isn’t just physical — it’s an inner energy, a mindset of focus, discipline, and innovation. That same energy inspires my journey in the world of diamonds. What began as fascination has grown into a passion — a pursuit of brilliance, emotion, and craftsmanship. Each diamond I curate is more than a gemstone; it’s a reflection of the wearer’s aura — their confidence, elegance, and individuality.
               </p>
               <p className="text-muted-foreground">
-                Over the years, we have built strong relationships with leading diamond manufacturers
-                and craftsmen, allowing us to offer an extensive collection of certified diamonds at
-                competitive prices. Our team of experienced gemologists and jewelry designers works
-                tirelessly to ensure that each piece meets our stringent quality standards.
+                With the help of my skilled craftsmen, I can design any diamond in the world, blending human artistry with modern technology to transform imagination into timeless reality. Every piece is handcrafted with precision, certified for authenticity, and made to be treasured for a lifetime.
               </p>
               <p className="text-muted-foreground">
-                Today, we continue to innovate and grow, embracing new technologies while maintaining
-                our commitment to traditional craftsmanship. Our success is measured not just in
-                sales, but in the lasting relationships we build with our customers.
+                For me, this is not about selling luxury — it’s about creating trust, sharing passion, and celebrating human strength, innovation, and beauty through diamonds. I believe true strength is the aura you carry — confident, graceful, and real. That same energy inspires every diamond I create. Every Diamond Reflects Your Aura.
               </p>
             </CardContent>
           </Card>

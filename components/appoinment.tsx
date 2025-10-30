@@ -1,10 +1,12 @@
 import React, { useState, useEffect } from 'react';
 import { Calendar, MapPin, Clock, Phone, Mail, ChevronDown, ChevronRight } from 'lucide-react';
 import Image from 'next/image';
+import { AppointmentForm } from '@/components/AppointmentForm';
 
 export default function DiamondAppointment() {
   const [isVisible, setIsVisible] = useState(false);
   const [hoursExpanded, setHoursExpanded] = useState(false);
+  const [isAppointmentFormOpen, setIsAppointmentFormOpen] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
@@ -28,11 +30,11 @@ export default function DiamondAppointment() {
   const todaySchedule = storeHours.find(schedule => schedule.day === currentDay);
 
   return (
-    <div className="min-h-screen bg-white dark:bg-gray-950 py-20 px-4">
+    <div className="bg-white dark:bg-gray-950 py-16 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className={`text-center mb-16 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <h2 className="text-5xl md:text-6xl font-bold text-black dark:text-white mb-6 tracking-tight">
+        <div className={`text-center mb-12 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          <h2 className="text-5xl md:text-6xl font-bold text-black dark:text-white mb-4 tracking-tight">
             Experience Elegance
             <span className="block mt-2">In Person</span>
           </h2>
@@ -49,11 +51,12 @@ export default function DiamondAppointment() {
               {/* Main Image */}
               <div className="relative overflow-hidden rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 h-full">
                 <Image
-                  src="/mothers-aura-appointment.jpg"
+                  src="/Mothers-aura-appointment.jpg"
                   alt="Mothers Aura Diamond Store"
                   width={800}
                   height={600}
                   className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
+                  unoptimized
                 />
                 
                 {/* Today's Status Badge */}
@@ -124,7 +127,10 @@ export default function DiamondAppointment() {
                 <p className="text-gray-700 dark:text-gray-300 mb-4">
                   Schedule a private consultation with our diamond experts
                 </p>
-                <button className="w-full bg-black dark:bg-white dark:text-black text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200">
+                <button 
+                  onClick={() => setIsAppointmentFormOpen(true)}
+                  className="w-full bg-black dark:bg-white dark:text-black text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200"
+                >
                   Schedule Now
                 </button>
               </div>
@@ -151,11 +157,22 @@ export default function DiamondAppointment() {
                   <br />
                   Maharashtra, India
                 </p>
-                <div className="flex items-center gap-4 mb-4">
+                <div className="flex items-center gap-4 mb-1">
                   <Phone className="text-gray-600 dark:text-gray-300" size={20} />
                   <span className="text-gray-700 dark:text-gray-300">+91 86575 85167</span>
                 </div>
-                <button className="w-full bg-black dark:bg-white dark:text-black text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200">
+                <div className="flex items-center gap-4 mb-4">
+                  <Phone className="text-gray-600 dark:text-gray-300" size={20} />
+                  <span className="text-gray-700 dark:text-gray-300">+91 78418 34563</span>
+                </div>
+                <button 
+                  onClick={() => {
+                    const address = 'Bhav Residency, Kalher, Thane - 421302, Maharashtra, India';
+                    const url = `https://www.google.com/maps/search/?api=1&query=${encodeURIComponent(address)}`;
+                    window.open(url, '_blank');
+                  }}
+                  className="w-full bg-black dark:bg-white dark:text-black text-white font-semibold py-4 rounded-xl transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-200"
+                >
                   Get Directions
                 </button>
               </div>
@@ -227,6 +244,12 @@ export default function DiamondAppointment() {
         </div>
 
       </div>
+
+      {/* Appointment Form Dialog */}
+      <AppointmentForm 
+        isOpen={isAppointmentFormOpen} 
+        onClose={() => setIsAppointmentFormOpen(false)} 
+      />
     </div>
   );
 }

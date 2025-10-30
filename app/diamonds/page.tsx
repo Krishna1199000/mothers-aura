@@ -2,12 +2,15 @@
 
 import { useState, useEffect, Suspense } from "react";
 import { useSearchParams, useRouter } from "next/navigation";
+import { useSession } from "next-auth/react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Badge } from "@/components/ui/badge";
 import { Checkbox } from "@/components/ui/checkbox";
-import { Loader2, FileText, Share2, ChevronDown } from "lucide-react";
+import { Loader2, FileText, Share2, ChevronDown, Search } from "lucide-react";
 import { DiamondSearch } from "@/components/DiamondSearch";
+import { RoleBasedHeader } from "@/components/RoleBasedHeader";
+import { Footer } from "@/components/Footer";
 import {
   Sheet,
   SheetContent,
@@ -42,6 +45,7 @@ interface Diamond {
 }
 
 function DiamondsContent() {
+  const { data: session } = useSession();
   const router = useRouter();
   const searchParams = useSearchParams();
   const { toast } = useToast();
@@ -49,6 +53,32 @@ function DiamondsContent() {
   const [isLoading, setIsLoading] = useState(true);
   const [selectedDiamonds, setSelectedDiamonds] = useState<string[]>([]);
   const [isModifySearchOpen, setIsModifySearchOpen] = useState(false);
+
+  const isAdmin = (session?.user as any)?.role === 'ADMIN';
+
+  const handleDelete = async (id: string, source?: string) => {
+    if (!isAdmin) return;
+    if (!confirm('Are you sure you want to delete this diamond?')) return;
+    try {
+      if (source === 'mothersaura') {
+        const res = await fetch(`/api/admin/inventory/${id}`, { method: 'DELETE' });
+        if (!res.ok) throw new Error('Failed to delete');
+      }
+      // For external sources (previously kyrah/cranberri), persist hide in localStorage and remove from list
+      if (source !== 'mothersaura') {
+        try {
+          const key = 'hiddenDiamonds';
+          const current = JSON.parse(localStorage.getItem(key) || '[]');
+          const entry = `${source}-${id}`;
+          if (!current.includes(entry)) current.push(entry);
+          localStorage.setItem(key, JSON.stringify(current));
+        } catch {}
+      }
+      setDiamonds(prev => prev.filter(d => d.id !== id));
+    } catch (e) {
+      console.error(e);
+    }
+  };
 
   useEffect(() => {
     const fetchDiamonds = async () => {
@@ -63,7 +93,15 @@ function DiamondsContent() {
         }
         
         const data = await response.json();
-        setDiamonds(data);
+        // Apply blacklist for external items so they don't return on refresh
+        let hidden: string[] = [];
+        try {
+          hidden = JSON.parse(localStorage.getItem('hiddenDiamonds') || '[]');
+        } catch {}
+        const filtered = Array.isArray(hidden) && hidden.length
+          ? data.filter((d: any) => !hidden.includes(`${d.source}-${d.id}`))
+          : data;
+        setDiamonds(filtered);
       } catch (error) {
         console.error('Error fetching diamonds:', error);
         toast({
@@ -160,61 +198,120 @@ function DiamondsContent() {
                 <th className="p-3 text-left">Sym</th>
                 <th className="p-3 text-left">Lab</th>
                 <th className="p-3 text-left">Source</th>
-                <th className="p-3 text-left">Status</th>
+                {/* Status hidden per request */}
                 <th className="p-3 text-right">Price/Ct</th>
                 <th className="p-3 text-right">Amount</th>
+                {isAdmin && <th className="p-3 text-right">Actions</th>}
               </tr>
             </thead>
             <tbody>
-              {diamonds.map((diamond, index) => (
-                <tr 
-                  key={`${diamond.source}-${diamond.id}`}
-                  className="border-b hover:bg-muted/50 cursor-pointer"
-                  onClick={() => handleDiamondClick(diamond.id, diamond.source as "mothersaura" | "kyrah")}
-                >
-                  <td className="p-3" onClick={(e) => e.stopPropagation()}>
-                    <Checkbox 
-                      checked={selectedDiamonds.includes(diamond.id)}
-                      onCheckedChange={() => handleCheckboxChange(diamond.id)}
-                    />
-                  </td>
-                  <td className="p-3">{index + 1}</td>
-                  <td className="p-3 font-medium">{diamond.stockId}</td>
-                  <td className="p-3">
-                    {diamond.videoUrl && (
-                      <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
-                        <FileText className="h-4 w-4" />
+              {diamonds.length === 0 ? (
+                <tr>
+                  <td colSpan={isAdmin ? 17 : 16} className="py-16">
+                    <div className="text-center">
+                      <Search size={64} className="mx-auto text-muted-foreground mb-6" />
+                      <h3 className="text-2xl font-bold mb-4">
+                        We currently don&apos;t have this
+                      </h3>
+                      <p className="text-muted-foreground mb-8 text-lg">
+                        All stocks are sold out, but we&apos;d love to help you find what you&apos;re looking for!
+                      </p>
+                      <div className="space-y-4 mb-8">
+                        <div className="flex items-center justify-center gap-3">
+                          <span className="text-primary">📧</span>
+                          <span className="text-muted-foreground">Email us:</span>
+                          <a 
+                            href="mailto:admintejas@mothersauradiamonds.com" 
+                            className="text-primary hover:underline font-medium"
+                          >
+                            admintejas@mothersauradiamonds.com
+                          </a>
+                        </div>
+                        <div className="flex items-center justify-center gap-3">
+                          <span className="text-primary">📞</span>
+                          <span className="text-muted-foreground">Call us:</span>
+                          <div className="flex flex-col gap-1">
+                            <a href="tel:+918657585167" className="text-primary hover:underline font-medium">
+                              +91 86575 85167
+                            </a>
+                            <a href="tel:+917841834563" className="text-primary hover:underline font-medium">
+                              +91 78418 34563
+                            </a>
+                          </div>
+                        </div>
+                        <p className="text-muted-foreground mt-6 text-base">
+                          We&apos;ll arrange it for you and give you something you would also love!
+                        </p>
+                      </div>
+                      <Button
+                        onClick={() => router.push('/products')}
+                        className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+                      >
+                        <FileText className="mr-2 h-5 w-5" />
+                        View Our Whole Collection
                       </Button>
-                    )}
+                    </div>
                   </td>
-                  <td className="p-3">{diamond.shape}</td>
-                  <td className="p-3">{((diamond.carat || diamond.size) || 0).toFixed(2)}</td>
-                  <td className="p-3">{diamond.color}</td>
-                  <td className="p-3">{diamond.clarity}</td>
-                  <td className="p-3">{diamond.cut || "EX"}</td>
-                  <td className="p-3">{diamond.polish}</td>
-                  <td className="p-3">{diamond.symmetry || diamond.sym}</td>
-                  <td className="p-3">{diamond.lab}</td>
-                  <td className="p-3">
-                    <Badge variant={
-                      diamond.source === 'mothersaura' ? 'default' : 
-                      diamond.source === 'cranberri' ? 'outline' : 
-                      'secondary'
-                    }>
-                      {diamond.source === 'mothersaura' ? 'Mothers Aura' : 
-                       diamond.source === 'cranberri' ? 'Cranberri Diamonds' : 
-                       'Kyrah'}
-                    </Badge>
-                  </td>
-                  <td className="p-3">
-                    <Badge variant={diamond.status === "AVAILABLE" ? "default" : "secondary"}>
-                      {diamond.status?.toLowerCase() || "unknown"}
-                    </Badge>
-                  </td>
-                  <td className="p-3 text-right">${(diamond.pricePerCarat || 0).toLocaleString()}</td>
-                  <td className="p-3 text-right">${((diamond.amount || diamond.finalAmount) || 0).toLocaleString()}</td>
                 </tr>
-              ))}
+              ) : (
+                diamonds.map((diamond, index) => (
+                  <tr 
+                    key={`${diamond.source}-${diamond.id}`}
+                    className="border-b hover:bg-muted/50 cursor-pointer"
+                    onClick={() => handleDiamondClick(diamond.id, diamond.source as "mothersaura" | "kyrah")}
+                  >
+                    <td className="p-3" onClick={(e) => e.stopPropagation()}>
+                      <Checkbox 
+                        checked={selectedDiamonds.includes(diamond.id)}
+                        onCheckedChange={() => handleCheckboxChange(diamond.id)}
+                      />
+                    </td>
+                    <td className="p-3">{index + 1}</td>
+                    <td className="p-3 font-medium">{diamond.stockId}</td>
+                    <td className="p-3">
+                      {diamond.videoUrl && (
+                        <Button variant="ghost" size="sm" className="h-8 w-8 p-0">
+                          <FileText className="h-4 w-4" />
+                        </Button>
+                      )}
+                    </td>
+                    <td className="p-3">{diamond.shape}</td>
+                    <td className="p-3">{((diamond.carat || diamond.size) || 0).toFixed(2)}</td>
+                    <td className="p-3">{diamond.color}</td>
+                    <td className="p-3">{diamond.clarity}</td>
+                    <td className="p-3">{diamond.cut || "EX"}</td>
+                    <td className="p-3">{diamond.polish}</td>
+                    <td className="p-3">{diamond.symmetry || diamond.sym}</td>
+                    <td className="p-3">{diamond.lab}</td>
+                    <td className="p-3">
+                      <Badge variant={
+                        diamond.source === 'mothersaura' ? 'default' : 
+                        diamond.source === 'cranberri' ? 'outline' : 
+                        'secondary'
+                      }>
+                        {diamond.source === 'mothersaura' ? 'Mothers Aura' : 
+                         diamond.source === 'cranberri' ? 'Cranberri Diamonds' : 
+                         'Kyrah'}
+                      </Badge>
+                    </td>
+                    {/* Status cell removed */}
+                    <td className="p-3 text-right">${(diamond.pricePerCarat || 0).toLocaleString()}</td>
+                    <td className="p-3 text-right">${((diamond.amount || diamond.finalAmount) || 0).toLocaleString()}</td>
+                    {isAdmin && (
+                      <td className="p-3 text-right" onClick={(e) => e.stopPropagation()}>
+                        <Button 
+                          variant="destructive" 
+                          size="sm" 
+                          onClick={() => handleDelete(diamond.id, diamond.source)}
+                          title={diamond.source !== 'mothersaura' ? 'Removes this external diamond from results' : undefined}
+                        >
+                          Delete
+                        </Button>
+                      </td>
+                    )}
+                  </tr>
+                ))
+              )}
             </tbody>
           </table>
         </div>
@@ -225,15 +322,19 @@ function DiamondsContent() {
 
 export default function DiamondsPage() {
   return (
-    <Suspense fallback={
-      <div className="min-h-screen bg-background flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
-          <p className="text-muted-foreground">Loading diamonds...</p>
+    <div className="min-h-screen bg-background">
+      <RoleBasedHeader />
+      <Suspense fallback={
+        <div className="min-h-[60vh] bg-background flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="h-8 w-8 animate-spin mx-auto mb-4" />
+            <p className="text-muted-foreground">Loading diamonds...</p>
+          </div>
         </div>
-      </div>
-    }>
-      <DiamondsContent />
-    </Suspense>
+      }>
+        <DiamondsContent />
+      </Suspense>
+      <Footer />
+    </div>
   );
 }

@@ -92,6 +92,7 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
 
   const [isPrinting, setIsPrinting] = useState(false);
   const [isDownloading, setIsDownloading] = useState(false);
+  const [isEmailing, setIsEmailing] = useState(false);
 
   const downloadPDF = async () => {
     try {
@@ -105,7 +106,7 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
 
       // Import jsPDF and html2canvas
       const jsPDF = (await import('jspdf')).default;
-      const html2canvas = (await import('html2canvas')).default;
+      const html2canvas = (await import('html2canvas-oklch')).default;
 
       console.log('Libraries loaded successfully');
 
@@ -207,6 +208,139 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
       alert('Error printing. Please try again.');
     } finally {
       setIsPrinting(false);
+    }
+  };
+
+  const sendEmailWithPreviewPdf = async () => {
+    try {
+      setIsEmailing(true);
+      const content = document.getElementById('invoice-content');
+      if (!content) throw new Error('Invoice content not found');
+
+      const jsPDF = (await import('jspdf')).default;
+      const html2canvas = (await import('html2canvas-oklch')).default;
+
+      const contentClone = content.cloneNode(true) as HTMLElement;
+      contentClone.style.position = 'absolute';
+      contentClone.style.top = '-9999px';
+      contentClone.style.left = '-9999px';
+      contentClone.style.width = '210mm';
+      contentClone.style.minHeight = '297mm';
+      contentClone.style.margin = '0';
+      contentClone.style.padding = '15mm';
+      contentClone.style.boxSizing = 'border-box';
+      contentClone.style.backgroundColor = '#ffffff';
+      contentClone.style.fontFamily = 'Arial, sans-serif';
+      
+      // Convert logo image to data URL before cloning
+      const logoImg = content.querySelector('img[alt="Logo"]') as HTMLImageElement;
+      if (logoImg) {
+        try {
+          const logoCanvas = document.createElement('canvas');
+          const ctx = logoCanvas.getContext('2d');
+          if (ctx && logoImg.complete && logoImg.naturalWidth > 0) {
+            logoCanvas.width = logoImg.naturalWidth;
+            logoCanvas.height = logoImg.naturalHeight;
+            ctx.drawImage(logoImg, 0, 0);
+            const logoDataUrl = logoCanvas.toDataURL('image/png');
+            // Replace the logo src in clone with data URL
+            const cloneLogo = contentClone.querySelector('img[alt="Logo"]') as HTMLImageElement;
+            if (cloneLogo) {
+              cloneLogo.src = logoDataUrl;
+            }
+          }
+        } catch (logoError) {
+          console.warn('Could not convert logo to data URL:', logoError);
+        }
+      }
+      
+      // Force all Tailwind CSS classes to render with explicit inline styles to avoid oklch() parsing errors
+      const inlineAllStyles = (element: HTMLElement) => {
+        const allElements = element.querySelectorAll('*');
+        allElements.forEach((el) => {
+          const htmlEl = el as HTMLElement;
+          
+          // Get all computed styles that have actual values
+          const computedStyle = window.getComputedStyle(htmlEl);
+          
+          // List of properties to inline
+          const propertiesToInline = [
+            'backgroundColor', 'color', 'borderColor', 'borderTopColor',
+            'borderRightColor', 'borderBottomColor', 'borderLeftColor'
+          ];
+          
+          propertiesToInline.forEach(prop => {
+            const value = computedStyle.getPropertyValue(prop);
+            if (value && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') {
+              try {
+                // Only set if it's a valid rgb/rgba/hex value
+                if (value.includes('rgb') || value.includes('#')) {
+                  htmlEl.style.setProperty(prop, value);
+                }
+              } catch (e) {
+                // Silently ignore - this means value contains unsupported color function
+                console.log('Skipping color property:', prop, value);
+              }
+            }
+          });
+        });
+      };
+      
+      inlineAllStyles(contentClone);
+      
+      document.body.appendChild(contentClone);
+
+      try {
+        const canvas = await html2canvas(contentClone, { 
+          scale: 2, 
+          useCORS: true, 
+          allowTaint: true, 
+          backgroundColor: '#ffffff', 
+          width: contentClone.offsetWidth, 
+          height: contentClone.offsetHeight, 
+          scrollX: 0, 
+          scrollY: 0, 
+          imageTimeout: 15000,
+          logging: false, // Reduce console noise
+          onclone: (clonedDoc) => {
+            // Suppress oklch warnings by overriding console.error temporarily
+            const originalError = console.error;
+            console.error = (...args) => {
+              if (args[0] && typeof args[0] === 'string' && args[0].includes('oklch')) {
+                return; // Suppress oklch warnings
+              }
+              originalError.apply(console, args);
+            };
+            setTimeout(() => {
+              console.error = originalError; // Restore after canvas render
+            }, 1000);
+          }
+        });
+        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
+        const pageWidth = 210; const pageHeight = 297; const margin = 10;
+        const contentWidth = pageWidth - (margin * 2); const contentHeight = pageHeight - (margin * 2);
+        const scaleX = contentWidth / canvas.width; const scaleY = contentHeight / canvas.height; const scale = Math.min(scaleX, scaleY);
+        const scaledWidth = canvas.width * scale; const scaledHeight = canvas.height * scale;
+        const x = (pageWidth - scaledWidth) / 2; const y = (pageHeight - scaledHeight) / 2;
+        const imgData = canvas.toDataURL('image/png', 1.0);
+        pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
+        const pdfDataUrl = pdf.output('datauristring');
+
+        const res = await fetch('/api/admin/invoices/send-email', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify({ invoiceId: id, pdfData: pdfDataUrl })
+        });
+        if (!res.ok) throw new Error(await res.text());
+        alert('Invoice email sent successfully');
+      } finally {
+        if (contentClone && contentClone.parentNode) contentClone.parentNode.removeChild(contentClone);
+        setIsEmailing(false);
+      }
+    } catch (err) {
+      console.error(err);
+      alert('Failed to send invoice email');
+      setIsEmailing(false);
     }
   };
 
@@ -313,6 +447,13 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
               >
                 <Download className="w-4 h-4 mr-2" />
                 {isDownloading ? 'Downloading...' : 'Download PDF'}
+              </Button>
+              <Button 
+                onClick={sendEmailWithPreviewPdf}
+                variant="default"
+                disabled={isPrinting || isDownloading || isEmailing}
+              >
+                {isEmailing ? 'Sending...' : 'Send Email'}
               </Button>
             </div>
           </div>

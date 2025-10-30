@@ -46,6 +46,10 @@ interface Product {
   certificateUrl?: string;
   threeSixtyView?: string;
   additionalMedia?: string[];
+  priceUSD?: number;
+  priceINR?: number;
+  priceEUR?: number;
+  priceAUD?: number;
 }
 
 export default function UIInventoryPage() {
@@ -62,7 +66,10 @@ export default function UIInventoryPage() {
   const [formData, setFormData] = useState({
     name: "",
     description: "",
-    price: "",
+    priceUSD: "",
+    priceINR: "",
+    priceEUR: "",
+    priceAUD: "",
     shape: "",
     carat: "",
     color: "",
@@ -111,7 +118,10 @@ export default function UIInventoryPage() {
     setFormData({
       name: "",
       description: "",
-      price: "",
+      priceUSD: "",
+      priceINR: "",
+      priceEUR: "",
+      priceAUD: "",
       shape: "",
       carat: "",
       color: "",
@@ -134,7 +144,10 @@ export default function UIInventoryPage() {
     setFormData({
       name: product.name,
       description: product.description || "",
-      price: product.price.toString(),
+      priceUSD: product.priceUSD?.toString() || "",
+      priceINR: product.priceINR?.toString() || "",
+      priceEUR: product.priceEUR?.toString() || "",
+      priceAUD: product.priceAUD?.toString() || "",
       shape: product.shape,
       carat: product.carat.toString(),
       color: product.color,
@@ -165,13 +178,20 @@ export default function UIInventoryPage() {
   };
 
   const handleSaveProduct = async () => {
+    if (!formData.priceUSD || !formData.priceINR || !formData.priceEUR || !formData.priceAUD) {
+      toast({ title: "Error", description: "All currency fields are required", variant: "destructive" });
+      return;
+    }
     try {
       const media = mediaInputs.filter((url) => url.trim() !== "");
       const images = media; // All media will be treated as images
       
       const data = {
         ...formData,
-        price: parseFloat(formData.price),
+        priceUSD: parseFloat(formData.priceUSD),
+        priceINR: parseFloat(formData.priceINR),
+        priceEUR: parseFloat(formData.priceEUR),
+        priceAUD: parseFloat(formData.priceAUD),
         carat: parseFloat(formData.carat),
         stock: parseInt(formData.stock),
         images,
@@ -245,32 +265,32 @@ export default function UIInventoryPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex items-center justify-between mb-8">
-        <div>
+    <div className="container mx-auto py-6 md:py-8 px-4 md:px-6">
+      <div className="flex flex-col md:flex-row md:items-center md:justify-between gap-4 mb-6 md:mb-8">
+        <div className="min-w-0">
           <h1 className="text-3xl font-bold">UI Inventory</h1>
           <p className="text-muted-foreground">
             Manage your products
           </p>
         </div>
-          <div className="flex items-center gap-4">
-            <div className="relative">
-              <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
-              <Input
+        <div className="flex flex-col sm:flex-row items-stretch sm:items-center gap-3 sm:gap-4 w-full md:w-auto">
+          <div className="relative flex-1 sm:flex-initial">
+            <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 h-4 w-4 text-muted-foreground" />
+            <Input
               placeholder="Search products..."
-                value={searchTerm}
-                onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-9"
-              />
-            </div>
-          <Button onClick={handleAddProduct}>
-              <Plus className="h-4 w-4 mr-2" />
-            Add Product
-            </Button>
+              value={searchTerm}
+              onChange={(e) => setSearchTerm(e.target.value)}
+              className="pl-9 w-full sm:w-64"
+            />
           </div>
+          <Button className="w-full sm:w-auto" onClick={handleAddProduct}>
+            <Plus className="h-4 w-4 mr-2" />
+            Add Product
+          </Button>
+        </div>
         </div>
 
-          <div className="rounded-md border">
+          <div className="rounded-md border overflow-x-auto">
             <Table>
               <TableHeader>
                 <TableRow>
@@ -346,17 +366,34 @@ export default function UIInventoryPage() {
               />
             </div>
 
-            <div>
-              <Label>Price *</Label>
-              <Input
-                type="number"
-                value={formData.price}
-                onChange={(e) => setFormData({ ...formData, price: e.target.value })}
-                placeholder="3800"
-              />
+            <div className="grid grid-cols-2 gap-3 mb-2">
+              <div>
+                <Label htmlFor="priceUSD">Price (USD)</Label>
+                <Input type="number" id="priceUSD" value={formData.priceUSD} min="0"
+                  onChange={e => setFormData({ ...formData, priceUSD: e.target.value })}
+                  placeholder="0.00" required />
+              </div>
+              <div>
+                <Label htmlFor="priceINR">Price (INR)</Label>
+                <Input type="number" id="priceINR" value={formData.priceINR} min="0"
+                  onChange={e => setFormData({ ...formData, priceINR: e.target.value })}
+                  placeholder="0.00" required />
+              </div>
+              <div>
+                <Label htmlFor="priceEUR">Price (EUR)</Label>
+                <Input type="number" id="priceEUR" value={formData.priceEUR} min="0"
+                  onChange={e => setFormData({ ...formData, priceEUR: e.target.value })}
+                  placeholder="0.00" required />
+              </div>
+              <div>
+                <Label htmlFor="priceAUD">Price (AUD)</Label>
+                <Input type="number" id="priceAUD" value={formData.priceAUD} min="0"
+                  onChange={e => setFormData({ ...formData, priceAUD: e.target.value })}
+                  placeholder="0.00" required />
+              </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Shape *</Label>
                 <Input
@@ -377,7 +414,7 @@ export default function UIInventoryPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Color *</Label>
                 <Input
@@ -396,7 +433,7 @@ export default function UIInventoryPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-3 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-4">
               <div>
                 <Label>Cut</Label>
                 <Input
@@ -423,7 +460,7 @@ export default function UIInventoryPage() {
               </div>
             </div>
 
-            <div className="grid grid-cols-2 gap-4">
+            <div className="grid grid-cols-1 sm:grid-cols-2 gap-4">
               <div>
                 <Label>Certificate No</Label>
                 <Input
@@ -471,7 +508,7 @@ export default function UIInventoryPage() {
               ))}
             </div>
 
-            <div className="flex justify-end gap-4">
+            <div className="flex flex-col sm:flex-row justify-end gap-3 sm:gap-4">
               <Button variant="outline" onClick={() => setIsModalOpen(false)}>
                 Cancel
               </Button>

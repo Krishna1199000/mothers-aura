@@ -97,7 +97,10 @@ export function CartModal({ open, onClose }: CartModalProps) {
                           <Image
                             src={item.image || "/placeholder.jpg"}
                             alt={item.name}
+                            width={96}
+                            height={96}
                             className="h-full w-full object-cover"
+                            sizes="96px"
                           />
                         </div>
 

@@ -1,5 +1,9 @@
 /** @type {import('tailwindcss').Config} */
 module.exports = {
+  future: {
+    // Force RGB color format instead of oklch for better compatibility with html2canvas
+    hoverOnlyWhenSupported: true,
+  },
   darkMode: ["class"],
   content: [
     './pages/**/*.{ts,tsx}',
@@ -67,6 +71,9 @@ module.exports = {
       },
       boxShadow: {
         'luxury': '0 4px 20px rgba(0, 0, 0, 0.08)',
+      },
+      gridTemplateColumns: {
+        '13': 'repeat(13, minmax(0, 1fr))',
       },
     },
   },

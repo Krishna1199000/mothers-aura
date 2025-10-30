@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
-import { sendInvoiceEmail } from "@/lib/email";
+import { sendInvoiceEmail, sendInvoiceEmailDetailed } from "@/lib/email";
 import { jsPDF } from "jspdf";
 
 const db = prisma as any;
@@ -26,7 +26,8 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const { invoiceId } = await request.json();
+    const body = await request.json();
+    const { invoiceId, pdfData } = body as { invoiceId: string; pdfData?: string };
 
     // Fetch invoice with all related data
     const invoice = await db.invoice.findUnique({
@@ -57,15 +58,26 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    // Generate PDF from invoice data
-    const pdfBuffer = await generateInvoicePDF(invoice);
+    // Prefer client-generated preview PDF if provided; else generate server-side
+    let pdfBuffer: Buffer;
+    if (pdfData && typeof pdfData === 'string') {
+      // Accept either data URL (data:application/pdf;base64,...) or raw base64
+      const base64 = pdfData.includes(',') ? pdfData.split(',')[1] : pdfData;
+      pdfBuffer = Buffer.from(base64, 'base64');
+    } else {
+      // Generate PDF from invoice data (server-side fallback)
+      pdfBuffer = await generateInvoicePDF(invoice);
+    }
 
     // Send email with PDF attachment
-    await sendInvoiceEmail(
-      invoice.master.email,
-      invoice.invoiceNumber,
+    // Send detailed branded email with dynamic fields
+    await sendInvoiceEmailDetailed({
+      to: invoice.master.email,
+      customerName: invoice.master.companyName,
+      invoiceNo: invoice.invoiceNumber,
+      totalAmount: Number(invoice.totalDue || 0),
       pdfBuffer
-    );
+    });
 
     // Update invoice emailPdf status
     await db.invoice.update({

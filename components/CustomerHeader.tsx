@@ -66,13 +66,22 @@ export const CustomerHeader = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Left - Contact */}
-            <div className="flex items-center space-x-2">
-              <Phone size={16} className="text-muted-foreground" />
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <Phone size={16} className="text-muted-foreground" />
+                <a 
+                  href="tel:+918657585167" 
+                  className="text-sm font-medium hover:text-primary transition-colors"
+                >
+                  +91 86575 85167
+                </a>
+              </div>
+              <span className="text-muted-foreground">|</span>
               <a 
-                href="tel:+918657585167" 
+                href="tel:+917841834563" 
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
-                +91 86575 85167
+                +91 78418 34563
               </a>
             </div>
 

@@ -1,6 +1,6 @@
 "use client";
 
-import { useEffect, useRef } from "react";
+import { useMemo } from "react";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { DailySales } from "@/types/reports";
 import {
@@ -111,44 +111,47 @@ export function SalesCharts({
     ],
   };
 
-  const pieChartOptions = {
-    responsive: true,
-    maintainAspectRatio: false,
-    plugins: {
-      legend: {
-        position: "right" as const,
-      },
-      tooltip: {
-        callbacks: {
-          label: (context: any) => {
-            const label = context.label || "";
-            const value = formatCurrency(context.raw);
-            return `${label}: ${value}`;
+  const pieChartOptions = useMemo(() => {
+    const isDesktop = typeof window !== "undefined" && window.matchMedia("(min-width: 768px)").matches;
+    return {
+      responsive: true,
+      maintainAspectRatio: false,
+      plugins: {
+        legend: {
+          position: (isDesktop ? "right" : "bottom") as "right" | "bottom",
+        },
+        tooltip: {
+          callbacks: {
+            label: (context: any) => {
+              const label = context.label || "";
+              const value = formatCurrency(context.raw);
+              return `${label}: ${value}`;
+            },
           },
         },
       },
-    },
-  };
+    };
+  }, []);
 
   return (
     <>
-      <Card className="col-span-4">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Sales Over Time</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[350px]">
+          <div className="h-[260px] sm:h-[320px] md:h-[350px]">
             <Line data={lineChartData} options={lineChartOptions} />
           </div>
         </CardContent>
       </Card>
 
-      <Card className="col-span-3">
+      <Card className="w-full">
         <CardHeader>
           <CardTitle>Sales by Category</CardTitle>
         </CardHeader>
         <CardContent>
-          <div className="h-[350px]">
+          <div className="h-[260px] sm:h-[320px] md:h-[350px]">
             <Pie data={pieChartData} options={pieChartOptions} />
           </div>
         </CardContent>

@@ -86,19 +86,36 @@ export const AuthenticatedHeader = () => {
         <div className="container mx-auto px-4 py-4">
           <div className="flex items-center justify-between">
             {/* Left - Contact */}
-            <div className="flex items-center space-x-2">
-              <Phone size={16} className="text-muted-foreground" />
+            <div className="flex items-center space-x-3">
+              <div className="flex items-center space-x-2">
+                <Phone size={16} className="text-muted-foreground" />
+                <a 
+                  href="tel:+918657585167" 
+                  className="text-sm font-medium hover:text-primary transition-colors"
+                >
+                  +91 86575 85167
+                </a>
+              </div>
+              <span className="text-muted-foreground">|</span>
               <a 
-                href="tel:+918657585167" 
+                href="tel:+917841834563" 
                 className="text-sm font-medium hover:text-primary transition-colors"
               >
-                +91 86575 85167
+                +91 78418 34563
               </a>
             </div>
 
             {/* Center - Logo */}
             <Link href="/dashboard" className="flex items-center">
-              <Image src="/logo.png" alt="Mothers Aura logo" className="w-12 h-12 object-contain" unoptimized />
+              <Image 
+                src="/logo.png" 
+                alt="Mothers Aura logo" 
+                width={48}
+                height={48}
+                sizes="48px"
+                className="object-contain" 
+                unoptimized 
+              />
             </Link>
 
             {/* Right - Search, Dark Mode, Cart, Profile */}

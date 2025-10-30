@@ -216,7 +216,7 @@ export function ForgotPasswordForm() {
         </div>
 
         <div className="flex justify-center py-4">
-          <OtpInput value={otp} onChange={setOTP} maxLength={6} />
+          <OtpInput value={otp} onChange={setOTP} length={6} />
         </div>
 
         <Button

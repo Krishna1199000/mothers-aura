@@ -136,6 +136,8 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
                           <Image
                             src={item.images[0]}
                             alt={item.name}
+                            width={64}
+                            height={64}
                             className="w-full h-full object-cover"
                           />
                         </div>
@@ -193,13 +195,48 @@ export const SearchPanel = ({ isOpen, onClose }: SearchPanelProps) => {
 
           {query.length >= 2 && results.length === 0 && !isLoading && (
             <div className="mt-4 bg-card border border-border rounded-lg p-8 text-center">
-              <Search size={32} className="mx-auto text-muted-foreground mb-2" />
-              <p className="text-muted-foreground">
-                No products found for &quot;{query}&quot;
+              <Search size={48} className="mx-auto text-muted-foreground mb-4" />
+              <h3 className="text-xl font-semibold mb-3">
+                We currently don&apos;t have this
+              </h3>
+              <p className="text-muted-foreground mb-4">
+                All stocks are sold out, but we&apos;d love to help you find what you&apos;re looking for!
               </p>
-              <p className="text-sm text-muted-foreground mt-1">
-                Try searching by product name, category, or description
-              </p>
+              <div className="space-y-3 mb-6">
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-muted-foreground">📧 Email us:</span>
+                  <a 
+                    href="mailto:admintejas@mothersauradiamonds.com" 
+                    className="text-primary hover:underline font-medium"
+                  >
+                    admintejas@mothersauradiamonds.com
+                  </a>
+                </div>
+                <div className="flex items-center justify-center gap-2">
+                  <span className="text-muted-foreground">📞 Call us:</span>
+                  <div className="flex flex-col gap-1">
+                    <a href="tel:+918657585167" className="text-primary hover:underline font-medium">
+                      +91 86575 85167
+                    </a>
+                    <a href="tel:+917841834563" className="text-primary hover:underline font-medium">
+                      +91 78418 34563
+                    </a>
+                  </div>
+                </div>
+                <p className="text-muted-foreground mt-4">
+                  We&apos;ll arrange it for you and give you something you would also love!
+                </p>
+              </div>
+              <button
+                onClick={() => {
+                  onClose();
+                  router.push('/products');
+                }}
+                className="inline-flex items-center justify-center rounded-md bg-primary px-6 py-3 text-sm font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <ExternalLink className="mr-2 h-4 w-4" />
+                View Our Whole Collection
+              </button>
             </div>
           )}
         </div>

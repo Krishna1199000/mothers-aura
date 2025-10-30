@@ -27,10 +27,10 @@ export const ReviewsSection = () => {
   ];
 
   return (
-    <section className="py-24 bg-white dark:bg-gray-950">
+    <section className="py-16 bg-white dark:bg-gray-950">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6 text-black dark:text-white">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-black dark:text-white">
             Customer Testimonials
           </h2>
           <div className="flex items-center justify-center space-x-2 mb-4">

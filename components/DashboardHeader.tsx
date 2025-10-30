@@ -13,21 +13,38 @@ export function DashboardHeader() {
 
   return (
     <header className="sticky top-0 z-50 w-full bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60 border-b">
-      <div className="container flex h-20 items-center px-4">
-        {/* Left side - Logo and Role Label */}
+      {/* Mobile header: 3 columns -> [menu] [logo centered] [actions] */}
+      <div className="container grid grid-cols-3 h-16 items-center px-4 md:px-6 md:hidden">
+        <div className="flex items-center">
+          <RoleBasedNavbar role={userRole as "ADMIN" | "EMPLOYEE" | "CUSTOMER"} showNavigationOnly />
+        </div>
+        <div className="flex justify-center items-center">
+          <RoleBasedNavbar role={userRole as "ADMIN" | "EMPLOYEE" | "CUSTOMER"} showLogoOnly />
+        </div>
+        <div className="flex justify-end items-center gap-2">
+          <ModeToggle />
+          <UserNav />
+        </div>
+      </div>
+
+      {/* Desktop header */}
+      <div className="container hidden md:flex h-20 items-center px-4 md:px-6">
+        {/* Left: Logo */}
         <div className="flex items-center gap-3 flex-shrink-0">
           <RoleBasedNavbar role={userRole as "ADMIN" | "EMPLOYEE" | "CUSTOMER"} showLogoOnly />
         </div>
 
-        {/* Center - Navigation */}
-        <div className="hidden md:flex items-center justify-center flex-1 px-8">
+        {/* Center: Navigation */}
+        <div className="flex items-center justify-center flex-1 px-8">
           <RoleBasedNavbar role={userRole as "ADMIN" | "EMPLOYEE" | "CUSTOMER"} showNavigationOnly />
         </div>
 
-        {/* Right side - Personal items */}
+        {/* Right: Personal items */}
         <div className="flex items-center gap-2 flex-shrink-0">
+          <div className="hidden md:flex items-center gap-2">
           <NotificationBar />
           <CartButton />
+          </div>
           <ModeToggle />
           <UserNav />
         </div>

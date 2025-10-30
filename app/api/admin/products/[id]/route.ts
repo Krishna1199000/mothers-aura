@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@/app/generated/prisma";
+import { revalidatePath } from "next/cache";
 import slugify from "slugify";
 
 const prisma = new PrismaClient();
@@ -94,6 +95,12 @@ export async function PUT(
       },
     });
 
+    // Revalidate relevant pages
+    try {
+      revalidatePath("/");
+      revalidatePath("/products");
+      revalidatePath(`/product/${slug}`);
+    } catch {}
     return NextResponse.json(product);
   } catch (error) {
     console.error("[PRODUCT_PUT]", error);
@@ -119,6 +126,14 @@ export async function DELETE(
     const product = await prisma.product.delete({
       where: { id },
     });
+    // Revalidate relevant pages
+    try {
+      revalidatePath("/");
+      revalidatePath("/products");
+      if ((product as any)?.slug) {
+        revalidatePath(`/product/${(product as any).slug}`);
+      }
+    } catch {}
 
     return NextResponse.json(product);
   } catch (error) {

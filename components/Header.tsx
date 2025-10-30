@@ -7,17 +7,21 @@ import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
 import { Phone, Search, ShoppingCart, Menu, Heart, Calendar } from 'lucide-react';
+import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MegaMenu } from './MegaMenu';
 import { SearchPanel } from './SearchPanel';
 import { ModeToggle } from './ModeToggle';
 import { useCart } from '@/lib/contexts/cart-context';
 import { CartModal } from './cart/CartModal';
+import { AppointmentForm } from './AppointmentForm';
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
   const [isSearchOpen, setIsSearchOpen] = useState(false);
+  const [currency, setCurrency] = useState<string>('USD');
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const [isCartOpen, setIsCartOpen] = useState(false);
+  const [isAppointmentFormOpen, setIsAppointmentFormOpen] = useState(false);
   const [navbarHeight, setNavbarHeight] = useState(56);
   const utilityRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
@@ -35,6 +39,14 @@ export const Header = () => {
 
     window.addEventListener('scroll', handleScroll);
     return () => window.removeEventListener('scroll', handleScroll);
+  }, []);
+
+  // Initialize currency from localStorage
+  useEffect(() => {
+    try {
+      const saved = localStorage.getItem('currency') || 'USD';
+      setCurrency(saved);
+    } catch {}
   }, []);
 
   useEffect(() => {
@@ -58,17 +70,43 @@ export const Header = () => {
           <div className="flex items-center justify-between">
             {/* Left Section */}
             <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-1">
-                <span className="text-xs text-muted-foreground">USD</span>
-                <span className="text-xs">▼</span>
+              <div className="w-24">
+                <Select
+                  value={currency}
+                  onValueChange={(val) => {
+                    setCurrency(val);
+                    try { localStorage.setItem('currency', val); } catch {}
+                    // Broadcast for any listeners (optional future use)
+                    window.dispatchEvent(new CustomEvent('currency:change', { detail: { currency: val } }));
+                  }}
+                >
+                  <SelectTrigger className="h-7 px-2 text-xs">
+                    <SelectValue placeholder="USD" />
+                  </SelectTrigger>
+                  <SelectContent>
+                    <SelectItem value="USD">USD</SelectItem>
+                    <SelectItem value="INR">INR</SelectItem>
+                    <SelectItem value="EUR">EUR</SelectItem>
+                    <SelectItem value="AUD">AUD</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
-              <div className="hidden md:flex items-center space-x-1">
-                <Phone size={14} className="text-muted-foreground" />
+              <div className="hidden md:flex items-center space-x-3">
+                <div className="flex items-center space-x-1">
+                  <Phone size={14} className="text-muted-foreground" />
+                  <a 
+                    href="tel:+918657585167" 
+                    className="text-xs text-muted-foreground hover:text-foreground transition-colors"
+                  >
+                    +91 86575 85167
+                  </a>
+                </div>
+                <span className="text-xs text-muted-foreground">|</span>
                 <a 
-                  href="tel:+918657585167" 
+                  href="tel:+917841834563" 
                   className="text-xs text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  +91 86575 85167
+                  +91 78418 34563
                 </a>
               </div>
               <button
@@ -125,13 +163,13 @@ export const Header = () => {
                   <Heart size={14} />
                   <span className="text-xs">WishList</span>
                 </Link>
-                <Link 
-                  href="/appointment"
+                <button 
+                  onClick={() => setIsAppointmentFormOpen(true)}
                   className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Calendar size={14} />
                   <span className="text-xs">Book Appointment</span>
-                </Link>
+                </button>
                 <ModeToggle />
               </div>
               <button
@@ -162,6 +200,12 @@ export const Header = () => {
 
       {/* Cart Modal */}
       <CartModal open={isCartOpen} onClose={() => setIsCartOpen(false)} />
+
+      {/* Appointment Form */}
+      <AppointmentForm 
+        isOpen={isAppointmentFormOpen} 
+        onClose={() => setIsAppointmentFormOpen(false)} 
+      />
     </>
   );
 };

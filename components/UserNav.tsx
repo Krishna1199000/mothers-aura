@@ -18,7 +18,6 @@ import {
   LogOut,
   Sun,
   Moon,
-  UserX,
 } from "lucide-react";
 import Link from "next/link";
 
@@ -55,25 +54,25 @@ export function UserNav() {
         </DropdownMenuLabel>
         <DropdownMenuSeparator />
         <DropdownMenuItem asChild>
-          <Link href="/profile">
+          <Link href="/profile#account">
             <User className="mr-2 h-4 w-4" />
             Profile
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/profile/change-password">
+          <Link href="/profile#password">
             <Lock className="mr-2 h-4 w-4" />
             Change Password
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/profile/settings">
+          <Link href="/profile#account">
             <Settings className="mr-2 h-4 w-4" />
             Settings
           </Link>
         </DropdownMenuItem>
         <DropdownMenuItem asChild>
-          <Link href="/profile/report-bug">
+          <Link href="/profile#bug">
             <Bug className="mr-2 h-4 w-4" />
             Report Bug
           </Link>
@@ -90,12 +89,6 @@ export function UserNav() {
           {theme === "light" ? "Dark Mode" : "Light Mode"}
         </DropdownMenuItem>
         <DropdownMenuSeparator />
-        <DropdownMenuItem asChild className="text-red-600">
-          <Link href="/profile/delete-account">
-            <UserX className="mr-2 h-4 w-4" />
-            Delete Account
-          </Link>
-        </DropdownMenuItem>
         <DropdownMenuItem
           className="text-red-600"
           onClick={() => signOut({ callbackUrl: "/" })}

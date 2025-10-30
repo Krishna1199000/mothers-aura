@@ -438,99 +438,7 @@ model ChatRequest {
   source      String?   // Where the request came from (e.g., "chat_widget", "contact_form")
 }
 
-// -----------------
-// Kyrah API models
-// -----------------
-
-model KyrahDiamond {
-  id            String   @id @default(uuid())
-  stockId       String   @unique
-  shape         String
-  carat         Float
-  color         String
-  clarity       String
-  cut           String?
-  polish        String
-  symmetry      String
-  certificateNo String?
-  lab           String
-  pricePerCarat Float
-  amount        Float
-  imageUrl      String?
-  videoUrl      String?
-  certificateUrl String?
-  measurement   String?
-  length        Float?
-  width         Float?
-  height        Float?
-  depth         Float?
-  table         Float?
-  ratio         Float?
-  status        String
-  comment       String?
-  girdle        String?
-  culet         String?
-  crownAngle    Float?
-  crownHeight   String?
-  pavilionAngle Float?
-  pavilionDepth Float?
-  fancyIntensity String?
-  fancyOvertone String?
-  fancyColor    String?
-  location      String?
-  inscription   String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
-}
-
-model KyrahSync {
-  id            String   @id @default(uuid())
-  lastSyncAt    DateTime
-  status        String
-  message       String?
-  diamondsCount Int      @default(0)
-  processed     Int      @default(0)
-  totalDiamonds Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt @default(now())
-}
-
-// -----------------
-// Cranberri API models
-// -----------------
-
-model CranberriDiamond {
-  id            String   @id @default(uuid())
-  stockId       String   @unique
-  shape         String
-  size          Float
-  color         String
-  clarity       String
-  cut           String?
-  polish        String
-  sym           String
-  lab           String
-  certificateNo String?
-  pricePerCarat Float
-  finalAmount   Float
-  imageUrl      String?
-  certUrl       String?
-  videoUrl      String?
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt @default(now())
-}
-
-model CranberriSync {
-  id            String   @id @default(uuid())
-  lastSyncAt    DateTime
-  status        String
-  message       String?
-  diamondsCount Int      @default(0)
-  processed     Int      @default(0)
-  totalDiamonds Int      @default(0)
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt @default(now())
-}
+// Kyrah and Cranberri models removed
 
 // -----------------
 // UI Inventory models
@@ -549,7 +457,11 @@ model Product {
   name            String
   slug            String    @unique
   description     String?
-  price           Float
+  price           Float?    // Deprecated - Use priceUSD etc instead
+  priceUSD        Float     @default(0)
+  priceINR        Float     @default(0)
+  priceEUR        Float     @default(0)
+  priceAUD        Float     @default(0)
   shape           String
   carat           Float
   color           String

@@ -2,7 +2,7 @@
 
 import { useState } from "react";
 import { useForm } from "react-hook-form";
-import { Loader2 } from "lucide-react";
+import { Loader2, Eye, EyeOff } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
@@ -19,6 +19,8 @@ export function ChangePasswordForm() {
   const [isLoading, setIsLoading] = useState(false);
   const [showOTP, setShowOTP] = useState(false);
   const [otp, setOTP] = useState("");
+  const [showNewPassword, setShowNewPassword] = useState(false);
+  const [showConfirmPassword, setShowConfirmPassword] = useState(false);
   const { toast } = useToast();
 
   const {
@@ -93,7 +95,7 @@ export function ChangePasswordForm() {
 
   if (showOTP) {
     return (
-      <div className="space-y-4">
+      <form onSubmit={handleSubmit(onSubmit)} className="space-y-4">
         <div className="text-center">
           <h3 className="text-lg font-semibold">Verify Your Email</h3>
           <p className="text-sm text-muted-foreground">
@@ -102,18 +104,76 @@ export function ChangePasswordForm() {
         </div>
 
         <div className="flex justify-center py-4">
-          <OtpInput value={otp} onChange={setOTP} maxLength={6} />
+          <OtpInput value={otp} onChange={setOTP} length={6} />
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="newPassword">New Password</Label>
+          <div className="relative">
+            <Input
+              id="newPassword"
+              type={showNewPassword ? "text" : "password"}
+              placeholder="Enter new password"
+              {...register("newPassword", {
+                required: "New password is required",
+                minLength: {
+                  value: 8,
+                  message: "Password must be at least 8 characters",
+                },
+              })}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowNewPassword(!showNewPassword)}
+              className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+            >
+              {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          {errors.newPassword && (
+            <p className="text-sm text-red-500">{errors.newPassword.message}</p>
+          )}
+        </div>
+
+        <div className="space-y-2">
+          <Label htmlFor="confirmPassword">Confirm Password</Label>
+          <div className="relative">
+            <Input
+              id="confirmPassword"
+              type={showConfirmPassword ? "text" : "password"}
+              placeholder="Confirm new password"
+              {...register("confirmPassword", {
+                required: "Please confirm your password",
+                validate: (value) =>
+                  value === newPassword || "Passwords do not match",
+              })}
+              className="pr-10"
+            />
+            <button
+              type="button"
+              onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+              className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+            >
+              {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+            </button>
+          </div>
+          {errors.confirmPassword && (
+            <p className="text-sm text-red-500">
+              {errors.confirmPassword.message}
+            </p>
+          )}
         </div>
 
         <Button
-          onClick={handleSubmit(onSubmit)}
+          type="submit"
           className="w-full"
           disabled={isLoading || otp.length !== 6}
         >
           {isLoading && <Loader2 className="mr-2 h-4 w-4 animate-spin" />}
           Verify & Change Password
         </Button>
-      </div>
+      </form>
     );
   }
 
@@ -138,18 +198,28 @@ export function ChangePasswordForm() {
 
       <div className="space-y-2">
         <Label htmlFor="newPassword">New Password</Label>
-        <Input
-          id="newPassword"
-          type="password"
-          placeholder="Enter new password"
-          {...register("newPassword", {
-            required: "New password is required",
-            minLength: {
-              value: 8,
-              message: "Password must be at least 8 characters",
-            },
-          })}
-        />
+        <div className="relative">
+          <Input
+            id="newPassword"
+            type={showNewPassword ? "text" : "password"}
+            placeholder="Enter new password"
+            {...register("newPassword", {
+              required: "New password is required",
+              minLength: {
+                value: 8,
+                message: "Password must be at least 8 characters",
+              },
+            })}
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowNewPassword(!showNewPassword)}
+            className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+          >
+            {showNewPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
         {errors.newPassword && (
           <p className="text-sm text-red-500">{errors.newPassword.message}</p>
         )}
@@ -157,16 +227,26 @@ export function ChangePasswordForm() {
 
       <div className="space-y-2">
         <Label htmlFor="confirmPassword">Confirm Password</Label>
-        <Input
-          id="confirmPassword"
-          type="password"
-          placeholder="Confirm new password"
-          {...register("confirmPassword", {
-            required: "Please confirm your password",
-            validate: (value) =>
-              value === newPassword || "Passwords do not match",
-          })}
-        />
+        <div className="relative">
+          <Input
+            id="confirmPassword"
+            type={showConfirmPassword ? "text" : "password"}
+            placeholder="Confirm new password"
+            {...register("confirmPassword", {
+              required: "Please confirm your password",
+              validate: (value) =>
+                value === newPassword || "Passwords do not match",
+            })}
+            className="pr-10"
+          />
+          <button
+            type="button"
+            onClick={() => setShowConfirmPassword(!showConfirmPassword)}
+            className="absolute right-3 top-3 text-muted-foreground hover:text-foreground"
+          >
+            {showConfirmPassword ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+          </button>
+        </div>
         {errors.confirmPassword && (
           <p className="text-sm text-red-500">
             {errors.confirmPassword.message}

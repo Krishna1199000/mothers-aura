@@ -47,8 +47,6 @@ export function ChatWidget({ className }: ChatWidgetProps) {
   const [isAdminTyping, setIsAdminTyping] = useState(false);
   const [chatId, setChatId] = useState<string | null>(null);
   const [showOptions, setShowOptions] = useState(false);
-  const [showFAQ, setShowFAQ] = useState(false);
-  const [showChatOptions, setShowChatOptions] = useState(false);
   const [selectedFAQ, setSelectedFAQ] = useState<string | null>(null);
   const messagesEndRef = useRef<HTMLDivElement>(null);
   const typingTimeoutRef = useRef<NodeJS.Timeout | null>(null);
@@ -115,10 +113,12 @@ export function ChatWidget({ className }: ChatWidgetProps) {
     };
   }, []);
 
-  // Scroll to bottom on new messages
+  // Scroll to bottom on new messages only if chat is active and FAQ is not shown
   useEffect(() => {
-    messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
-  }, [messages]);
+    if (chatStep === 'message' && !showOptions) {
+      messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
+    }
+  }, [messages, chatStep, showOptions]);
 
   // Check admin status on mount
   useEffect(() => {
@@ -332,8 +332,8 @@ export function ChatWidget({ className }: ChatWidgetProps) {
             try {
               const activeRes = await fetch('/api/chat/active');
               if (activeRes.ok) {
-                const activeData = await activeRes.json();
-                const match = (activeData.chats || []).find((c: any) => c.customerEmail === formData.email);
+              const activeData = await activeRes.json();
+              const match = (activeData.chats || []).find((c: any) => c.customerEmail === formData.email);
                 if (match?.id) {
                   setChatId(match.id);
                   localStorage.setItem('chatId', match.id);
@@ -439,10 +439,10 @@ export function ChatWidget({ className }: ChatWidgetProps) {
               exit={{ opacity: 0, y: 20 }}
               className="absolute bottom-16 right-0"
             >
-              <Card className="w-[350px] max-h-[600px] shadow-xl">
-                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-4">
-                  <CardTitle className="text-xl font-semibold">
-                    Chat with Us
+              <Card className="w-[340px] max-h-[520px] shadow-xl rounded-xl overflow-hidden">
+                <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 bg-primary">
+                  <CardTitle className="text-xl font-semibold text-primary-foreground">
+                    Live Support
                   </CardTitle>
                   <div className="flex items-center gap-2">
                     <Button
@@ -450,6 +450,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                       size="icon"
                       onClick={resetChat}
                       title="Start new chat"
+                      className="text-primary-foreground hover:bg-primary-foreground/20"
                     >
                       <RefreshCw className="h-4 w-4" />
                     </Button>
@@ -457,6 +458,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsMinimized(!isMinimized)}
+                      className="text-primary-foreground hover:bg-primary-foreground/20"
                     >
                       <MinusCircle className="h-4 w-4" />
                     </Button>
@@ -464,13 +466,14 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                       variant="ghost"
                       size="icon"
                       onClick={() => setIsOpen(false)}
+                      className="text-primary-foreground hover:bg-primary-foreground/20"
                     >
                       <X className="h-4 w-4" />
                     </Button>
                   </div>
                 </CardHeader>
 
-                <CardContent className={`p-4 max-h-[500px] overflow-y-auto ${isMinimized ? 'hidden' : ''}`}>
+                <CardContent className={`p-3 max-h-[440px] overflow-y-auto ${isMinimized ? 'hidden' : ''}`}>
                   {isLoading ? (
                     <div className="flex items-center justify-center py-8">
                       <Loader2 className="h-8 w-8 animate-spin" />
@@ -518,206 +521,165 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                     </form>
                   ) : (
                     // Chat Interface
-                    <div className="space-y-4">
-                      <div className="flex items-center gap-2">
+                    <div className="space-y-3">
+                      <div className="flex items-center justify-between pb-2 border-b">
                         <Badge variant={adminStatus === 'AVAILABLE' ? 'default' : 'secondary'}>
                           {adminStatus === 'AVAILABLE' ? 'Online' : 'Offline'}
                         </Badge>
-                      </div>
-
-                      {/* Quick Options */}
-                      <div className="space-y-2">
-                        <div className="text-sm font-medium text-muted-foreground">Quick Options:</div>
-                        <div className="grid grid-cols-1 gap-2">
+                        {/* Icon toolbar */}
+                        <div className="flex items-center gap-1.5">
                           <Button
-                            variant="outline"
-                            size="sm"
-                            className="justify-start"
-                            onClick={() => {
-                              setShowOptions(!showOptions);
-                              setShowChatOptions(false);
-                              setShowFAQ(false);
-                            }}
-                          >
-                            <HelpCircle className="h-4 w-4 mr-2" />
-                            FAQ
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="justify-start"
-                            onClick={() => {
-                              window.open('tel:+852-537-5554-1');
-                              setShowChatOptions(false);
-                              setShowFAQ(false);
-                            }}
-                          >
-                            <Phone className="h-4 w-4 mr-2" />
-                            Call Us: +852-537-5554-1
-                          </Button>
-                          <Button
-                            variant="outline"
-                            size="sm"
-                            className="justify-start"
+                            variant={chatStep === 'message' && !showOptions ? 'default' : 'ghost'}
+                            size="icon"
+                            title="Start live chat"
                             onClick={() => {
                               setShowOptions(false);
-                              setShowFAQ(false);
-                              setShowChatOptions(!showChatOptions);
+                              setChatStep('message');
                             }}
                           >
-                            <MessageCircle className="h-4 w-4 mr-2" />
-                            Chat with Us
+                            <MessageCircle className="h-5 w-5" />
+                          </Button>
+                          <Button
+                            variant={showOptions ? 'default' : 'ghost'}
+                            size="icon"
+                            title="Browse FAQ"
+                            onClick={() => {
+                              setShowOptions((v) => !v);
+                              if (showOptions) {
+                                setChatStep('message');
+                              }
+                            }}
+                          >
+                            <HelpCircle className="h-5 w-5" />
+                          </Button>
+                          <Button
+                            variant="ghost"
+                            size="icon"
+                            title="Call us: +852-537-5554-1"
+                            onClick={() => {
+                              window.open('tel:+852-537-5554-1');
+                              setShowOptions(false);
+                            }}
+                          >
+                            <Phone className="h-5 w-5" />
                           </Button>
                         </div>
                       </div>
 
-                      {/* Chat Options - Show when Chat with Us is clicked */}
-                      {showChatOptions && (
-                        <div className="space-y-2 p-3 bg-muted rounded-lg">
-                          <div className="text-sm font-medium">Choose how you&apos;d like to get help:</div>
-                          <div className="grid grid-cols-1 gap-2">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="justify-start"
+                      {/* FAQ Section */}
+                      {showOptions && (
+                        <div className="space-y-3 p-4 bg-gradient-to-br from-blue-50 to-indigo-50 dark:from-blue-950/20 dark:to-indigo-950/20 rounded-lg border border-blue-200 dark:border-blue-800">
+                          <div className="flex items-center justify-between">
+                            <h3 className="text-sm font-semibold text-blue-900 dark:text-blue-100">Frequently Asked Questions</h3>
+                            {/* <Button
+                              variant="ghost"
+                              size="icon"
                               onClick={() => {
-                                setShowChatOptions(false);
-                                setShowOptions(true);
-                                setShowFAQ(false);
+                                setShowOptions(false);
+                                setChatStep('message');
                               }}
                             >
-                              <HelpCircle className="h-4 w-4 mr-2" />
-                              Browse FAQ
-                            </Button>
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="justify-start"
-                              onClick={() => {
-                                window.open('tel:+852-537-5554-1');
-                                setShowChatOptions(false);
-                              }}
-                            >
-                              <Phone className="h-4 w-4 mr-2" />
-                              Call Us: +852-537-5554-1
-                            </Button>
+                              <X className="h-4 w-4" />
+                            </Button> */}
+                          </div>
+                          <ScrollArea className="max-h-[240px] pr-2">
+                            <div className="space-y-2 text-sm">
+                              {faqData.map((faq, index) => (
+                                <div key={index} className="border-b border-blue-200 dark:border-blue-800 pb-2 last:border-b-0">
+                                  <div 
+                                    className="cursor-pointer hover:text-blue-700 dark:hover:text-blue-300 font-medium text-blue-900 dark:text-blue-100 transition-colors"
+                                    onClick={() => setSelectedFAQ(selectedFAQ === faq.question ? null : faq.question)}
+                                  >
+                                    • {faq.question}
+                                  </div>
+                                  {selectedFAQ === faq.question && (
+                                    <div className="mt-2 p-3 bg-white dark:bg-blue-900/30 rounded-md text-gray-700 dark:text-gray-300 text-xs border border-blue-100 dark:border-blue-800">
+                                      {faq.answer}
+                                    </div>
+                                  )}
+                                </div>
+                              ))}
+                            </div>
+                          </ScrollArea>
+                          {/* <div className="pt-2 border-t border-blue-200 dark:border-blue-800">
                             <Button
                               variant="default"
                               size="sm"
-                              className="justify-start"
+                              className="w-full"
                               onClick={() => {
-                                setShowChatOptions(false);
                                 setShowOptions(false);
-                                setShowFAQ(false);
                                 setChatStep('message');
                               }}
                             >
                               <MessageCircle className="h-4 w-4 mr-2" />
-                              Start Live Chat
+                              Start live chat
                             </Button>
-                          </div>
-                        </div>
-                      )}
-
-                      {/* FAQ Options */}
-                      {showOptions && (
-                        <div className="space-y-2 p-3 bg-muted rounded-lg">
-                          <div className="text-sm font-medium">Frequently Asked Questions:</div>
-                          <div className="space-y-2 text-sm">
-                            {faqData.map((faq, index) => (
-                              <div key={index} className="border-b border-gray-200 pb-2 last:border-b-0">
-                                <div 
-                                  className="cursor-pointer hover:text-primary font-medium"
-                                  onClick={() => setSelectedFAQ(selectedFAQ === faq.question ? null : faq.question)}
-                                >
-                                  • {faq.question}
-                                </div>
-                                {selectedFAQ === faq.question && (
-                                  <div className="mt-2 p-2 bg-white rounded text-gray-700 text-xs">
-                                    {faq.answer}
-                                  </div>
-                                )}
-                              </div>
-                            ))}
-                          </div>
-                          <div className="pt-2 border-t border-gray-200">
-                            <Button
-                              variant="outline"
-                              size="sm"
-                              className="w-full justify-start"
-                              onClick={() => {
-                                setShowOptions(false);
-                                setShowChatOptions(true);
-                                setShowFAQ(false);
-                              }}
-                            >
-                              <MessageCircle className="h-4 w-4 mr-2" />
-                              Still need help? Chat with Us
-                            </Button>
-                          </div>
+                          </div> */}
                         </div>
                       )}
 
                       {/* Chat Interface - Only show when chat is active */}
-                      {chatStep === 'message' && (
+                      {chatStep === 'message' && !showOptions && (
                         <>
-                          <ScrollArea className="h-[250px] pr-4">
-                        <div className="space-y-4">
-                          {messages.map((message) => (
-                            <div
-                              key={message.id}
-                              className={`flex ${
-                                message.senderType === 'CUSTOMER' ? 'justify-end' : 'justify-start'
-                              }`}
-                            >
-                              <div
-                                className={`rounded-lg px-4 py-2 max-w-[80%] ${
-                                  message.senderType === 'CUSTOMER'
-                                    ? 'bg-primary text-primary-foreground'
-                                    : 'bg-muted'
-                                }`}
-                              >
-                                <p className="text-sm">{message.content}</p>
-                                <p className="text-xs opacity-70 mt-1">
-                                  {new Date(message.createdAt).toLocaleTimeString()}
-                                </p>
-                              </div>
+                          <ScrollArea className="h-[200px] pr-2">
+                            <div className="space-y-3">
+                              {messages.map((message) => (
+                                <div
+                                  key={message.id}
+                                  className={`flex ${
+                                    message.senderType === 'CUSTOMER' ? 'justify-end' : 'justify-start'
+                                  }`}
+                                >
+                                  <div
+                                    className={`rounded-lg px-4 py-2 max-w-[80%] ${
+                                      message.senderType === 'CUSTOMER'
+                                        ? 'bg-primary text-primary-foreground'
+                                        : 'bg-muted'
+                                    }`}
+                                  >
+                                    <p className="text-sm">{message.content}</p>
+                                    <p className="text-xs opacity-70 mt-1">
+                                      {new Date(message.createdAt).toLocaleTimeString()}
+                                    </p>
+                                  </div>
+                                </div>
+                              ))}
+                              {isAdminTyping && (
+                                <div className="flex justify-start">
+                                  <div className="bg-muted rounded-lg px-4 py-2">
+                                    <p className="text-sm">Admin is typing...</p>
+                                  </div>
+                                </div>
+                              )}
+                              <div ref={messagesEndRef} />
                             </div>
-                          ))}
-                          {isAdminTyping && (
-                            <div className="flex justify-start">
-                              <div className="bg-muted rounded-lg px-4 py-2">
-                                <p className="text-sm">Admin is typing...</p>
-                              </div>
-                            </div>
-                          )}
-                          <div ref={messagesEndRef} />
-                        </div>
-                      </ScrollArea>
+                          </ScrollArea>
 
-                      <div className="flex items-center gap-2">
-                        <Input
+                          <div className="flex items-center gap-2 pt-2">
+                            <Input
                               placeholder="Type your message..."
                               type="text"
-                          value={newMessage}
-                          onChange={(e) => {
-                            setNewMessage(e.target.value);
-                            handleTyping();
-                          }}
-                          onKeyPress={(e) => {
-                            if (e.key === 'Enter') {
-                              handleSendMessage();
-                            }
-                          }}
-                        />
-                        <Button
-                          size="icon"
-                          onClick={handleSendMessage}
+                              className="flex-1"
+                              value={newMessage}
+                              onChange={(e) => {
+                                setNewMessage(e.target.value);
+                                handleTyping();
+                              }}
+                              onKeyPress={(e) => {
+                                if (e.key === 'Enter') {
+                                  handleSendMessage();
+                                }
+                              }}
+                            />
+                            <Button
+                              size="icon"
+                              onClick={handleSendMessage}
                               disabled={!newMessage.trim()}
-                        >
-                          <Send className="h-4 w-4" />
-                        </Button>
-                      </div>
+                              className="flex-shrink-0"
+                            >
+                              <Send className="h-4 w-4" />
+                            </Button>
+                          </div>
                         </>
                       )}
                     </div>

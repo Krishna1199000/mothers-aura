@@ -8,7 +8,7 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Badge } from "@/components/ui/badge";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2 } from "lucide-react";
-import { DIAMOND_SHAPES } from "@/lib/constants/diamond-shapes";
+import { MAIN_DIAMOND_SHAPES, OTHER_DIAMOND_SHAPES, DIAMOND_SHAPES } from "@/lib/constants/diamond-shapes";
 import Image from "next/image";
 
 interface Diamond {
@@ -39,6 +39,7 @@ interface DiamondSearchProps {
 export const DiamondSearch = ({ className, initialFilters = {} }: DiamondSearchProps) => {
   const { toast } = useToast();
   const [isLoading, setIsLoading] = useState(false);
+  const [showOthers, setShowOthers] = useState(false);
   const [filters, setFilters] = useState(() => {
     // Parse initial filters
     const shapes = initialFilters.shape ? initialFilters.shape.split(',') : [];
@@ -161,30 +162,69 @@ export const DiamondSearch = ({ className, initialFilters = {} }: DiamondSearchP
           {/* Diamond Shapes */}
           <div>
             <h3 className="text-lg font-semibold mb-4">Diamond Shapes</h3>
-            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-11 gap-3">
-              {DIAMOND_SHAPES.map((shape) => (
+            <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-13 gap-3">
+              {MAIN_DIAMOND_SHAPES.map((shape) => (
                 <button
                   key={shape.id}
-                  onClick={() => toggleFilter("shapes", shape.id)}
+                  onClick={() => {
+                    if (shape.id === 'OTHERS') {
+                      setShowOthers(!showOthers);
+                    } else {
+                      toggleFilter("shapes", shape.id);
+                    }
+                  }}
                   className={`flex flex-col items-center p-3 border rounded-lg transition-all ${
                     filters.shapes.includes(shape.id)
                       ? "border-blue-500 bg-blue-50 text-blue-700"
                       : "border-gray-200 hover:border-gray-300"
                   }`}
                 >
-                  <div className="w-12 h-12 flex items-center justify-center border rounded-lg mb-2 relative">
+                  <div className="w-12 h-12 flex items-center justify-center rounded-lg mb-2 relative overflow-hidden">
                     <Image
-                      src={shape.icon}
+                      src={shape.image}
                       alt={shape.name}
-                      width={32}
-                      height={32}
-                      className={filters.shapes.includes(shape.id) ? "text-blue-700" : "text-gray-600"}
+                      width={48}
+                      height={48}
+                      className="w-full h-full object-cover"
+                      unoptimized
                     />
                   </div>
                   <span className="text-xs text-center font-medium">{shape.name}</span>
                 </button>
               ))}
             </div>
+            
+            {/* Other Shapes Dropdown */}
+            {showOthers && (
+              <div className="mt-6">
+                <h4 className="text-md font-semibold mb-3">Other Diamond Shapes</h4>
+                <div className="grid grid-cols-3 sm:grid-cols-4 md:grid-cols-6 lg:grid-cols-8 xl:grid-cols-10 gap-3">
+                  {OTHER_DIAMOND_SHAPES.map((shape) => (
+                    <button
+                      key={shape.id}
+                      onClick={() => toggleFilter("shapes", shape.id)}
+                      className={`flex flex-col items-center p-3 border rounded-lg transition-all ${
+                        filters.shapes.includes(shape.id)
+                          ? "border-blue-500 bg-blue-50 text-blue-700"
+                          : "border-gray-200 hover:border-gray-300"
+                      }`}
+                    >
+                      <div className="w-12 h-12 flex items-center justify-center rounded-lg mb-2 relative overflow-hidden">
+                        <Image
+                          src={shape.image}
+                          alt={shape.name}
+                          width={48}
+                          height={48}
+                          className="w-full h-full object-cover"
+                          unoptimized
+                        />
+                      </div>
+                      <span className="text-xs text-center font-medium">{shape.name}</span>
+                    </button>
+                  ))}
+                </div>
+              </div>
+            )}
           </div>
 
           {/* Filters Row 1 */}

@@ -307,14 +307,15 @@ export default function AdminChatsPage() {
   }
 
   return (
-    <div className="container mx-auto py-8">
-      <div className="flex justify-between items-center mb-8">
+    <div className="container mx-auto py-6 md:py-8 px-4 md:px-6">
+      <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4 mb-6 md:mb-8">
         <h1 className="text-3xl font-bold">Chat Management</h1>
-        <div className="flex items-center gap-4">
-          <Badge variant={isConnected ? 'default' : 'destructive'}>
+        <div className="flex items-center gap-3 sm:gap-4 w-full sm:w-auto">
+          <Badge className="flex-shrink-0" variant={isConnected ? 'default' : 'destructive'}>
             {isConnected ? 'Connected' : 'Disconnected'}
           </Badge>
           <Button
+            className="w-full sm:w-auto"
             variant={adminStatus === 'AVAILABLE' ? 'default' : 'secondary'}
             onClick={handleStatusToggle}
           >
@@ -323,9 +324,9 @@ export default function AdminChatsPage() {
         </div>
       </div>
 
-      <div className="grid grid-cols-12 gap-8">
+      <div className="grid grid-cols-1 lg:grid-cols-12 gap-6 md:gap-8">
         {/* Left Sidebar */}
-        <div className="col-span-4">
+        <div className="lg:col-span-4">
           <Tabs defaultValue="active">
             <TabsList className="w-full">
               <TabsTrigger value="active" className="flex-1">
@@ -349,7 +350,7 @@ export default function AdminChatsPage() {
             <TabsContent value="active" className="mt-4">
               <Card>
                 <CardContent className="p-4">
-                  <ScrollArea className="h-[600px]">
+                  <ScrollArea className="h-[400px] lg:h-[600px]">
                     {(activeChats?.length ?? 0) === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         No active chats
@@ -397,7 +398,7 @@ export default function AdminChatsPage() {
             <TabsContent value="requests" className="mt-4">
               <Card>
                 <CardContent className="p-4">
-                  <ScrollArea className="h-[600px]">
+                  <ScrollArea className="h-[400px] lg:h-[600px]">
                     {(chatRequests?.length ?? 0) === 0 ? (
                       <div className="text-center py-8 text-muted-foreground">
                         No pending requests
@@ -448,8 +449,8 @@ export default function AdminChatsPage() {
         </div>
 
         {/* Chat Area */}
-        <div className="col-span-8">
-          <Card className="h-[700px] flex flex-col">
+        <div className="lg:col-span-8">
+          <Card className="h-[600px] lg:h-[700px] flex flex-col">
             {selectedChat ? (
               <>
                 <CardHeader className="border-b">

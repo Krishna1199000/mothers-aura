@@ -62,7 +62,7 @@ export function SalesReportContent() {
         data && (
           <>
             <SummaryCards summary={data.summary} />
-            <div className="grid gap-8 md:grid-cols-2">
+            <div className="grid gap-6 md:gap-8 md:grid-cols-2">
               <SalesCharts
                 dailySales={data.dailySales}
                 categoryDistribution={data.categoryDistribution}

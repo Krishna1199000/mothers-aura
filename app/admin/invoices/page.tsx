@@ -99,46 +99,46 @@ export default function InvoicesPage() {
     <div className="min-h-screen bg-background">
       <main className="container mx-auto px-4 py-8">
         <div className="max-w-7xl mx-auto space-y-6">
-          {/* Header */}
-          <div className="flex items-center justify-between gap-4">
-            <div>
+        {/* Header */}
+        <div className="flex flex-col sm:flex-row sm:items-center justify-between gap-3 sm:gap-4">
+          <div>
               <h1 className="text-3xl font-bold">Invoices</h1>
               <p className="text-muted-foreground">
                 Manage your invoices and billing
               </p>
             </div>
-            <div className="flex gap-2">
-              <Button variant="outline" onClick={() => router.push('/admin/invoices/from-inventory')}>
+          <div className="flex gap-2 w-full sm:w-auto flex-col sm:flex-row">
+            <Button className="w-full sm:w-auto" variant="outline" onClick={() => router.push('/admin/invoices/from-inventory')}>
                 <Plus className="w-4 h-4 mr-2" />
                 From Inventory
               </Button>
-              <Button onClick={() => router.push('/admin/invoices/create')}>
+            <Button className="w-full sm:w-auto" onClick={() => router.push('/admin/invoices/create')}>
                 <Plus className="w-4 h-4 mr-2" />
                 Create New Invoice
               </Button>
             </div>
           </div>
 
-          {/* Search Bar */}
-          <div className="flex items-center gap-4">
-            <div className="relative flex-1 max-w-sm">
+        {/* Search Bar */}
+        <div className="flex flex-col md:flex-row items-stretch md:items-center gap-3 md:gap-4">
+          <div className="relative flex-1 max-w-full md:max-w-sm">
               <Search className="absolute left-3 top-1/2 transform -translate-y-1/2 text-gray-400 h-4 w-4" />
               <Input
                 placeholder="Search invoices..."
                 value={searchTerm}
                 onChange={(e) => setSearchTerm(e.target.value)}
-                className="pl-10"
+              className="pl-10 w-full"
               />
             </div>
-            <div className="text-sm text-muted-foreground">
+          <div className="text-sm text-muted-foreground md:text-right">
               {filteredInvoices.length} of {invoices.length} invoices
             </div>
           </div>
 
           {/* Invoices Table */}
-          <Card>
-            <CardContent className="p-0">
-              <Table>
+        <Card>
+          <CardContent className="p-0 overflow-x-auto">
+            <Table>
                 <TableHeader>
                   <TableRow>
                     <TableHead>Invoice Number</TableHead>

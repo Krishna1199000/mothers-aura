@@ -69,7 +69,7 @@ export default function LuxurySplitScreen() {
 
       {/* Left Side - Ring (Overlay Layer) */}
       <div 
-        className="absolute inset-0 bg-gradient-to-br from-stone-50 to-stone-100 dark:from-gray-800 dark:to-gray-700"
+        className="absolute inset-0 bg-white dark:from-gray-800 dark:to-gray-700"
         style={{ 
           clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)`
         }}
@@ -86,7 +86,7 @@ export default function LuxurySplitScreen() {
         {/* Ring Image - Left Side */}
         <div className="absolute top-1/2 left-1/2 transform -translate-x-1/2 -translate-y-1/2 pointer-events-none">
           <Image
-            src="/diamond3.png" 
+            src="/Slidersimage.png" 
             alt="Premium Diamond Ring" 
             width={256}
             height={256}

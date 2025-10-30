@@ -166,7 +166,7 @@ export function OutstandingReportContent() {
           <Loader2 className="h-8 w-8 animate-spin" />
         </div>
       ) : report ? (
-        <Card className="p-6">
+        <Card className="p-6 overflow-x-auto">
           <div className="space-y-6">
             {/* Transactions Table */}
             <Table>

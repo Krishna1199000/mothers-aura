@@ -3,9 +3,9 @@
 import { useState, useEffect } from "react";
 import Image from "next/image";
 import { useRouter, useSearchParams } from "next/navigation";
-import { Heart } from "lucide-react";
+import { Heart, Search, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
-import { MegaMenu } from "@/components/MegaMenu";
+import { Header } from "@/components/Header";
 
 interface Product {
   id: string;
@@ -65,7 +65,7 @@ export default function ProductsPage() {
 
   return (
     <div>
-      <MegaMenu isMobileOpen={isMobileMenuOpen} setIsMobileOpen={setIsMobileMenuOpen} />
+      <Header />
       <div className="container mx-auto px-4 py-8">
         <h1 className="text-3xl font-bold mb-8">Our Collection</h1>
       
@@ -92,6 +92,7 @@ export default function ProductsPage() {
                   <Image
                     src={displayImage}
                     alt={product.name}
+                    fill
                     className="w-full h-full object-cover transition-transform duration-300 group-hover:scale-105"
                     onError={(e) => {
                       // If image fails to load, show placeholder
@@ -133,8 +134,50 @@ export default function ProductsPage() {
       </div>
 
         {products.length === 0 && (
-          <div className="text-center py-12">
-            <p className="text-gray-500">No products found.</p>
+          <div className="max-w-2xl mx-auto text-center py-16">
+            <div className="bg-card border border-border rounded-lg p-12">
+              <Search size={64} className="mx-auto text-muted-foreground mb-6" />
+              <h2 className="text-3xl font-bold mb-4">
+                We currently don&apos;t have this
+              </h2>
+              <p className="text-muted-foreground mb-8 text-lg">
+                All stocks are sold out, but we&apos;d love to help you find what you&apos;re looking for!
+              </p>
+              <div className="space-y-4 mb-8">
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-primary">📧</span>
+                  <span className="text-muted-foreground">Email us:</span>
+                  <a 
+                    href="mailto:admintejas@mothersauradiamonds.com" 
+                    className="text-primary hover:underline font-medium"
+                  >
+                    admintejas@mothersauradiamonds.com
+                  </a>
+                </div>
+                <div className="flex items-center justify-center gap-3">
+                  <span className="text-primary">📞</span>
+                  <span className="text-muted-foreground">Call us:</span>
+                  <div className="flex flex-col gap-1">
+                    <a href="tel:+918657585167" className="text-primary hover:underline font-medium">
+                      +91 86575 85167
+                    </a>
+                    <a href="tel:+917841834563" className="text-primary hover:underline font-medium">
+                      +91 78418 34563
+                    </a>
+                  </div>
+                </div>
+                <p className="text-muted-foreground mt-6 text-base">
+                  We&apos;ll arrange it for you and give you something you would also love!
+                </p>
+              </div>
+              <button
+                onClick={() => router.push('/products')}
+                className="inline-flex items-center justify-center rounded-md bg-primary px-8 py-3 text-base font-medium text-primary-foreground hover:bg-primary/90 transition-colors"
+              >
+                <ExternalLink className="mr-2 h-5 w-5" />
+                Continue Browsing
+              </button>
+            </div>
           </div>
         )}
       </div>

@@ -4,7 +4,8 @@ export const Footer = () => {
   const footerLinks = {
     'Contact Us': [
       { name: 'admintejas@mothersauradiamonds.com', href: 'mailto:admintejas@mothersauradiamonds.com'},
-      { name: '+91 86575 85167', href: 'tel:+918657585167' }
+      { name: '+91 86575 85167', href: 'tel:+918657585167' },
+      { name: '+91 78418 34563', href: 'tel:+917841834563' }
     ],
     'Information': [
       { name: 'Terms & Conditions', href: '/terms' },
@@ -13,10 +14,10 @@ export const Footer = () => {
       { name: 'Contact Us', href: '/contact' }
     ],
     'Links': [
-      { name: 'Diamond Education', href: '/diamond-education' },
-      { name: 'Ring Sizing Guide', href: '/sizing-guide' },
-      { name: 'Care Instructions', href: '/care' },
-      { name: 'Certification', href: '/certification' }
+      { name: 'Diamond Education', href: '/diamond-Education' },
+      { name: 'Ring Sizing Guide', href: '/RIng-sizeguide' },
+      { name: 'Care Instructions', href: '/Care-instructions' },
+      { name: 'Certification', href: '/certifications' }
     ]
   };
 

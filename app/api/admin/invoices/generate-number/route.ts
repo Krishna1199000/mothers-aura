@@ -31,26 +31,14 @@ export async function GET(request: NextRequest) {
     const month = String(now.getMonth() + 1).padStart(2, '0');
     const dateFormat = `${day}${month}`;
 
-    // Find the latest invoice for this day/month
+    // Find the latest invoice globally (do not reset by date)
     const latestInvoice = await db.invoice.findFirst({
-      where: {
-        invoiceNumber: {
-          contains: `/${dateFormat}`,
-        },
-      },
       orderBy: {
-        invoiceNumber: 'desc',
+        sequenceNum: 'desc',
       },
     });
 
-    let nextNumber = 1;
-    if (latestInvoice) {
-      // Extract the number from the invoice number (MA-0001A/DDMM)
-      const match = latestInvoice.invoiceNumber.match(/MA-(\d+)A/);
-      if (match) {
-        nextNumber = parseInt(match[1]) + 1;
-      }
-    }
+    const nextNumber = (latestInvoice?.sequenceNum ?? 0) + 1;
 
     // Format the number with leading zeros
     const formattedNumber = String(nextNumber).padStart(4, '0');

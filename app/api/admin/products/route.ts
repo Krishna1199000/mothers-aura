@@ -1,4 +1,5 @@
 import { NextResponse } from "next/server";
+import { revalidatePath } from "next/cache";
 import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import { PrismaClient } from "@/app/generated/prisma";
@@ -38,7 +39,10 @@ export async function POST(req: Request) {
     const {
       name,
       description,
-      price,
+      priceUSD,
+      priceINR,
+      priceEUR,
+      priceAUD,
       shape,
       carat,
       color,
@@ -53,10 +57,8 @@ export async function POST(req: Request) {
     } = body;
 
     // Validate required fields
-    if (!name || !price || !shape || !carat || !color || !clarity) {
-      return new NextResponse("Name, price, shape, carat, color, and clarity are required", {
-        status: 400,
-      });
+    if (!name || !priceUSD || !shape || !carat || !color || !clarity) {
+      return new NextResponse("Name, priceUSD, shape, carat, color, and clarity are required", { status: 400 });
     }
 
     if (!images || images.length === 0) {
@@ -88,7 +90,11 @@ export async function POST(req: Request) {
         name,
         slug,
         description,
-        price: parseFloat(price),
+        priceUSD: parseFloat(priceUSD),
+        priceINR: parseFloat(priceINR || "0"),
+        priceEUR: parseFloat(priceEUR || "0"),
+        priceAUD: parseFloat(priceAUD || "0"),
+        price: parseFloat(priceUSD), // for legacy fallback; remove later
         shape,
         carat: parseFloat(carat),
         color,
@@ -103,9 +109,18 @@ export async function POST(req: Request) {
       },
     });
 
+    // Revalidate relevant pages
+    try {
+      revalidatePath("/");
+      revalidatePath("/products");
+      revalidatePath(`/product/${slug}`);
+    } catch {}
+
     return NextResponse.json(product);
   } catch (error) {
     console.error("[PRODUCTS_POST]", error);
     return new NextResponse("Internal error", { status: 500 });
   }
 }
+
+// PUT and DELETE handlers are in app/api/admin/products/[id]/route.ts

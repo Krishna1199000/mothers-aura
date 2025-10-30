@@ -129,8 +129,8 @@ export const DiamondShapes = () => {
                     }}
                     onLoadStart={() => setIsVideoLoading(true)}
                     onCanPlay={() => setIsVideoLoading(false)}
-                    onError={(e) => {
-                      console.error('Video failed to load:', shape.video);
+                    onError={() => {
+                      // Silently handle video load failures to avoid noisy console errors
                       setIsVideoLoading(false);
                     }}
                   >

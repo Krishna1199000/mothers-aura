@@ -33,12 +33,8 @@ export function SignInForm() {
   // Handle redirect after successful sign-in
   useEffect(() => {
     if (shouldRedirect && session?.user) {
-      const userRole = session.user.role || 'CUSTOMER';
-      if (userRole === 'ADMIN' || userRole === 'EMPLOYEE') {
-        router.push('/admin');
-      } else {
-        router.push('/dashboard');
-      }
+      // All users (including admin) go to dashboard
+      router.push('/dashboard');
       router.refresh();
       setShouldRedirect(false);
     }

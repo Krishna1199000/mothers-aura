@@ -10,7 +10,7 @@ const staticCategories = [
     id: "1",
     title: 'Gems',
     type: 'gems',
-    image: '/luxury-diamond-macro-close-up.jpg',
+    image: 'https://cdn.create.vista.com/api/media/small/11854510/stock-photo-diamond',
     alt: 'Precious gems collection'
   },
   {
@@ -51,10 +51,10 @@ export const ShopByCategory = () => {
   };
 
   return (
-    <section className="py-24 bg-background">
+    <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-16">
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+        <div className="text-center mb-12">
+          <h2 className="text-4xl md:text-5xl font-bold mb-4">
             Shop by Category
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">

@@ -26,18 +26,19 @@ export async function POST(
 
     // Restore stock
     const { id } = await params;
+
+    // Ensure product exists; if not, no-op to avoid noisy errors for deleted/non-UI items
+    const existing = await prisma.product.findUnique({ where: { id }, select: { id: true, name: true, stock: true } });
+    if (!existing) {
+      return NextResponse.json({ success: true, skipped: true, message: "Product not found; restore skipped" });
+    }
+
     const updatedProduct = await prisma.product.update({
       where: { id },
       data: {
-        stock: {
-          increment: quantity,
-        },
+        stock: { increment: quantity },
       },
-      select: {
-        id: true,
-        name: true,
-        stock: true,
-      },
+      select: { id: true, name: true, stock: true },
     });
 
     return NextResponse.json({

@@ -7,8 +7,8 @@ export const ContactSection = () => {
   return (
     <section className="py-16 bg-accent/30 dark:bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-3xl md:text-4xl font-bold mb-4 dark:text-white">
+        <div className="text-center mb-10">
+          <h2 className="text-3xl md:text-4xl font-bold mb-3 dark:text-white">
             Get in Touch
           </h2>
           <p className="text-lg text-muted-foreground dark:text-gray-300 max-w-2xl mx-auto">
@@ -60,6 +60,7 @@ export const ContactSection = () => {
                       <div>
                         <p className="font-semibold text-lg mb-2 dark:text-white">Phone Numbers</p>
                         <p className="text-muted-foreground dark:text-gray-300">+91 86575 85167</p>
+                        <p className="text-muted-foreground dark:text-gray-300">+91 78418 34563</p>
                       </div>
                     </div>
 

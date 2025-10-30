@@ -54,39 +54,43 @@ export function CartProvider({ children }: { children: ReactNode }) {
     if (hasLoadedFromStorage.current) return;
     hasLoadedFromStorage.current = true;
 
-    const savedCart = localStorage.getItem("cart");
-    if (savedCart) {
-      try {
-        const parsed: CartItem[] = JSON.parse(savedCart);
-        // Normalize just in case of any previous bad writes
-        const normalized = Array.isArray(parsed)
-          ? parsed.reduce<Record<string, CartItem>>((map, item) => {
-              const key = item.productId;
-              const existing = map[key];
-              if (existing) {
-                existing.quantity += item.quantity;
-              } else {
-                map[key] = { ...item };
-              }
-              return map;
-            }, {})
-          : {};
-        setItems(Object.values(normalized));
-      } catch {
-        // If parsing fails, reset the cart
-        localStorage.removeItem("cart");
-        setItems([]);
+    if (session?.user) {
+      const savedCart = localStorage.getItem("cart");
+      if (savedCart) {
+        try {
+          const parsed = JSON.parse(savedCart);
+          const normalized = Array.isArray(parsed)
+            ? parsed.reduce((map, item) => {
+                const key = item.productId;
+                const existing = map[key];
+                if (existing) {
+                  existing.quantity += item.quantity;
+                } else {
+                  map[key] = { ...item };
+                }
+                return map;
+              }, {})
+            : {};
+          setItems(Object.values(normalized));
+        } catch {
+          localStorage.removeItem("cart");
+          setItems([]);
+        }
       }
+    } else {
+      // Guest: ensure localStorage is fully cleared to remove any stale/ghost data
+      localStorage.removeItem("cart");
+      setItems([]);
     }
     setIsLoading(false);
-  }, []);
+  }, [session?.user]);
 
-  // Save cart to localStorage whenever it changes
   useEffect(() => {
-    if (!isLoading) {
+    if (!isLoading && session?.user) {
       localStorage.setItem("cart", JSON.stringify(items));
     }
-  }, [items, isLoading]);
+    // Guests: do not persist cart
+  }, [items, isLoading, session?.user]);
 
   // Sync with database when user logs in
   const hasSyncedWithDb = useRef(false);

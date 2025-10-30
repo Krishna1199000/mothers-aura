@@ -413,6 +413,9 @@ export function NotificationBar() {
                                   <Image
                                     src={notification.imageUrl} 
                                     alt="Notification" 
+                                    width={800}
+                                    height={160}
+                                    sizes="(max-width: 420px) 100vw, 420px"
                                     className="w-full h-40 object-cover rounded-lg border shadow-sm hover:shadow-md transition-shadow"
                                     onError={(e) => {
                                       console.error('Image failed to load:', notification.imageUrl);
@@ -474,6 +477,9 @@ export function NotificationBar() {
                                   <Image
                                     src={notification.imageUrl} 
                                     alt="Notification" 
+                                    width={800}
+                                    height={160}
+                                    sizes="(max-width: 420px) 100vw, 420px"
                                     className="w-full h-40 object-cover rounded-lg border shadow-sm hover:shadow-md transition-shadow"
                                     onError={(e) => {
                                       console.error('Image failed to load:', notification.imageUrl);
@@ -569,6 +575,9 @@ export function NotificationBar() {
                               <Image
                                 src={notification.imageUrl} 
                                 alt="Notification" 
+                                width={800}
+                                height={160}
+                                sizes="(max-width: 420px) 100vw, 420px"
                                 className="w-full h-40 object-cover rounded-lg border shadow-sm hover:shadow-md transition-shadow"
                                 loading="lazy"
                                 onError={(e) => {

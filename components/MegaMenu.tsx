@@ -466,6 +466,7 @@ const menuItems: MenuItem[] = [
 export function MegaMenu({ isMobileOpen, setIsMobileOpen, navbarHeight = 56 }: MegaMenuProps) {
   const router = useRouter()
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
+  const [clickedMenu, setClickedMenu] = useState<string | null>(null)
 
   interface Product {
   id: string;
@@ -485,14 +486,74 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     if (product) {
       setSelectedProduct(product);
     } else if (href.startsWith('/category/')) {
-      // Redirect category links to products page
+      // Fetch products for the category with query params
+      try {
+        const url = new URL(href, window.location.origin);
+        const searchParams = url.searchParams;
+        const type = searchParams.get('type');
+        const category = searchParams.get('category');
+        const subcategory = searchParams.get('subcategory');
+        const searchTerm = searchParams.get('search');
+        
+        // Build the API URL
+        let apiUrl = '/api/categories/map?';
+        const params: string[] = [];
+        if (type) params.push(`type=${encodeURIComponent(type)}`);
+        if (category) params.push(`category=${encodeURIComponent(category)}`);
+        if (subcategory) params.push(`subcategory=${encodeURIComponent(subcategory)}`);
+        if (searchTerm) params.push(`search=${encodeURIComponent(searchTerm)}`);
+        apiUrl += params.join('&');
+        
+        const response = await fetch(apiUrl);
+        if (!response.ok) throw new Error("Failed to map category");
+        const data = await response.json();
+
+        // Store the results in localStorage for the target page
+        localStorage.setItem("categoryResults", JSON.stringify(data));
+
+        // Extract the base category path (e.g., /category/rings)
+        const categoryBase = href.split('?')[0];
+        router.push(categoryBase);
+      } catch (error) {
+        console.error("Error mapping category:", error);
+        // Fallback to direct navigation
+        router.push(href.split('?')[0]);
+      }
+      
       setIsMobileOpen(false);
       setActiveMenu(null);
-      router.push('/products');
+      setClickedMenu(null);
     } else {
       setIsMobileOpen(false);
       setActiveMenu(null);
+      setClickedMenu(null);
       router.push(href);
+    }
+  }
+
+  const handleMenuToggle = (menuLabel: string) => {
+    if (clickedMenu === menuLabel) {
+      // Close if clicking the same menu
+      setClickedMenu(null)
+      setActiveMenu(null)
+    } else {
+      // Open the clicked menu
+      setClickedMenu(menuLabel)
+      setActiveMenu(menuLabel)
+    }
+  }
+
+  const handleMouseEnter = (menuLabel: string) => {
+    // Only set active on hover if no menu is clicked
+    if (!clickedMenu) {
+      setActiveMenu(menuLabel)
+    }
+  }
+
+  const handleMouseLeave = () => {
+    // Only clear active on mouse leave if no menu is clicked
+    if (!clickedMenu) {
+      setActiveMenu(null)
     }
   }
 
@@ -501,6 +562,7 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     const handleClickOutside = (event: MouseEvent) => {
       if (activeMenu && !(event.target as Element).closest('.mega-menu-container')) {
         setActiveMenu(null)
+        setClickedMenu(null)
       }
     }
 
@@ -516,10 +578,13 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
           <div
             key={`${item.label}-${index}`}
             className="relative group"
-            onMouseEnter={() => setActiveMenu(item.label)}
-            onMouseLeave={() => setActiveMenu(null)}
+            onMouseEnter={() => handleMouseEnter(item.label)}
+            onMouseLeave={handleMouseLeave}
           >
-            <button className="flex items-center space-x-1 py-2 text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-gray-600 dark:hover:text-white transition-colors">
+            <button 
+              onClick={() => handleMenuToggle(item.label)}
+              className="flex items-center space-x-1 py-2 text-sm font-medium text-gray-800 dark:text-gray-100 hover:text-gray-600 dark:hover:text-white transition-colors"
+            >
               <span>{item.label}</span>
               <ChevronDown className="h-3 w-3" />
             </button>

@@ -104,52 +104,8 @@ export async function GET(request: NextRequest) {
       commonWhere.symmetry = { in: symmetries };
     }
 
-    // Build where clause for Cranberri diamonds (using size instead of carat)
-    const cranberriWhere: any = {};
-    if (search) {
-      cranberriWhere.OR = [
-        { stockId: { contains: search, mode: "insensitive" } },
-        { certificateNo: { contains: search, mode: "insensitive" } },
-      ];
-    }
-    if (minCarat || maxCarat) {
-      cranberriWhere.size = {
-        ...(minCarat && { gte: parseFloat(minCarat) }),
-        ...(maxCarat && { lte: parseFloat(maxCarat) }),
-      };
-    }
-    if (minPrice || maxPrice) {
-      cranberriWhere.pricePerCarat = {
-        ...(minPrice && { gte: parseFloat(minPrice) }),
-        ...(maxPrice && { lte: parseFloat(maxPrice) }),
-      };
-    }
-    if (colors.length > 0) {
-      cranberriWhere.color = { in: colors };
-    }
-    if (clarities.length > 0) {
-      cranberriWhere.clarity = { in: clarities };
-    }
-    if (shapes.length > 0) {
-      cranberriWhere.shape = { in: shapes };
-    }
-    if (cuts.length > 0) {
-      cranberriWhere.cut = { in: cuts };
-    }
-    if (labs.length > 0) {
-      cranberriWhere.lab = { in: labs };
-    }
-    if (polishes.length > 0) {
-      cranberriWhere.polish = { in: polishes };
-    }
-    if (symmetries.length > 0) {
-      cranberriWhere.sym = { in: symmetries };
-    }
-
-    // Fetch diamonds from all three sources
-    const [mothersauraDiamonds, kyrahDiamonds, cranberriDiamonds] = await Promise.all([
-      // Fetch Mothers Aura diamonds
-      db.inventory.findMany({
+    // Fetch only Mothers Aura inventory diamonds
+    const mothersauraDiamonds = await db.inventory.findMany({
         where: {
           ...mothersauraWhere,
           ...commonWhere,
@@ -162,43 +118,29 @@ export async function GET(request: NextRequest) {
             },
           },
         },
-      }),
+      });
 
-      // Fetch Kyrah diamonds
-      db.kyrahDiamond.findMany({
-        where: {
-          ...commonWhere,
-          // Kyrah-specific filters
-          ...(statuses.length > 0 && { status: { in: statuses } }),
-        },
-      }),
-
-      // Fetch Cranberri diamonds
-      db.cranberriDiamond.findMany({
-        where: cranberriWhere,
-      }),
-    ]);
-
-    // Transform Mothers Aura diamonds
-    const mothersauraTransformed = mothersauraDiamonds.map(d => ({
-      ...d,
+    // Transform Mothers Aura diamonds for UI compatibility
+    const mothersauraTransformed = mothersauraDiamonds.map((d: any) => ({
+      id: d.id,
+      stockId: d.stockId,
+      shape: d.shape,
+      carat: d.carat,
+      color: d.color,
+      clarity: d.clarity,
+      cut: d.cut,
+      polish: d.polish,
+      symmetry: d.symmetry,
+      lab: d.lab,
+      pricePerCarat: d.carat ? (d.askingAmount ?? 0) / d.carat : 0,
+      amount: d.askingAmount ?? 0,
+      imageUrl: d.imageUrl,
+      videoUrl: d.videoUrl,
+      certificateUrl: d.certificateUrl,
       source: 'mothersaura' as const,
     }));
 
-    // Transform Kyrah diamonds
-    const kyrahTransformed = kyrahDiamonds.map(d => ({
-      ...d,
-      source: 'kyrah' as const,
-    }));
-
-    // Transform Cranberri diamonds
-    const cranberriTransformed = cranberriDiamonds.map(d => ({
-      ...d,
-      source: 'cranberri' as const,
-    }));
-
-    // Combine and return all diamonds
-    return NextResponse.json([...mothersauraTransformed, ...kyrahTransformed, ...cranberriTransformed]);
+    return NextResponse.json(mothersauraTransformed);
   } catch (error) {
     console.error("Error fetching diamonds:", error);
     return NextResponse.json(

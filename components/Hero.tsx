@@ -1,52 +1,67 @@
 "use client";
 
-import { motion } from "framer-motion";
+import { motion, AnimatePresence } from "framer-motion";
 import Image from "next/image";
+import { useEffect, useState } from "react";
 
 export const Hero = () => {
+  const [currentIndex, setCurrentIndex] = useState(0);
+
+  const images = [
+    "/Mothers-aura-landingimage.png",
+    "/Mothers-aura-landingimage2.png",
+    "/Mothers-aura-landingimage3.png"
+  ];
+
+  useEffect(() => {
+    const interval = setInterval(() => {
+      setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
+    }, 5000); // Change image every 5 seconds
+
+    return () => clearInterval(interval);
+  }, [images.length]);
+
   return (
     <section className="relative w-full h-[100vh] overflow-hidden flex items-center">
-      {/* Background Image with Overlay */}
-      <motion.div
-        initial={{ opacity: 0 }}
-        animate={{ opacity: 1 }}
-        transition={{ duration: 1 }}
-        className="absolute inset-0 z-0"
-      >
-        <Image
-          src="/Mothers-aura-landingimage.png"
-          alt="Luxury Diamond"
-          fill
-          className="object-cover object-center"
-          priority
-          sizes="100vw"
-          unoptimized
-          style={{
-            objectPosition: 'center center'
-          }}
-        />
+      {/* Background Image Slider with Overlay */}
+      <div className="absolute inset-0 z-0">
+        <AnimatePresence mode="wait">
+          <motion.div
+            key={currentIndex}
+            initial={{ opacity: 0 }}
+            animate={{ opacity: 1 }}
+            exit={{ opacity: 0 }}
+            transition={{ duration: 1 }}
+            className="absolute inset-0"
+          >
+            <Image
+              src={images[currentIndex]}
+              alt="Luxury Diamond"
+              fill
+              className="object-cover object-center"
+              priority={currentIndex === 0}
+              sizes="100vw"
+              unoptimized
+              style={{
+                objectPosition: 'center center'
+              }}
+            />
+          </motion.div>
+        </AnimatePresence>
         <div className="absolute inset-0 bg-gradient-to-r from-black/50 via-black/20 to-transparent" />
-      </motion.div>
+      </div>
 
       {/* Content */}
-      <div className="container relative z-10 mx-auto px-4">
-        <div className="max-w-2xl text-white">
+      <div className="relative z-10 w-full px-4 md:px-8">
+        <div className="max-w-lg text-white">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-serif text-4xl md:text-5xl lg:text-6xl font-semibold mb-6 leading-tight"
+            className="font-serif text-2xl md:text-3xl lg:text-4xl font-semibold mb-6 leading-tight"
           >
-            I prefer liberty to chains of diamonds.
+            We don&apos;t just craft diamonds — we create symbols of timeless brilliance and enduring beauty.
           </motion.h1>
-          <motion.p
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 0.8, delay: 0.4 }}
-            className="text-base md:text-lg mb-8 text-gray-100 max-w-xl leading-relaxed"
-          >
-            I have a feeling that no diamonds, Rappers wear diamonds, to compensate for a lack of fashion sense. I don&apos;t even have pierced ears.
-          </motion.p>
           <motion.div
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
