@@ -91,7 +91,7 @@ export async function POST(request: NextRequest) {
         memoNumber: data.memoNumber,
         date: new Date(data.date),
         dueDate: new Date(data.dueDate),
-        paymentTerms: data.paymentTerms,
+        paymentTerms: data.paymentTerms ? String(data.paymentTerms) : null,
         emailPdf: data.emailPdf,
         masterId: data.masterId,
         description: data.description,
