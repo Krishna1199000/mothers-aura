@@ -15,7 +15,7 @@ import {
 } from "@/components/ui/carousel";
 import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
 import { useCart } from "@/lib/contexts/cart-context";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
 
@@ -48,7 +48,6 @@ export default function ProductDetailPage() {
   const [selectedSize, setSelectedSize] = useState("7");
   const [isMobileMenuOpen, setIsMobileMenuOpen] = useState(false);
   const { checkStockAndAdd } = useCart();
-  const { toast } = useToast();
 
   useEffect(() => {
     const fetchData = async () => {
@@ -70,10 +69,8 @@ export default function ProductDetailPage() {
         }
       } catch (error) {
         console.error("Error fetching data:", error);
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Failed to fetch product details",
-          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
@@ -95,12 +92,7 @@ export default function ProductDetailPage() {
       quantity: 1,
     });
 
-    if (success) {
-      toast({
-        title: "Added to cart",
-        description: "Item has been added to your cart",
-      });
-    }
+    // Toast notification is handled in checkStockAndAdd
   };
 
   if (isLoading) {

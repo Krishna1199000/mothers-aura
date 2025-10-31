@@ -17,6 +17,7 @@ import { CalendarIcon, FileText, Trash2, Plus } from "lucide-react";
 import { Calendar } from "@/components/ui/calendar";
 import { Popover, PopoverContent, PopoverTrigger } from "@/components/ui/popover";
 import { format } from "date-fns";
+import { toast } from "sonner";
 
 interface Master {
   id: string;
@@ -228,9 +229,17 @@ export default function CreateMemoPage() {
         throw new Error(data.error || "Failed to create memo");
       }
 
+      toast.success("Memo Created", {
+        description: formData.emailPdf ? "Memo created and email sent successfully" : "Memo created successfully",
+      });
+
       router.push('/admin/memos');
     } catch (error) {
-      setError(error instanceof Error ? error.message : "Something went wrong");
+      const errorMessage = error instanceof Error ? error.message : "Something went wrong";
+      setError(errorMessage);
+      toast.error("Failed to Create Memo", {
+        description: errorMessage,
+      });
     } finally {
       setLoading(false);
     }
@@ -346,6 +355,20 @@ export default function CreateMemoPage() {
                         />
                       </PopoverContent>
                     </Popover>
+                  </div>
+                </div>
+
+                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                  <div className="flex items-center space-x-2">
+                    <Switch
+                      id="emailPdf"
+                      checked={formData.emailPdf}
+                      onCheckedChange={(checked) => setFormData(prev => ({ ...prev, emailPdf: checked }))}
+                    />
+                    <Label htmlFor="emailPdf">Email PDF</Label>
+                    <span className="text-sm text-muted-foreground">
+                      {formData.emailPdf ? "PDF will be emailed to customer" : "PDF will not be emailed"}
+                    </span>
                   </div>
                 </div>
 

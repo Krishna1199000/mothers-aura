@@ -47,7 +47,7 @@ export default function LuxurySplitScreen() {
       <div className="absolute inset-0 bg-gradient-to-br from-pink-50 via-rose-50 to-pink-100 dark:from-gray-900 dark:via-gray-900 dark:to-gray-800">
         <div className="absolute right-0 top-1/2 transform -translate-y-1/2 pr-8 md:pr-16 flex flex-col items-end max-w-sm">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-gray-900 dark:text-white mb-6 text-right leading-tight">
-            Classic<br />Diamond Ring
+            Mother&apos;s aura<br />classic diamond ring
           </h2>
           <button className="bg-stone-700 hover:bg-stone-800 text-white px-8 py-3 text-sm font-medium tracking-widest transition-all duration-300 hover:shadow-xl">
             SHOP NOW
@@ -69,14 +69,14 @@ export default function LuxurySplitScreen() {
 
       {/* Left Side - Ring (Overlay Layer) */}
       <div 
-        className="absolute inset-0 bg-white dark:from-gray-800 dark:to-gray-700"
+        className="absolute inset-0 bg-white dark:bg-gradient-to-br dark:from-gray-800 dark:via-gray-800 dark:to-gray-700"
         style={{ 
           clipPath: `polygon(0 0, ${sliderPosition}% 0, ${sliderPosition}% 100%, 0 100%)`
         }}
       >
         <div className="absolute left-0 top-1/2 transform -translate-y-1/2 pl-8 md:pl-16 flex flex-col items-start max-w-sm">
           <h2 className="text-3xl md:text-4xl lg:text-5xl font-serif text-gray-900 dark:text-white mb-6 text-left leading-tight">
-            Premium<br />Diamond Ring
+            Mother&apos;s aura<br />premium diamond ring
           </h2>
           <button className="bg-stone-700 hover:bg-stone-800 text-white px-8 py-3 text-sm font-medium tracking-widest transition-all duration-300 hover:shadow-xl">
             SHOP NOW

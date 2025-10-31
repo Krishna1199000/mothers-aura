@@ -51,7 +51,7 @@ export default function DiamondAppointment() {
               {/* Main Image */}
               <div className="relative overflow-hidden rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 h-full">
                 <Image
-                  src="/Mothers-aura-appointment.jpg"
+                  src="/Mothers-aura-appointment1.jpg"
                   alt="Mothers Aura Diamond Store"
                   width={800}
                   height={600}

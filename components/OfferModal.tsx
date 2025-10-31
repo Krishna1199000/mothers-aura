@@ -11,8 +11,21 @@ export const OfferModal = () => {
   const [consent, setConsent] = useState(false);
 
   useEffect(() => {
+    // Show once per browser session
+    try {
+      if (typeof window !== 'undefined') {
+        const hasShown = sessionStorage.getItem('offerModalShown');
+        if (hasShown) return; // already shown this session
+      }
+    } catch {}
+
     const timer = setTimeout(() => {
       setIsVisible(true);
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('offerModalShown', '1');
+        }
+      } catch {}
     }, 3000);
 
     return () => clearTimeout(timer);
@@ -24,11 +37,22 @@ export const OfferModal = () => {
       // TODO: Handle form submission
       console.log('Offer claimed:', { email, phone });
 
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('offerModalShown', '1');
+        }
+      } catch {}
+
       setIsVisible(false);
     }
   };
 
   const handleDismiss = () => {
+    try {
+      if (typeof window !== 'undefined') {
+        sessionStorage.setItem('offerModalShown', '1');
+      }
+    } catch {}
     setIsVisible(false);
   };
 
@@ -68,7 +92,7 @@ export const OfferModal = () => {
             <div className="w-16 h-16 bg-primary/10 rounded-full flex items-center justify-center mx-auto mb-4">
               <span className="text-2xl">💎</span>
             </div>
-            <h2 className="text-3xl font-bold mb-2">£100 OFF</h2>
+            <h2 className="text-3xl font-bold mb-2">$100 OFF</h2>
             <p className="text-lg text-muted-foreground">your first order</p>
           </div>
 
@@ -122,7 +146,7 @@ export const OfferModal = () => {
                 className="w-full"
                 disabled={!email || !phone || !consent}
               >
-                Claim £100 Off
+                Claim $100 Off
               </Button>
               
               <button

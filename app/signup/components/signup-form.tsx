@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OtpInput } from "@/components/ui/otp-input";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface SignupFormData {
   name: string;
@@ -24,7 +24,6 @@ export function SignupForm() {
   const [otp, setOTP] = useState("");
   const [tempEmail, setTempEmail] = useState("");
   const router = useRouter();
-  const { toast } = useToast();
 
   const {
     register,
@@ -57,16 +56,13 @@ export function SignupForm() {
 
       setTempEmail(data.email);
       setShowOTP(true);
-      toast({
-        title: "OTP Sent!",
+      toast.success("OTP Sent!", {
         description: "Please check your email for the verification code.",
       });
     } catch (error) {
       console.error("Signup error:", error);
-      toast({
-        title: "Error",
+      toast.error("Signup Failed", {
         description: error instanceof Error ? error.message : "Something went wrong",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -75,10 +71,8 @@ export function SignupForm() {
 
   const handleOTPSubmit = async () => {
     if (otp.length !== 6) {
-      toast({
-        title: "Error",
+      toast.error("Invalid OTP", {
         description: "Please enter a valid 6-digit OTP",
-        variant: "destructive",
       });
       return;
     }
@@ -100,18 +94,17 @@ export function SignupForm() {
         throw new Error(result.error || "Failed to verify OTP");
       }
 
-      toast({
-        title: "Success!",
-        description: "Your account has been created. Please sign in.",
+      toast.success("Account Created!", {
+        description: "Your account has been created. Redirecting to sign in...",
       });
 
-      router.push("/signin");
+      setTimeout(() => {
+        router.push("/signin");
+      }, 1500);
     } catch (error) {
       console.error("OTP verification error:", error);
-      toast({
-        title: "Error",
+      toast.error("Verification Failed", {
         description: error instanceof Error ? error.message : "Something went wrong",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

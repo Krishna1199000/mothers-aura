@@ -11,6 +11,7 @@ import { Loader2, MessageCircle, Send, X, MinusCircle, RefreshCw, Phone, HelpCir
 import { motion, AnimatePresence } from 'framer-motion';
 import { io, Socket } from 'socket.io-client';
 import { useToast } from '@/components/ui/use-toast';
+import Image from 'next/image';
 
 interface Message {
   id: string;
@@ -138,12 +139,25 @@ export function ChatWidget({ className }: ChatWidgetProps) {
     checkAdminStatus();
   }, []);
 
-  // Auto-open widget 10s after page load once per page view
+  // Auto-open widget 10s after page load once per browser session
   useEffect(() => {
     if (hasAutopopupRun) return;
+
+    try {
+      if (typeof window !== 'undefined') {
+        const hasShown = sessionStorage.getItem('chatWidgetAutopopupShown');
+        if (hasShown) return; // already auto-opened this session
+      }
+    } catch {}
+
     const timer = setTimeout(() => {
       setIsOpen(true);
       setHasAutopopupRun(true);
+      try {
+        if (typeof window !== 'undefined') {
+          sessionStorage.setItem('chatWidgetAutopopupShown', '1');
+        }
+      } catch {}
     }, 10000);
     return () => clearTimeout(timer);
   }, [hasAutopopupRun]);
@@ -439,7 +453,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
               exit={{ opacity: 0, y: 20 }}
               className="absolute bottom-16 right-0"
             >
-              <Card className="w-[340px] max-h-[520px] shadow-xl rounded-xl overflow-hidden">
+              <Card className="w-[340px] max-h-[600px] shadow-xl rounded-xl overflow-hidden">
                 <CardHeader className="flex flex-row items-center justify-between space-y-0 p-3 bg-primary">
                   <CardTitle className="text-xl font-semibold text-primary-foreground">
                     Live Support
@@ -522,6 +536,18 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                   ) : (
                     // Chat Interface
                     <div className="space-y-3">
+                      {/* Call Image - Full Width Professional Display */}
+                      <div className="relative w-full h-48 rounded-lg overflow-hidden mb-3 shadow-md border border-border">
+                        <Image
+                          src="/Call-image.jpg"
+                          alt="Call us for assistance"
+                          fill
+                          className="object-cover"
+                          sizes="(max-width: 340px) 340px, 340px"
+                          priority
+                          unoptimized
+                        />
+                      </div>
                       <div className="flex items-center justify-between pb-2 border-b">
                         <Badge variant={adminStatus === 'AVAILABLE' ? 'default' : 'secondary'}>
                           {adminStatus === 'AVAILABLE' ? 'Online' : 'Offline'}

@@ -8,7 +8,7 @@ import { Loader2 } from "lucide-react";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface SignInFormData {
   email: string;
@@ -20,7 +20,6 @@ export function SignInForm() {
   const [shouldRedirect, setShouldRedirect] = useState(false);
   const router = useRouter();
   const searchParams = useSearchParams();
-  const { toast } = useToast();
   const { data: session } = useSession();
   const callbackUrl = searchParams.get("callbackUrl") || "/";
 
@@ -54,14 +53,16 @@ export function SignInForm() {
         throw new Error("Invalid email or password");
       }
 
+      toast.success("Welcome back!", {
+        description: "You have been successfully signed in.",
+      });
+
       // Set flag to trigger redirect when session updates
       setShouldRedirect(true);
     } catch (error) {
       console.error("Sign in error:", error);
-      toast({
-        title: "Error",
+      toast.error("Sign In Failed", {
         description: error instanceof Error ? error.message : "Something went wrong",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -76,10 +77,8 @@ export function SignInForm() {
       });
     } catch (error) {
       console.error("Google sign in error:", error);
-      toast({
-        title: "Error",
-        description: "Failed to sign in with Google",
-        variant: "destructive",
+      toast.error("Google Sign In Failed", {
+        description: "Failed to sign in with Google. Please try again.",
       });
     } finally {
       setIsLoading(false);

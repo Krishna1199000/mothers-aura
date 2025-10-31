@@ -35,10 +35,20 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const isPasswordValid = await bcrypt.compare(
-          credentials.password,
-          user.password
-        );
+        // Check if password is hashed (starts with $2a$, $2b$, or $2y$ - bcrypt format)
+        // or plaintext (for new users)
+        let isPasswordValid = false;
+        
+        if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
+          // Existing user with hashed password - use bcrypt
+          isPasswordValid = await bcrypt.compare(
+            credentials.password,
+            user.password
+          );
+        } else {
+          // New user with plaintext password - direct comparison
+          isPasswordValid = credentials.password === user.password;
+        }
 
         if (!isPasswordValid) {
           return null;

@@ -4,65 +4,8 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { sendMemoEmailDetailed } from "@/lib/email";
 import { jsPDF } from "jspdf";
+
 const db = prisma as any;
-
-export async function GET(request: NextRequest) {
-  try {
-    const session = await getServerSession(authOptions);
-    
-    if (!session || !session.user) {
-      return NextResponse.json(
-        { error: "Unauthorized" },
-        { status: 401 }
-      );
-    }
-
-    // Authorize using role from session token
-    if (!["ADMIN", "EMPLOYEE"].includes((session.user as any)?.role)) {
-      return NextResponse.json(
-        { error: "Access denied. Admin or Employee role required." },
-        { status: 403 }
-      );
-    }
-
-    // Build where clause
-    const where: any = {};
-
-    // For employees, only show memos they created
-    if ((session.user as any)?.role === "EMPLOYEE") {
-      where.createdById = session.user.id;
-    }
-
-    // Fetch all memos with related data
-    const memos = await db.memo.findMany({
-      where,
-      select: {
-        id: true,
-        memoNumber: true,
-        date: true,
-        dueDate: true,
-        totalDue: true,
-        createdById: true,
-        master: {
-          select: {
-            companyName: true,
-          },
-        },
-      },
-      orderBy: {
-        createdAt: 'desc',
-      },
-    });
-
-    return NextResponse.json(memos);
-  } catch (error) {
-    console.error("Error fetching memos:", error);
-    return NextResponse.json(
-      { error: "Internal server error" },
-      { status: 500 }
-    );
-  }
-}
 
 export async function POST(request: NextRequest) {
   try {
@@ -83,37 +26,12 @@ export async function POST(request: NextRequest) {
       );
     }
 
-    const data = await request.json();
+    const body = await request.json();
+    const { memoId, pdfData } = body as { memoId: string; pdfData?: string };
 
-    // Create memo with items
-    const memo = await db.memo.create({
-      data: {
-        memoNumber: data.memoNumber,
-        date: new Date(data.date),
-        dueDate: new Date(data.dueDate),
-        paymentTerms: data.paymentTerms,
-        emailPdf: data.emailPdf,
-        masterId: data.masterId,
-        description: data.description,
-        shipmentCost: data.shipmentCost,
-        discount: data.discount,
-        crPayment: data.crPayment,
-        subtotal: data.subtotal,
-        totalDue: data.totalDue,
-        createdById: session.user.id,
-        items: {
-          create: data.items.map((item: any) => ({
-            description: item.description,
-            carat: item.carat,
-            color: item.color,
-            clarity: item.clarity,
-            lab: item.lab,
-            reportNo: item.reportNo,
-            pricePerCarat: item.pricePerCarat,
-            total: item.total,
-          }))
-        }
-      },
+    // Fetch memo with all related data
+    const memo = await db.memo.findUnique({
+      where: { id: memoId },
       include: {
         items: true,
         master: true,
@@ -126,32 +44,51 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // If emailPdf is true, send the memo email
-    if (data.emailPdf && memo.master.email) {
-      try {
-        // Generate PDF from memo data
-        const pdfBuffer = await generateMemoPDF(memo);
-        
-        // Send email with PDF attachment
-        await sendMemoEmailDetailed({
-          to: memo.master.email,
-          customerName: memo.master.companyName,
-          memoNo: memo.memoNumber,
-          totalAmount: Number(memo.totalDue || 0),
-          pdfBuffer
-        });
-      } catch (emailError) {
-        console.error("Error sending memo email:", emailError);
-        // Don't fail the memo creation if email fails
-      }
+    if (!memo) {
+      return NextResponse.json(
+        { error: "Memo not found" },
+        { status: 404 }
+      );
     }
 
+    if (!memo.master.email) {
+      return NextResponse.json(
+        { error: "Master email not found" },
+        { status: 400 }
+      );
+    }
+
+    // Prefer client-generated preview PDF if provided; else generate server-side
+    let pdfBuffer: Buffer;
+    if (pdfData && typeof pdfData === 'string') {
+      // Accept either data URL (data:application/pdf;base64,...) or raw base64
+      const base64 = pdfData.includes(',') ? pdfData.split(',')[1] : pdfData;
+      pdfBuffer = Buffer.from(base64, 'base64');
+    } else {
+      // Generate PDF from memo data (server-side fallback)
+      pdfBuffer = await generateMemoPDF(memo);
+    }
+
+    // Send email with PDF attachment
+    await sendMemoEmailDetailed({
+      to: memo.master.email,
+      customerName: memo.master.companyName,
+      memoNo: memo.memoNumber,
+      totalAmount: Number(memo.totalDue || 0),
+      pdfBuffer
+    });
+
+    // Update memo emailPdf status
+    await db.memo.update({
+      where: { id: memoId },
+      data: { emailPdf: true },
+    });
+
     return NextResponse.json({
-      message: "Memo created successfully",
-      memo,
+      message: "Memo email sent successfully",
     });
   } catch (error) {
-    console.error("Error creating memo:", error);
+    console.error("Error sending memo email:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
@@ -242,12 +179,4 @@ async function generateMemoPDF(memo: any) {
   
   return Buffer.from(doc.output('arraybuffer'));
 }
-
-
-
-
-
-
-
-
 

@@ -1,7 +1,7 @@
 "use client";
 
 import React, { createContext, useContext, useState, useEffect, ReactNode } from 'react';
-import { useToast } from '@/components/ui/use-toast';
+import { toast } from 'sonner';
 
 interface WishlistItem {
   id: string;
@@ -38,7 +38,6 @@ interface WishlistProviderProps {
 export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) => {
   const [wishlist, setWishlist] = useState<WishlistItem[]>([]);
   const [isLoading, setIsLoading] = useState(false);
-  const { toast } = useToast();
 
   // Load wishlist from localStorage on mount
   useEffect(() => {
@@ -86,8 +85,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
 
       // Check if already in wishlist
       if (wishlist.some(wishlistItem => wishlistItem.id === item.id)) {
-        toast({
-          title: "Already in wishlist",
+        toast.info("Already in wishlist", {
           description: "This item is already in your wishlist",
         });
         return false;
@@ -107,8 +105,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
         setWishlist(newWishlist);
         localStorage.setItem('wishlist', JSON.stringify(newWishlist));
         
-        toast({
-          title: "Added to wishlist",
+        toast.success("Added to wishlist", {
           description: `${item.name} has been added to your wishlist`,
         });
         return true;
@@ -129,17 +126,14 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
         setWishlist(newWishlist);
         localStorage.setItem('wishlist', JSON.stringify(newWishlist));
         
-        toast({
-          title: "Added to wishlist (offline)",
+        toast.success("Added to wishlist (offline)", {
           description: `${item.name} has been added to your wishlist`,
         });
         return true;
       }
       
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to add to wishlist. Please try again.",
-        variant: "destructive",
       });
       return false;
     } finally {
@@ -161,8 +155,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
         setWishlist(newWishlist);
         localStorage.setItem('wishlist', JSON.stringify(newWishlist));
         
-        toast({
-          title: "Removed from wishlist",
+        toast.success("Removed from wishlist", {
           description: "Item has been removed from your wishlist",
         });
         return true;
@@ -177,8 +170,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
       setWishlist(newWishlist);
       localStorage.setItem('wishlist', JSON.stringify(newWishlist));
       
-      toast({
-        title: "Removed from wishlist (offline)",
+      toast.success("Removed from wishlist (offline)", {
         description: "Item has been removed from your wishlist",
       });
       return true;
@@ -204,8 +196,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
         setWishlist([]);
         localStorage.removeItem('wishlist');
         
-        toast({
-          title: "Wishlist cleared",
+        toast.success("Wishlist cleared", {
           description: "All items have been removed from your wishlist",
         });
         return true;
@@ -219,8 +210,7 @@ export const WishlistProvider: React.FC<WishlistProviderProps> = ({ children }) 
       setWishlist([]);
       localStorage.removeItem('wishlist');
       
-      toast({
-        title: "Wishlist cleared (offline)",
+      toast.success("Wishlist cleared (offline)", {
         description: "All items have been removed from your wishlist",
       });
       return true;

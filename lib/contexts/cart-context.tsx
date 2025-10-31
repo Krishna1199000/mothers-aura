@@ -11,7 +11,7 @@ import {
 import { useRef } from "react";
 import { useSession } from "next-auth/react";
 import { useRouter } from "next/navigation";
-import { useToast } from "@/components/ui/use-toast";
+import { toast } from "sonner";
 
 interface CartItem {
   productId: string;
@@ -37,7 +37,6 @@ const CartContext = createContext<CartContextType | undefined>(undefined);
 
 export function CartProvider({ children }: { children: ReactNode }) {
   const { data: session } = useSession();
-  const { toast } = useToast();
   const router = useRouter();
   const [items, setItems] = useState<CartItem[]>([]);
   const [isLoading, setIsLoading] = useState(true);
@@ -133,10 +132,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         setItems(nextItems);
       } catch (error) {
         console.error("Error syncing cart:", error);
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Failed to sync cart with your account",
-          variant: "destructive",
         });
       } finally {
         setIsLoading(false);
@@ -144,7 +141,7 @@ export function CartProvider({ children }: { children: ReactNode }) {
     };
 
     syncCart();
-  }, [session, toast]);
+  }, [session]);
 
   const addItem = async (newItem: CartItem) => {
     const updatedItems = [...items];
@@ -172,10 +169,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
       } catch (error) {
         console.error("Error updating cart:", error);
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Failed to update cart",
-          variant: "destructive",
         });
       }
     }
@@ -212,13 +207,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
       } catch (error) {
         console.error("Error updating cart:", error);
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Failed to update cart",
-          variant: "destructive",
         });
       }
     }
+    toast.success("Item Removed", {
+      description: "Item has been removed from your cart",
+    });
   };
 
   const updateQuantity = async (productId: string, newQuantity: number) => {
@@ -265,13 +261,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
       } catch (error) {
         console.error("Error updating cart:", error);
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Failed to update cart",
-          variant: "destructive",
         });
       }
     }
+    toast.success("Quantity Updated", {
+      description: "Cart quantity has been updated",
+    });
   };
 
   const clearCart = async () => {
@@ -304,13 +301,14 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
       } catch (error) {
         console.error("Error clearing cart:", error);
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Failed to clear cart",
-          variant: "destructive",
         });
       }
     }
+    toast.success("Cart Cleared", {
+      description: "All items have been removed from your cart",
+    });
   };
 
   const clearCartWithoutRestore = async () => {
@@ -329,10 +327,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
         });
       } catch (error) {
         console.error("Error clearing cart:", error);
-        toast({
-          title: "Error",
+        toast.error("Error", {
           description: "Failed to clear cart",
-          variant: "destructive",
         });
       }
     }
@@ -341,10 +337,8 @@ export function CartProvider({ children }: { children: ReactNode }) {
   const checkStockAndAdd = async (item: CartItem): Promise<boolean> => {
     // Check if user is signed in
     if (!session?.user) {
-      toast({
-        title: "Sign in required",
+      toast.error("Sign in required", {
         description: "Please sign in to add items to your cart",
-        variant: "destructive",
       });
       router.push("/signin?redirect=" + encodeURIComponent(window.location.pathname));
       return false;
@@ -360,23 +354,22 @@ export function CartProvider({ children }: { children: ReactNode }) {
 
       if (!response.ok) {
         const error = await response.json();
-        toast({
-          title: "Stock unavailable",
+        toast.error("Stock unavailable", {
           description: error.message || "Insufficient stock available",
-          variant: "destructive",
         });
         return false;
       }
 
       // Stock is available, add to cart
       addItem(item);
+      toast.success("Added to cart", {
+        description: `${item.name} has been added to your cart`,
+      });
       return true;
     } catch (error) {
       console.error("Error checking stock:", error);
-      toast({
-        title: "Error",
+      toast.error("Error", {
         description: "Failed to check stock availability",
-        variant: "destructive",
       });
       return false;
     }

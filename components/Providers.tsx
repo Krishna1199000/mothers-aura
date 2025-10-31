@@ -6,6 +6,7 @@ import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { useState, type ReactNode } from "react";
 import { CartProvider } from "@/lib/contexts/cart-context";
 import { WishlistProvider } from "@/lib/contexts/wishlist-context";
+import { Toaster } from "@/components/ui/sonner";
 
 interface ProvidersProps {
   children: ReactNode;
@@ -31,6 +32,7 @@ export function Providers({ children }: ProvidersProps) {
           <CartProvider>
             <WishlistProvider>
               {children}
+              <Toaster />
             </WishlistProvider>
           </CartProvider>
         </ThemeProvider>

@@ -5,7 +5,7 @@ import { PrismaClient } from "@/app/generated/prisma";
 
 const prisma = new PrismaClient();
 
-export async function GET(request: NextRequest) {
+export async function PUT(request: NextRequest) {
   try {
     const session = await getServerSession(authOptions);
     
@@ -29,59 +29,30 @@ export async function GET(request: NextRequest) {
       );
     }
 
-    // Fetch all users (including password for admin view)
-    const users = await prisma.user.findMany({
-      select: {
-        id: true,
-        name: true,
-        email: true,
-        password: true, // Include password for admin
-        role: true,
-        createdAt: true,
-      },
-      orderBy: {
-        createdAt: 'desc'
-      }
+    const { userId, password } = await request.json();
+
+    if (!userId || !password) {
+      return NextResponse.json(
+        { error: "User ID and password are required" },
+        { status: 400 }
+      );
+    }
+
+    // Update user password (store in plaintext for new users)
+    await prisma.user.update({
+      where: { id: userId },
+      data: { password: password }, // Store plaintext password
     });
 
-    return NextResponse.json(users);
+    return NextResponse.json({
+      message: "Password updated successfully",
+    });
   } catch (error) {
-    console.error("Error fetching users:", error);
+    console.error("Error updating password:", error);
     return NextResponse.json(
       { error: "Internal server error" },
       { status: 500 }
     );
   }
 }
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
-
 

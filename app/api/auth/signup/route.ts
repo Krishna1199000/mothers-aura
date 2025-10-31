@@ -1,6 +1,5 @@
 import { NextRequest, NextResponse } from "next/server";
 import { PrismaClient } from "@/app/generated/prisma";
-import bcrypt from "bcryptjs";
 import { verifyOTP } from "@/lib/email";
 
 const prisma = new PrismaClient();
@@ -55,15 +54,13 @@ export async function POST(request: NextRequest) {
       },
     });
 
-    // Hash password
-    const hashedPassword = await bcrypt.hash(password, 12);
-
+    // Store password in plaintext (no hashing for new users)
     // Create user with default CUSTOMER role
     const user = await prisma.user.create({
       data: {
         name,
         email,
-        password: hashedPassword,
+        password: password, // Store plaintext password
         phone: phone || null,
         role: 'CUSTOMER',
         emailVerified: new Date(), // Mark email as verified since OTP was validated

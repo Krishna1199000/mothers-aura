@@ -8,7 +8,7 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { OtpInput } from "@/components/ui/otp-input";
-import { useToast } from "@/hooks/use-toast";
+import { toast } from "sonner";
 
 interface ForgotPasswordFormData {
   email: string;
@@ -26,7 +26,6 @@ export function ForgotPasswordForm() {
   const [otp, setOTP] = useState("");
   const [tempEmail, setTempEmail] = useState("");
   const router = useRouter();
-  const { toast } = useToast();
 
   const {
     register: registerEmail,
@@ -60,16 +59,13 @@ export function ForgotPasswordForm() {
 
       setTempEmail(data.email);
       setShowOTP(true);
-      toast({
-        title: "OTP Sent!",
+      toast.success("OTP Sent!", {
         description: "Please check your email for the verification code.",
       });
     } catch (error) {
       console.error("Forgot password error:", error);
-      toast({
-        title: "Error",
+      toast.error("Password Reset Failed", {
         description: error instanceof Error ? error.message : "Something went wrong",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -78,10 +74,8 @@ export function ForgotPasswordForm() {
 
   const onOTPSubmit = async () => {
     if (otp.length !== 6) {
-      toast({
-        title: "Error",
-        description: "Please enter a valid OTP",
-        variant: "destructive",
+      toast.error("Invalid OTP", {
+        description: "Please enter a valid 6-digit OTP",
       });
       return;
     }
@@ -105,12 +99,13 @@ export function ForgotPasswordForm() {
 
       setShowOTP(false);
       setShowResetForm(true);
+      toast.success("OTP Verified!", {
+        description: "Please enter your new password.",
+      });
     } catch (error) {
       console.error("OTP verification error:", error);
-      toast({
-        title: "Error",
+      toast.error("OTP Verification Failed", {
         description: error instanceof Error ? error.message : "Something went wrong",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);
@@ -136,18 +131,17 @@ export function ForgotPasswordForm() {
         throw new Error(result.error || "Failed to reset password");
       }
 
-      toast({
-        title: "Success!",
-        description: "Your password has been reset. Please sign in.",
+      toast.success("Password Reset Successful!", {
+        description: "Your password has been reset. Redirecting to sign in...",
       });
 
-      router.push("/signin");
+      setTimeout(() => {
+        router.push("/signin");
+      }, 1500);
     } catch (error) {
       console.error("Password reset error:", error);
-      toast({
-        title: "Error",
+      toast.error("Password Reset Failed", {
         description: error instanceof Error ? error.message : "Something went wrong",
-        variant: "destructive",
       });
     } finally {
       setIsLoading(false);

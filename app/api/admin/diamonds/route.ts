@@ -39,13 +39,38 @@ export async function GET(request: NextRequest) {
 
     // Build where clause for both sources
     const commonWhere: any = {};
+    const andConditions: any[] = [];
 
     // Search
     if (search) {
-      commonWhere.OR = [
-        { stockId: { contains: search, mode: "insensitive" } },
-        { certificateNo: { contains: search, mode: "insensitive" } },
-      ];
+      andConditions.push({
+        OR: [
+          { stockId: { contains: search, mode: "insensitive" } },
+          { certificateNo: { contains: search, mode: "insensitive" } },
+        ]
+      });
+    }
+
+    // Shape filter (case-insensitive)
+    if (shapes.length > 0) {
+      // Use case-insensitive matching for shapes - match any of the selected shapes
+      andConditions.push({
+        OR: shapes.map(shape => ({
+          shape: { 
+            equals: shape, 
+            mode: "insensitive" 
+          }
+        }))
+      });
+    }
+
+    // Combine AND conditions if we have any
+    if (andConditions.length > 0) {
+      if (andConditions.length === 1) {
+        Object.assign(commonWhere, andConditions[0]);
+      } else {
+        commonWhere.AND = andConditions;
+      }
     }
 
     // Status filter
@@ -77,11 +102,6 @@ export async function GET(request: NextRequest) {
     // Clarity filter
     if (clarities.length > 0) {
       commonWhere.clarity = { in: clarities };
-    }
-
-    // Shape filter
-    if (shapes.length > 0) {
-      commonWhere.shape = { in: shapes };
     }
 
     // Cut filter

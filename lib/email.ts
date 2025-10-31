@@ -310,6 +310,75 @@ export async function sendInvoiceEmailDetailed({
   });
 }
 
+// Exact-format memo email (same as invoice email) with dynamic fields
+export async function sendMemoEmailDetailed({
+  to,
+  customerName,
+  memoNo,
+  totalAmount,
+  pdfBuffer
+}: {
+  to: string;
+  customerName: string;
+  memoNo: string;
+  totalAmount: number;
+  pdfBuffer: Buffer;
+}): Promise<void> {
+  const logoUrl = getLogoForEmail();
+  const title = 'Your Memo from Mothers Aura Diamonds';
+  const content = `
+    <p>Dear <strong>${customerName}</strong>,</p>
+    <p>Thank you for choosing Mothers Aura Diamonds. We are pleased to provide your memo and have attached it for your records.</p>
+    <div class="highlight">
+      <h3>Memo Details</h3>
+      <p><strong>Memo Number:</strong> ${memoNo}</p>
+      <p><strong>Total Amount:</strong> <span class="amount">₹${totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
+      <p><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
+    </div>
+    <h3>What's Next?</h3>
+    <ul>
+      <li>Your memo is attached to this email as a PDF</li>
+      <li>Our team will process your order and arrange shipping</li>
+      <li>Our customer service team is available for any questions</li>
+    </ul>
+    <h3>Need Assistance?</h3>
+    <p>If you have any questions about your memo or need additional support, please don't hesitate to contact us:</p>
+    <ul>
+      <li><strong>Email:</strong> <a href="mailto:admintejas@mothersauradiamonds.com">admintejas@mothersauradiamonds.com</a></li>
+      <li><strong>Website:</strong> <a href="https://mothersauradiamonds.com" target="_blank">mothersauradiamonds.com</a></li>
+      <li><strong>Address:</strong> 203-Bhav resiedency, Thane 421304, Maharastra, India.</li>
+    </ul>
+    <p style="color:#333;margin-top:24px;">We truly appreciate your business and look forward to serving you again. Thank you for trusting Mothers Aura Diamonds with your diamond needs.</p>
+    <p style="margin: 32px 0 8px 0; color:#333;">Warm regards,<br><strong>The Mothers Aura Diamond Team</strong></p>
+  `;
+
+  const html = createEmailTemplate({
+    logoUrl,
+    title,
+    content,
+    footerContent: '<p>203-Bhav resiedency, Thane 421304, Maharastra, India.</p>'
+  });
+
+  const safeMemoNo = memoNo.replace(/\/?/g, '-');
+
+  // Basic validation to ensure the PDF buffer is not empty and starts with PDF magic number
+  if (!pdfBuffer || pdfBuffer.length === 0) {
+    throw new Error('PDF buffer is empty or invalid');
+  }
+  const pdfHeader = pdfBuffer.slice(0, 4).toString('hex');
+  if (pdfHeader !== '25504446') {
+    throw new Error('Generated buffer is not a valid PDF file');
+  }
+
+  await transporter.sendMail({
+    from: '"Mothers Aura" <admintejas@mothersauradiamonds.com>',
+    to,
+    subject: `Memo ${memoNo} - From Mothers Aura Diamonds`,
+    html,
+    attachments: [{ filename: `Memo-${safeMemoNo}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }]
+  });
+}
+
 const chatNotificationTemplate = (name: string, email: string, message: string) => `
   <div style="font-family: Arial, sans-serif; max-width: 600px; margin: 0 auto; padding: 20px; background-color: #f9f9f9;">
     <div style="background-color: white; padding: 30px; border-radius: 10px; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
@@ -394,22 +463,22 @@ const appointmentEmailTemplate = (formData: {
     <meta charset="utf-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
   </head>
-  <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f5f5f5;">
-    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #f5f5f5; padding: 20px 0;">
+  <body style="margin: 0; padding: 0; font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #ffffff;">
+    <table role="presentation" style="width: 100%; border-collapse: collapse; background-color: #ffffff; padding: 20px 0;">
       <tr>
         <td style="padding: 20px 0;">
           <table role="presentation" style="width: 600px; margin: 0 auto; background-color: #ffffff; border-radius: 8px; box-shadow: 0 2px 8px rgba(0,0,0,0.1); overflow: hidden;">
             <!-- Header -->
             <tr>
-              <td style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 40px 30px; text-align: center;">
+              <td style="background: #ffffff; padding: 40px 30px; text-align: center; border-bottom: 1px solid #e9ecef;">
                 <img src="https://mothersauradiamonds.com/logobg.png" alt="Mothers Aura Logo" style="height:90px; width:auto; display:block; margin:0 auto 0 auto;" />
-                <p style="color: #ffffff; margin: 8px 0 0 0; font-size: 16px; opacity: 0.95;">Premium Diamond Jewellery</p>
+                <p style="color: #333333; margin: 8px 0 0 0; font-size: 16px;">Premium Diamond Jewellery</p>
               </td>
             </tr>
             
             <!-- Content -->
             <tr>
-              <td style="padding: 40px 30px;">
+              <td style="padding: 40px 30px; background-color:#ffffff;">
                 <div style="text-align: center; margin-bottom: 30px;">
                   <div style="width: 60px; height: 60px; background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); border-radius: 50%; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
                     <span style="color: #ffffff; font-size: 28px; font-weight: bold;">📅</span>
@@ -488,7 +557,7 @@ const appointmentEmailTemplate = (formData: {
                 </table>
                 
                 ${formData.message ? `
-                <div style="background: linear-gradient(135deg, #667eea 0%, #764ba2 100%); padding: 2px; border-radius: 8px; margin-bottom: 30px;">
+                <div style="background: #e9ecef; padding: 2px; border-radius: 8px; margin-bottom: 30px;">
                   <div style="background-color: #ffffff; border-radius: 6px; padding: 25px;">
                     <p style="color: #667eea; font-size: 14px; font-weight: 600; text-transform: uppercase; letter-spacing: 0.5px; margin: 0 0 12px 0;">Additional Message</p>
                     <p style="color: #666666; font-size: 15px; line-height: 1.6; margin: 0;">${formData.message}</p>
@@ -506,13 +575,102 @@ const appointmentEmailTemplate = (formData: {
             
             <!-- Footer -->
             <tr>
-              <td style="background-color: #f8f9fa; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;">
+              <td style="background-color: #ffffff; padding: 30px; text-align: center; border-top: 1px solid #e9ecef;">
                 <p style="color: #999999; font-size: 12px; margin: 0 0 8px 0;">
                   © 2024 Mothers Aura Diamonds. All rights reserved.
                 </p>
                 <p style="color: #cccccc; font-size: 11px; margin: 0;">
                   This is an automated notification email. Please do not reply directly to this message.
                 </p>
+              </td>
+            </tr>
+          </table>
+        </td>
+      </tr>
+    </table>
+  </body>
+  </html>
+`;
+
+// Customer-facing appointment confirmation (thank-you tone) with white background
+const appointmentCustomerEmailTemplate = (formData: {
+  name: string;
+  email: string;
+  phone: string;
+  date: string;
+  time: string;
+  message?: string;
+}) => `
+  <!DOCTYPE html>
+  <html>
+  <head>
+    <meta charset="utf-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  </head>
+  <body style="margin:0;padding:0;font-family:'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;background-color:#ffffff;">
+    <table role="presentation" style="width:100%;border-collapse:collapse;background-color:#ffffff;padding:20px 0;">
+      <tr>
+        <td>
+          <table role="presentation" style="width:600px;margin:0 auto;background-color:#ffffff;border-radius:8px;border:1px solid #e9ecef;overflow:hidden;">
+            <tr>
+              <td style="background:#ffffff;padding:40px 30px;text-align:center;border-bottom:1px solid #e9ecef;">
+                <img src="https://mothersauradiamonds.com/logobg.png" alt="Mothers Aura Logo" style="height:90px;width:auto;display:block;margin:0 auto;" />
+                <p style="color:#333333;margin:8px 0 0 0;font-size:16px;">Premium Diamond Jewellery</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="padding:32px 30px;background:#ffffff;">
+                <h2 style="margin:0 0 8px 0;color:#1a1a1a;font-weight:700;font-size:22px;text-align:center;">Thank you! We received your appointment request.</h2>
+                <p style="margin:0 0 20px 0;color:#4a5568;font-size:15px;text-align:center;">Our team will review your request and book the appointment. We’ll get back to you shortly with confirmation.</p>
+
+                <div style="background:#f8f9fa;border-radius:8px;border:1px solid #e9ecef;padding:20px;margin-bottom:24px;">
+                  <table role="presentation" style="width:100%;border-collapse:collapse;">
+                    <tr>
+                      <td style="padding:10px 0;border-bottom:1px solid #e9ecef;">
+                        <strong style="display:inline-block;width:120px;color:#667eea;text-transform:uppercase;letter-spacing:.5px;font-size:12px;">Name</strong>
+                        <span style="color:#333333;font-size:15px;font-weight:500;">${formData.name}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:10px 0;border-bottom:1px solid #e9ecef;">
+                        <strong style="display:inline-block;width:120px;color:#667eea;text-transform:uppercase;letter-spacing:.5px;font-size:12px;">Email</strong>
+                        <span style="color:#333333;font-size:15px;font-weight:500;">${formData.email}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:10px 0;border-bottom:1px solid #e9ecef;">
+                        <strong style="display:inline-block;width:120px;color:#667eea;text-transform:uppercase;letter-spacing:.5px;font-size:12px;">Phone</strong>
+                        <span style="color:#333333;font-size:15px;font-weight:500;">${formData.phone}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:10px 0;border-bottom:1px solid #e9ecef;">
+                        <strong style="display:inline-block;width:120px;color:#667eea;text-transform:uppercase;letter-spacing:.5px;font-size:12px;">Date</strong>
+                        <span style="color:#333333;font-size:15px;font-weight:500;">${formData.date}</span>
+                      </td>
+                    </tr>
+                    <tr>
+                      <td style="padding:10px 0;">
+                        <strong style="display:inline-block;width:120px;color:#667eea;text-transform:uppercase;letter-spacing:.5px;font-size:12px;">Time</strong>
+                        <span style="color:#333333;font-size:15px;font-weight:500;">${formData.time}</span>
+                      </td>
+                    </tr>
+                  </table>
+                </div>
+
+                ${formData.message ? `
+                <div style="background:#ffffff;border:1px solid #e9ecef;border-radius:8px;padding:16px;margin-bottom:20px;">
+                  <p style="color:#667eea;font-size:12px;font-weight:600;text-transform:uppercase;letter-spacing:.5px;margin:0 0 8px 0;">Additional Message</p>
+                  <p style="color:#4a5568;font-size:15px;line-height:1.6;margin:0;">${formData.message}</p>
+                </div>
+                ` : ''}
+
+                <p style="color:#4a5568;font-size:14px;margin-top:16px;text-align:center;">If any detail needs changes, just reply to this email and we’ll update your booking.</p>
+              </td>
+            </tr>
+            <tr>
+              <td style="background:#ffffff;padding:24px;text-align:center;border-top:1px solid #e9ecef;">
+                <p style="color:#999999;font-size:12px;margin:0 0 6px 0;">© 2024 Mothers Aura Diamonds. All rights reserved.</p>
               </td>
             </tr>
           </table>
@@ -534,12 +692,24 @@ export const sendAppointmentEmail = async (formData: {
 }) => {
   try {
     console.log(`Sending appointment email to ${formData.email}`);
+    const htmlCustomer = appointmentCustomerEmailTemplate(formData);
+    const htmlAdmin = appointmentEmailTemplate(formData);
 
+    // 1) Send confirmation to customer
     await transporter.sendMail({
       from: '"Mothers Aura" <admintejas@mothersauradiamonds.com>',
       to: formData.email,
-      subject: "New Appointment Booking Request from Mothers Aura Diamonds",
-      html: appointmentEmailTemplate(formData),
+      subject: "Thanks! We received your appointment request",
+      html: htmlCustomer,
+    });
+
+    // 2) Notify admin with customer's request as well
+    await transporter.sendMail({
+      from: '"Mothers Aura" <admintejas@mothersauradiamonds.com>',
+      to: 'admintejas@mothersauradiamonds.com',
+      subject: `Appointment Request: ${formData.name} (${formData.email})`,
+      html: htmlAdmin,
+      replyTo: formData.email,
     });
 
     console.log(`Appointment email sent successfully to ${formData.email}`);

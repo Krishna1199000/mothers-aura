@@ -11,12 +11,15 @@ import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@
 import { Badge } from "@/components/ui/badge";
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from "@/components/ui/select";
 import { Alert, AlertDescription } from "@/components/ui/alert";
-import { Users, Shield, UserCheck, Crown } from "lucide-react";
+import { Users, Shield, UserCheck, Crown, Eye, EyeOff, Edit2, Check, X } from "lucide-react";
+import { Input } from "@/components/ui/input";
+import { toast } from "sonner";
 
 interface User {
   id: string;
   name: string;
   email: string;
+  password?: string;
   role: 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER';
   createdAt: string;
 }
@@ -28,6 +31,9 @@ export default function ManageUsersPage() {
   const [loading, setLoading] = useState(true);
   const [updating, setUpdating] = useState<string | null>(null);
   const [message, setMessage] = useState("");
+  const [editingPassword, setEditingPassword] = useState<string | null>(null);
+  const [passwordValues, setPasswordValues] = useState<Record<string, string>>({});
+  const [showPasswords, setShowPasswords] = useState<Record<string, boolean>>({});
 
   useEffect(() => {
     if (status === "loading") return;
@@ -47,6 +53,14 @@ export default function ManageUsersPage() {
       if (response.ok) {
         const data = await response.json();
         setUsers(data);
+        // Initialize password values from fetched users
+        const initialPasswordValues: Record<string, string> = {};
+        data.forEach((user: User) => {
+          if (user.password) {
+            initialPasswordValues[user.id] = user.password;
+          }
+        });
+        setPasswordValues(initialPasswordValues);
       } else {
         setMessage("Failed to fetch users");
       }
@@ -70,16 +84,83 @@ export default function ManageUsersPage() {
 
       if (response.ok) {
         setMessage(`User role updated successfully to ${newRole}`);
+        toast.success("Role Updated", {
+          description: `User role updated successfully to ${newRole}`,
+        });
         fetchUsers(); // Refresh the list
       } else {
         const error = await response.json();
-        setMessage(error.error || "Failed to update user role");
+        const errorMsg = error.error || "Failed to update user role";
+        setMessage(errorMsg);
+        toast.error("Update Failed", {
+          description: errorMsg,
+        });
       }
     } catch (error) {
       setMessage("Error updating user role");
     } finally {
       setUpdating(null);
     }
+  };
+
+  const updateUserPassword = async (userId: string) => {
+    const newPassword = passwordValues[userId];
+    if (!newPassword || newPassword.trim() === '') {
+      setMessage("Password cannot be empty");
+      toast.error("Validation Error", {
+        description: "Password cannot be empty",
+      });
+      return;
+    }
+
+    setUpdating(userId);
+    try {
+      const response = await fetch('/api/admin/users/update-password', {
+        method: 'PUT',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ userId, password: newPassword }),
+      });
+
+      if (response.ok) {
+        setMessage("Password updated successfully");
+        toast.success("Password Updated", {
+          description: "User password has been updated successfully",
+        });
+        setEditingPassword(null);
+        setPasswordValues({ ...passwordValues, [userId]: newPassword });
+        fetchUsers(); // Refresh the list
+      } else {
+        const error = await response.json();
+        const errorMsg = error.error || "Failed to update password";
+        setMessage(errorMsg);
+        toast.error("Update Failed", {
+          description: errorMsg,
+        });
+      }
+    } catch (error) {
+      setMessage("Error updating password");
+      toast.error("Update Failed", {
+        description: "Error updating password",
+      });
+    } finally {
+      setUpdating(null);
+    }
+  };
+
+  const startEditingPassword = (userId: string, currentPassword: string = '') => {
+    setEditingPassword(userId);
+    setPasswordValues({ ...passwordValues, [userId]: currentPassword });
+  };
+
+  const cancelEditingPassword = (userId: string, originalPassword: string = '') => {
+    setEditingPassword(null);
+    setPasswordValues({ ...passwordValues, [userId]: originalPassword });
+  };
+
+  const togglePasswordVisibility = (userId: string) => {
+    setShowPasswords({ ...showPasswords, [userId]: !showPasswords[userId] });
   };
 
   const getRoleBadgeVariant = (role: string) => {
@@ -197,47 +278,126 @@ export default function ManageUsersPage() {
                   <TableRow>
                     <TableHead>User</TableHead>
                     <TableHead>Email</TableHead>
+                    <TableHead>Password</TableHead>
                     <TableHead>Current Role</TableHead>
                     <TableHead>Member Since</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  {users.map((user) => (
-                    <TableRow key={user.id}>
-                      <TableCell className="font-medium">
-                        <div className="flex items-center gap-2">
-                          {getRoleIcon(user.role)}
-                          {user.name}
-                        </div>
-                      </TableCell>
-                      <TableCell>{user.email}</TableCell>
-                      <TableCell>
-                        <Badge variant={getRoleBadgeVariant(user.role)}>
-                          {user.role}
-                        </Badge>
-                      </TableCell>
-                      <TableCell>
-                        {new Date(user.createdAt).toLocaleDateString()}
-                      </TableCell>
-                      <TableCell>
-                        <Select
-                          value={user.role}
-                          onValueChange={(newRole) => updateUserRole(user.id, newRole)}
-                          disabled={updating === user.id}
-                        >
-                          <SelectTrigger className="w-32">
-                            <SelectValue />
-                          </SelectTrigger>
-                          <SelectContent>
-                            <SelectItem value="CUSTOMER">Customer</SelectItem>
-                            <SelectItem value="EMPLOYEE">Employee</SelectItem>
-                            <SelectItem value="ADMIN">Admin</SelectItem>
-                          </SelectContent>
-                        </Select>
-                      </TableCell>
-                    </TableRow>
-                  ))}
+                  {users.map((user) => {
+                    const isEditing = editingPassword === user.id;
+                    const isPasswordVisible = showPasswords[user.id];
+                    const displayPassword = user.password || 'No password';
+                    // Check if password is hashed (starts with $2a$, $2b$, or $2y$)
+                    const isHashed = user.password?.startsWith('$2a$') || 
+                                     user.password?.startsWith('$2b$') || 
+                                     user.password?.startsWith('$2y$');
+                    // Show actual password if visible and not hashed, otherwise show masked
+                    const showPassword = isHashed 
+                      ? '******** (Hashed)' 
+                      : (isPasswordVisible ? displayPassword : '••••••••');
+                    
+                    return (
+                      <TableRow key={user.id}>
+                        <TableCell className="font-medium">
+                          <div className="flex items-center gap-2">
+                            {getRoleIcon(user.role)}
+                            {user.name}
+                          </div>
+                        </TableCell>
+                        <TableCell>{user.email}</TableCell>
+                        <TableCell>
+                          {isEditing ? (
+                            <div className="flex items-center gap-2">
+                              <Input
+                                type={isPasswordVisible ? "text" : "password"}
+                                value={passwordValues[user.id] || ''}
+                                onChange={(e) => setPasswordValues({ ...passwordValues, [user.id]: e.target.value })}
+                                className="w-48"
+                                autoFocus
+                              />
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => togglePasswordVisibility(user.id)}
+                                disabled={updating === user.id}
+                              >
+                                {isPasswordVisible ? <EyeOff className="h-4 w-4" /> : <Eye className="h-4 w-4" />}
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => updateUserPassword(user.id)}
+                                disabled={updating === user.id}
+                              >
+                                <Check className="h-4 w-4 text-green-600" />
+                              </Button>
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => cancelEditingPassword(user.id, user.password || '')}
+                                disabled={updating === user.id}
+                              >
+                                <X className="h-4 w-4 text-red-600" />
+                              </Button>
+                            </div>
+                          ) : (
+                            <div className="flex items-center gap-2">
+                              <span className="font-mono text-sm max-w-xs truncate">
+                                {showPassword}
+                              </span>
+                              {!isHashed && (
+                                <Button
+                                  size="sm"
+                                  variant="ghost"
+                                  onClick={() => togglePasswordVisibility(user.id)}
+                                  className="h-6 w-6 p-0"
+                                  title={isPasswordVisible ? "Hide password" : "Show password"}
+                                >
+                                  {isPasswordVisible ? <EyeOff className="h-3 w-3" /> : <Eye className="h-3 w-3" />}
+                                </Button>
+                              )}
+                              <Button
+                                size="sm"
+                                variant="ghost"
+                                onClick={() => startEditingPassword(user.id, user.password || '')}
+                                className="h-6 w-6 p-0"
+                                disabled={updating === user.id}
+                                title="Edit password"
+                              >
+                                <Edit2 className="h-3 w-3" />
+                              </Button>
+                            </div>
+                          )}
+                        </TableCell>
+                        <TableCell>
+                          <Badge variant={getRoleBadgeVariant(user.role)}>
+                            {user.role}
+                          </Badge>
+                        </TableCell>
+                        <TableCell>
+                          {new Date(user.createdAt).toLocaleDateString()}
+                        </TableCell>
+                        <TableCell>
+                          <Select
+                            value={user.role}
+                            onValueChange={(newRole) => updateUserRole(user.id, newRole)}
+                            disabled={updating === user.id}
+                          >
+                            <SelectTrigger className="w-32">
+                              <SelectValue />
+                            </SelectTrigger>
+                            <SelectContent>
+                              <SelectItem value="CUSTOMER">Customer</SelectItem>
+                              <SelectItem value="EMPLOYEE">Employee</SelectItem>
+                              <SelectItem value="ADMIN">Admin</SelectItem>
+                            </SelectContent>
+                          </Select>
+                        </TableCell>
+                      </TableRow>
+                    );
+                  })}
                 </TableBody>
               </Table>
               

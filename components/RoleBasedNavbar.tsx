@@ -33,6 +33,7 @@ const navItems: Record<string, NavItem[]> = {
     { href: "/dashboard", label: "Dashboard", group: "core" },
     { href: "/manage-users", label: "Manage Users", group: "core" },
     { href: "/masters", label: "Masters", group: "core" },
+    { href: "/announcements", label: "Announcements", group: "core" },
 
     // Inventory & Products
     { href: "/inventory", label: "Inventory", group: "inventory" },

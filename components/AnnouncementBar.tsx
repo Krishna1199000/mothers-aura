@@ -10,38 +10,50 @@ interface AnnouncementBarProps {
 export const AnnouncementBar = ({ forceShow = false }: AnnouncementBarProps) => {
   const { data: session, status } = useSession();
   const [currentIndex, setCurrentIndex] = useState(0);
-
-  const announcements = [
-    {
-      text: "Sign up to our Late Spring sale, for up to 20% off.",
-      buttonText: "GET ACCESS",
-      buttonAction: () => window.open('/signup', '_self')
-    },
-    {
-      text: "Free worldwide shipping on orders over $500.",
-      buttonText: "SHOP NOW",
-      buttonAction: () => window.open('/products', '_self')
-    },
-    {
-      text: "New diamond collection just arrived! Limited time offer.",
-      buttonText: "VIEW COLLECTION",
-      buttonAction: () => window.open('/diamonds', '_self')
-    }
-  ];
+  const [announcements, setAnnouncements] = useState<{
+    text: string;
+    buttonText?: string | null;
+    buttonUrl?: string | null;
+  }[]>([]);
 
   useEffect(() => {
+    // Load active announcements
+    const load = async () => {
+      try {
+        const res = await fetch('/api/announcements', { cache: 'no-store' });
+        if (res.ok) {
+          const data = await res.json();
+          if (Array.isArray(data) && data.length > 0) {
+            setAnnouncements(data);
+            return;
+          }
+        }
+        // Fallback defaults
+        setAnnouncements([
+          { text: 'Free worldwide shipping on orders over $500.', buttonText: 'SHOP NOW', buttonUrl: '/products' },
+        ]);
+      } catch {
+        setAnnouncements([
+          { text: 'Free worldwide shipping on orders over $500.', buttonText: 'SHOP NOW', buttonUrl: '/products' },
+        ]);
+      }
+    };
+    load();
+  }, []);
+
+  useEffect(() => {
+    if (announcements.length === 0) return;
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % announcements.length);
-    }, 4000); // Change every 4 seconds
-
+    }, 4000);
     return () => clearInterval(interval);
-  }, [announcements.length]);
+  }, [announcements]);
 
   // Hide for signed-in pages unless explicitly forced (landing page)
   if (!forceShow && status !== "loading" && session?.user) return null;
 
   return (
-    <div className="bg-gray-50 text-gray-800 dark:bg-gray-900 dark:text-gray-100 py-2 px-4 text-sm overflow-hidden">
+    <div className="text-white py-2 px-4 text-sm overflow-hidden" style={{ backgroundColor: '#112158' }}>
       <div className="container mx-auto">
         <div className="flex justify-center items-center relative">
           <div className="flex items-center min-h-[32px]">
@@ -52,14 +64,7 @@ export const AnnouncementBar = ({ forceShow = false }: AnnouncementBarProps) => 
                 animation: 'fadeInSlide 0.5s ease-in-out'
               }}
             >
-              <p className="text-center truncate max-w-[180px] sm:max-w-none text-xs sm:text-sm">{announcements[currentIndex].text}</p>
-              <button 
-                onClick={announcements[currentIndex].buttonAction}
-                className="ml-2 sm:ml-4 px-2 py-1 sm:px-3 sm:py-1 border border-gray-300 dark:border-gray-700 text-gray-800 dark:text-gray-100 text-xs uppercase tracking-wide hover:bg-gray-100 dark:hover:bg-gray-800 transition-colors"
-              >
-                <span className="hidden sm:inline">{announcements[currentIndex].buttonText}</span>
-                <span className="sm:hidden">SHOP</span>
-              </button>
+              <p className="text-center truncate max-w-[180px] sm:max-w-none text-xs sm:text-sm">{announcements[currentIndex]?.text}</p>
             </div>
           </div>
         </div>
