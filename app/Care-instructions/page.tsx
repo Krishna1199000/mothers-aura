@@ -5,11 +5,19 @@ import CareHero from "@/components/care-hero"
 import CareCard from "@/components/care-card"
 import CareAccordion from "@/components/care-accordion"
 import CareTimeline from "@/components/care-timeline"
+import { Footer } from "@/components/Footer"
+import { AnnouncementBar } from "@/components/AnnouncementBar"
+import { Header } from "@/components/Header"
 
 export default function CareInstructionsPage() {
   const [expandedIndex, setExpandedIndex] = useState<number | null>(null)
 
   return (
+    <>
+    <AnnouncementBar forceShow />
+    <div className="sticky top-0 z-40">
+      <Header />
+    </div>
     <main className="min-h-screen bg-white text-black">
       <CareHero />
 
@@ -78,6 +86,8 @@ export default function CareInstructionsPage() {
           </button>
         </div>
       </section>
+      <Footer />
     </main>
+    </>
   )
 }

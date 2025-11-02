@@ -4,6 +4,9 @@ import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Award, Diamond, Users, Star } from "lucide-react";
 import Image from "next/image";
+import { Footer } from "@/components/Footer";
+import { AnnouncementBar } from "@/components/AnnouncementBar";
+import { Header } from "@/components/Header";
 
 export default function AboutPage() {
   const stats = [
@@ -34,6 +37,11 @@ export default function AboutPage() {
   ];
 
   return (
+    <>
+    <AnnouncementBar forceShow />
+    <div className="sticky top-0 z-40">
+      <Header />
+    </div>
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto space-y-12">
         {/* Hero Section */}
@@ -136,5 +144,7 @@ export default function AboutPage() {
         </motion.div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

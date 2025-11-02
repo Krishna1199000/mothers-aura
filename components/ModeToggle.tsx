@@ -20,13 +20,13 @@ export function ModeToggle() {
 
   // Pick icon by current theme
   const EffectiveIcon = () => {
-    if (theme === "dark") return <Moon className="h-[1.2rem] w-[1.2rem]" />;
+    if (theme === "dark") return <Moon className="h-5 w-5" />;
     // default to light
-    return <Sun className="h-[1.2rem] w-[1.2rem]" />;
+    return <Sun className="h-5 w-5" />;
   };
 
   return (
-    <Button variant="ghost" size="icon" onClick={handleCycle} aria-label="Toggle theme">
+    <Button variant="ghost" size="icon" className="h-10 w-10" onClick={handleCycle} aria-label="Toggle theme">
       <EffectiveIcon />
     </Button>
   );

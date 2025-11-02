@@ -66,7 +66,7 @@ export const verifyOTP = async (email: string, otp: string, type: 'signup' | 'pa
 // Email Templates
 // Helper to provide company logo for emails (prefer hosted URL for email client reliability)
 const getLogoForEmail = (): string => {
-  return 'https://mothersauradiamonds.com/logobg.png';
+  return 'https://mothersauradiamonds.com/logoWithDescbg.png';
 };
 
 // Professional, reusable email shell matching the reference design (header/logo, styled content, footer)
@@ -471,7 +471,7 @@ const appointmentEmailTemplate = (formData: {
             <!-- Header -->
             <tr>
               <td style="background: #ffffff; padding: 40px 30px; text-align: center; border-bottom: 1px solid #e9ecef;">
-                <img src="https://mothersauradiamonds.com/logobg.png" alt="Mothers Aura Logo" style="height:90px; width:auto; display:block; margin:0 auto 0 auto;" />
+                <img src="https://mothersauradiamonds.com/logoWithDescbg.png" alt="Mothers Aura Logo" style="height:90px; width:auto; display:block; margin:0 auto 0 auto;" />
                 <p style="color: #333333; margin: 8px 0 0 0; font-size: 16px;">Premium Diamond Jewellery</p>
               </td>
             </tr>
@@ -614,7 +614,7 @@ const appointmentCustomerEmailTemplate = (formData: {
           <table role="presentation" style="width:600px;margin:0 auto;background-color:#ffffff;border-radius:8px;border:1px solid #e9ecef;overflow:hidden;">
             <tr>
               <td style="background:#ffffff;padding:40px 30px;text-align:center;border-bottom:1px solid #e9ecef;">
-                <img src="https://mothersauradiamonds.com/logobg.png" alt="Mothers Aura Logo" style="height:90px;width:auto;display:block;margin:0 auto;" />
+                <img src="https://mothersauradiamonds.com/logoWithDescbg.png" alt="Mothers Aura Logo" style="height:90px;width:auto;display:block;margin:0 auto;" />
                 <p style="color:#333333;margin:8px 0 0 0;font-size:16px;">Premium Diamond Jewellery</p>
               </td>
             </tr>

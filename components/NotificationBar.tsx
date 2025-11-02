@@ -306,10 +306,10 @@ export function NotificationBar() {
         <Button 
           variant="outline" 
           size="icon" 
-          className="relative"
+          className="relative h-10 w-10"
           onClick={() => setIsNotificationOpen(!isNotificationOpen)}
         >
-          <Bell className="h-4 w-4" />
+          <Bell className="h-5 w-5" />
           {unreadCount > 0 && (
             <span className="absolute -top-2 -right-2 bg-red-500 text-white text-xs font-medium px-1.5 py-0.5 rounded-full min-w-[1.25rem] text-center">
               {unreadCount > 99 ? '99+' : unreadCount}

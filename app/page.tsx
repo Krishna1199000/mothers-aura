@@ -8,7 +8,6 @@ import { ShopByCategory } from '@/components/ShopByCategory';
 import { TrustSection } from '@/components/TrustSection';
 import { FeatureStripe } from '@/components/FeatureStripe';
 import { DiamondShapes } from '@/components/DiamondShapes';
-import { EssentialsSection } from '@/components/EssentialsShapes';
 import { MonthsSection } from '@/components/MonthsSection';
 import { PartnersSection } from '@/components/PartnersSection';
 import { ReviewsSection } from '@/components/ReviewsSection';
@@ -126,15 +125,6 @@ const Home = () => {
           <ShopByCategory />
         </motion.div>
         
-        <motion.div
-          initial="hidden"
-          whileInView="visible"
-          viewport={{ once: true, margin: "-20%" }}
-          variants={scaleUp}
-        >
-          <EssentialsSection />
-        </motion.div>
-
         <motion.div
           initial="hidden"
           whileInView="visible"

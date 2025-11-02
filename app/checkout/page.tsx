@@ -11,6 +11,7 @@ import { Textarea } from "@/components/ui/textarea";
 import { useToast } from "@/components/ui/use-toast";
 import { useCart } from "@/lib/contexts/cart-context";
 import { Loader2 } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 interface CheckoutFormData {
   fullName: string;
@@ -87,6 +88,7 @@ export default function CheckoutPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <motion.div
@@ -209,5 +211,7 @@ export default function CheckoutPage() {
         </motion.div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

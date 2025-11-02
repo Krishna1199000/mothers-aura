@@ -7,6 +7,7 @@ import { usePathname } from "next/navigation";
 import { Menu, X, ChevronDown } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { getRolePrefix } from "@/lib/get-role-prefix";
+import { useTheme } from "next-themes";
 import {
   Sheet,
   SheetContent,
@@ -34,6 +35,7 @@ const navItems: Record<string, NavItem[]> = {
     { href: "/manage-users", label: "Manage Users", group: "core" },
     { href: "/masters", label: "Masters", group: "core" },
     { href: "/announcements", label: "Announcements", group: "core" },
+    { href: "/customer-testimonials", label: "Customer Testimonials", group: "core" },
 
     // Inventory & Products
     { href: "/inventory", label: "Inventory", group: "inventory" },
@@ -84,6 +86,7 @@ export function RoleBasedNavbar({ role, showLogoOnly = false, showNavigationOnly
   const [expandedGroups, setExpandedGroups] = useState<Record<string, boolean>>({});
   const items = navItems[role] || navItems.CUSTOMER;
   const rolePrefix = getRolePrefix(role);
+  const { theme } = useTheme();
 
   // Helper to get the full path for a nav item
   const getFullPath = (href: string) => {
@@ -107,13 +110,13 @@ export function RoleBasedNavbar({ role, showLogoOnly = false, showNavigationOnly
   const LogoSection = () => (
     <div className="flex items-center gap-3">
       <Link href="/dashboard" className="flex items-center gap-3">
-        <div className="relative h-14 w-14">
+        <div className="relative h-[72px] w-[72px]">
           <Image
-            src="/logobg.png"
-            alt="Logo"
+            src={theme === "dark" ? "/logoNameInvertbg.png" : "/logoNamebg.png"}
+            alt="Mother's Aura Logo"
             fill
             className="object-contain"
-            sizes="56px"
+            sizes="72px"
             priority
           />
         </div>
@@ -214,13 +217,13 @@ export function RoleBasedNavbar({ role, showLogoOnly = false, showNavigationOnly
         <SheetHeader>
           <SheetTitle>
             <div className="flex items-center gap-3">
-              <div className="relative h-16 w-16">
+              <div className="relative h-[72px] w-[72px]">
                 <Image
-                  src="/logo.png"
-                  alt="Logo"
+                  src={theme === "dark" ? "/logoNameInvertbg.png" : "/logoNamebg.png"}
+                  alt="Mother's Aura Logo"
                   fill
                   className="object-contain"
-                  sizes="64px"
+                  sizes="72px"
                   unoptimized
                 />
               </div>

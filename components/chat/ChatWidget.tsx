@@ -434,7 +434,21 @@ export function ChatWidget({ className }: ChatWidgetProps) {
           initial={{ scale: 0 }}
           animate={{ scale: 1 }}
           exit={{ scale: 0 }}
+          className="flex flex-col items-end gap-1"
         >
+          {!isOpen && (
+            <motion.div
+              initial={{ opacity: 0, x: 20 }}
+              animate={{ opacity: 1, x: 0 }}
+              exit={{ opacity: 0, x: 20 }}
+              className="bg-white dark:bg-gray-900 rounded-lg shadow-lg px-4 py-2 mb-1 border border-gray-200 dark:border-gray-700 flex items-center gap-2"
+            >
+              <HelpCircle className="h-4 w-4 text-primary flex-shrink-0" />
+              <p className="text-sm font-medium text-gray-800 dark:text-gray-200 whitespace-nowrap">
+                Have a question? We are ready to help you
+              </p>
+            </motion.div>
+          )}
           <Button
             size="lg"
             className="rounded-full p-4 shadow-lg"
@@ -549,8 +563,26 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                         />
                       </div>
                       <div className="flex items-center justify-between pb-2 border-b">
-                        <Badge variant={adminStatus === 'AVAILABLE' ? 'default' : 'secondary'}>
-                          {adminStatus === 'AVAILABLE' ? 'Online' : 'Offline'}
+                        <Badge 
+                          variant={adminStatus === 'AVAILABLE' ? 'default' : 'secondary'}
+                          className={adminStatus === 'AVAILABLE' ? 'bg-green-500 hover:bg-green-600 text-white' : ''}
+                        >
+                          <span className="flex items-center gap-2">
+                            {adminStatus === 'AVAILABLE' && (
+                              <motion.span
+                                className="w-2 h-2 bg-white rounded-full"
+                                animate={{
+                                  opacity: [1, 0.5, 1],
+                                }}
+                                transition={{
+                                  duration: 1.5,
+                                  repeat: Infinity,
+                                  ease: "easeInOut",
+                                }}
+                              />
+                            )}
+                            {adminStatus === 'AVAILABLE' ? 'Online' : 'Offline'}
+                          </span>
                         </Badge>
                         {/* Icon toolbar */}
                         <div className="flex items-center gap-1.5">

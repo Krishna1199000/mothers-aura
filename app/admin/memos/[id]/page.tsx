@@ -333,11 +333,29 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
           headers: { 'Content-Type': 'application/json' },
           body: JSON.stringify({ memoId: id, pdfData: pdfDataUrl })
         });
-        if (!res.ok) {
-          const errorText = await res.text();
-          throw new Error(errorText || 'Failed to send email');
+        
+        let result: any;
+        try {
+          const text = await res.text();
+          if (!res.ok) {
+            // Try to parse as JSON first, otherwise use plain text
+            try {
+              result = JSON.parse(text);
+              throw new Error(result.error || text || 'Failed to send email');
+            } catch (parseError) {
+              throw new Error(text || 'Failed to send email');
+            }
+          }
+          // Try to parse as JSON
+          try {
+            result = JSON.parse(text);
+          } catch (parseError) {
+            throw new Error('Invalid response from server');
+          }
+        } catch (fetchError) {
+          throw fetchError instanceof Error ? fetchError : new Error('Failed to send email');
         }
-        const result = await res.json();
+        
         toast.success('Email Sent', {
           description: 'Memo email sent successfully to customer',
         });
@@ -616,6 +634,8 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
                   <Image
                     src="/logo.png" 
                     alt="Logo" 
+                    width={96}
+                    height={96}
                     className="mx-auto w-24 h-24 object-contain print:w-28 print:h-28"
                     unoptimized
                   />

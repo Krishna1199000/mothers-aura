@@ -1,43 +1,25 @@
 "use client";
 
-import { useState } from 'react';
 import Image from 'next/image';
-import { ChevronLeft, ChevronRight } from 'lucide-react';
 import { useRouter } from 'next/navigation';
 
 const months = [
-  { name: 'January', image: '/january.jpg' },
-  { name: 'February', image: '/february.jpg' },
-  { name: 'March', image: '/march.jpg' },
-  { name: 'April', image: '/april.jpg' },
-  { name: 'May', image: '/may.jpg' },
-  { name: 'June', image: '/june.jpg' },
-  { name: 'July', image: '/july.jpg' },
-  { name: 'August', image: '/august.jpg' },
-  { name: 'September', image: '/september.jpg' },
-  { name: 'October', image: '/october.jpg' },
-  { name: 'November', image: '/november.jpg' },
-  { name: 'December', image: '/december.jpg' }
+  { name: 'January', image: '/january.png' },
+  { name: 'February', image: '/february.png' },
+  { name: 'March', image: '/march.png' },
+  { name: 'April', image: '/april.png' },
+  { name: 'May', image: '/may.png' },
+  { name: 'June', image: '/june.png' },
+  { name: 'July', image: '/july.png' },
+  { name: 'August', image: '/august.png' },
+  { name: 'September', image: '/september.png' },
+  { name: 'October', image: '/october.png' },
+  { name: 'November', image: '/november.png' },
+  { name: 'December', image: '/december.png' }
 ];
 
 export const MonthsSection = () => {
-  const [startIndex, setStartIndex] = useState(0);
-  const visibleCount = 8;
   const router = useRouter();
-
-  const nextSlide = () => {
-    setStartIndex((prev) => (prev + visibleCount) % months.length);
-  };
-
-  const prevSlide = () => {
-    setStartIndex((prev) => (prev - visibleCount + months.length) % months.length);
-  };
-
-  const visibleMonths = [];
-  for (let i = 0; i < visibleCount; i++) {
-    const index = (startIndex + i) % months.length;
-    visibleMonths.push(months[index]);
-  }
 
   const handleMonthClick = async (monthName: string) => {
     try {
@@ -65,36 +47,30 @@ export const MonthsSection = () => {
             Birthstone Collection
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Discover your birthstone and celebrate your special month
+          Enhance Aura With Real Power of Birthstones
+
           </p>
         </div>
 
         <div className="relative max-w-7xl mx-auto">
-          {/* Left Arrow */}
-          <button
-            onClick={prevSlide}
-            className="absolute left-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
-            aria-label="Previous months"
+          {/* Scrollable Months Container */}
+          <div 
+            className="flex gap-6 overflow-x-auto scroll-smooth pb-4 px-4 months-scrollbar"
           >
-            <ChevronLeft className="w-6 h-6 text-gray-600" />
-          </button>
-
-          {/* Months Grid */}
-          <div className="flex gap-4 px-12 overflow-hidden">
-            {visibleMonths.map((month, idx) => (
+            {months.map((month, idx) => (
               <div
                 key={`${month.name}-${idx}`}
-                className="flex-shrink-0 w-full sm:w-1/2 md:w-1/3 lg:w-1/4 xl:w-1/8"
+                className="flex-shrink-0"
               >
                 <div 
                   onClick={() => handleMonthClick(month.name)}
                   className="group relative overflow-visible bg-transparent cursor-pointer flex flex-col items-center"
                 >
-                  <div className="aspect-square overflow-visible relative flex items-center justify-center w-24 h-24 md:w-28 md:h-28">
+                  <div className="aspect-square overflow-visible relative flex items-center justify-center w-28 h-28 md:w-32 md:h-32">
                     <Image
                       src={month.image}
                       alt={month.name}
-                      className="w-full h-full object-contain group-hover:scale-105 transition-transform duration-300"
+                      className="w-full h-full object-contain group-hover:scale-110 transition-transform duration-300"
                       loading="lazy"
                       width={200}
                       height={200}
@@ -103,7 +79,7 @@ export const MonthsSection = () => {
                   </div>
                   
                   <div className="mt-3 text-center">
-                    <h3 className="text-gray-900 font-medium text-base">
+                    <h3 className="text-gray-900 dark:text-gray-100 font-medium text-base">
                       {month.name}
                     </h3>
                   </div>
@@ -111,17 +87,19 @@ export const MonthsSection = () => {
               </div>
             ))}
           </div>
-
-          {/* Right Arrow */}
-          <button
-            onClick={nextSlide}
-            className="absolute right-0 top-1/2 -translate-y-1/2 z-10 bg-white/90 hover:bg-white border border-gray-200 rounded-full p-2 shadow-lg transition-all duration-300 hover:scale-110"
-            aria-label="Next months"
-          >
-            <ChevronRight className="w-6 h-6 text-gray-600" />
-          </button>
         </div>
       </div>
+      
+      <style jsx>{`
+        .months-scrollbar {
+          scrollbar-width: none; /* Firefox */
+          -ms-overflow-style: none; /* IE and Edge */
+        }
+        
+        .months-scrollbar::-webkit-scrollbar {
+          display: none; /* Chrome, Safari, Opera */
+        }
+      `}</style>
     </section>
   );
 };

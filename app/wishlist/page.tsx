@@ -10,6 +10,7 @@ import { ShoppingBag, Heart, Trash2, Loader2 } from "lucide-react";
 import { useToast } from "@/components/ui/use-toast";
 import { useState } from "react";
 import Image from "next/image";
+import { Footer } from "@/components/Footer";
 
 export default function WishlistPage() {
   const { wishlist, removeFromWishlist, clearWishlist, isLoading } = useWishlist();
@@ -59,6 +60,7 @@ export default function WishlistPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-white">
       <Header />
       
@@ -177,8 +179,11 @@ export default function WishlistPage() {
         )}
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
+
 
 
 

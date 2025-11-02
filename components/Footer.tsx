@@ -1,4 +1,5 @@
 import { Facebook, Instagram, Linkedin, Twitter } from 'lucide-react';
+import Image from 'next/image';
 
 export const Footer = () => {
   const footerLinks = {
@@ -35,11 +36,15 @@ export const Footer = () => {
         <div className="grid grid-cols-1 lg:grid-cols-4 gap-12 mb-12">
           {/* Brand Section */}
           <div className="lg:col-span-1">
-            <div className="flex items-center space-x-2 mb-6">
-              <div className="w-8 h-8 bg-white rounded-sm flex items-center justify-center">
-                <div className="w-4 h-4 border-2 border-[#112158] rotate-45"></div>
-              </div>
-              <span className="text-xl font-bold">Mothers Aura</span>
+            <div className="flex items-center space-x-3 mb-2">
+              <Image
+                src="/logoNameInvertbg.png"
+                alt="Mother's Aura Logo"
+                width={240}
+                height={64}
+                className="h-16 w-auto object-contain"
+              />
+              {/* <span className="text-2xl font-bold">Mother&apos;s Aura</span> */}
             </div>
             <blockquote className="text-white/80 italic leading-relaxed">
               &ldquo;Every diamond tells a story of time, pressure, and beauty. 

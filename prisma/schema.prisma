@@ -592,6 +592,22 @@ model SiteAnnouncement {
 }
 
 // -----------------
+// Customer Testimonial
+// -----------------
+
+model CustomerTestimonial {
+  id        String   @id @default(uuid())
+  name      String
+  review    String   @db.Text
+  imageUrl  String?
+  rating    Int      @default(5)
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([createdAt])
+}
+
+// -----------------
 // Category models
 // -----------------
 

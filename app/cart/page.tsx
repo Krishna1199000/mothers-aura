@@ -9,6 +9,7 @@ import { Input } from "@/components/ui/input";
 import { useCart } from "@/lib/contexts/cart-context";
 import { Loader2, Minus, Plus, Trash2 } from "lucide-react";
 import Image from "next/image";
+import { Footer } from "@/components/Footer";
 
 export default function CartPage() {
   const { data: session } = useSession();
@@ -57,6 +58,7 @@ export default function CartPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <h1 className="text-3xl font-bold mb-8">Shopping Cart</h1>
@@ -177,6 +179,8 @@ export default function CartPage() {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
 

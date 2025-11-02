@@ -14,6 +14,7 @@ import { ModeToggle } from './ModeToggle';
 import { useCart } from '@/lib/contexts/cart-context';
 import { CartModal } from './cart/CartModal';
 import { AppointmentForm } from './AppointmentForm';
+import { useTheme } from 'next-themes';
 
 export const Header = () => {
   const [isScrolled, setIsScrolled] = useState(false);
@@ -28,6 +29,7 @@ export const Header = () => {
   const { items } = useCart();
   const router = useRouter();
   const { data: session } = useSession();
+  const { theme } = useTheme();
 
   // Calculate total items in cart
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
@@ -129,8 +131,8 @@ export const Header = () => {
               >
                 <div className="relative h-16 w-auto">
                   <Image
-                    src="/logobg.png"
-                    alt="Mothers Aura Logo"
+                    src={theme === "dark" ? "/logoNameInvertbg.png" : "/logoNamebg.png"}
+                    alt="Mother's Aura Logo"
                     width={240}
                     height={64}
                     className="h-full w-auto object-contain"

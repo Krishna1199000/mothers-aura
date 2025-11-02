@@ -7,6 +7,7 @@ import { motion } from "framer-motion";
 import { Button } from "@/components/ui/button";
 import { useToast } from "@/components/ui/use-toast";
 import { Loader2, CheckCircle2 } from "lucide-react";
+import { Footer } from "@/components/Footer";
 
 interface Order {
   id: string;
@@ -97,6 +98,7 @@ export default function OrderConfirmationPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-background py-8">
       <div className="container mx-auto px-4">
         <motion.div
@@ -200,5 +202,7 @@ export default function OrderConfirmationPage() {
         </motion.div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

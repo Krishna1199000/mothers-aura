@@ -19,6 +19,9 @@ import {
   MessageSquare
 } from "lucide-react";
 import Image from "next/image";
+import { Footer } from "@/components/Footer";
+import { AnnouncementBar } from "@/components/AnnouncementBar";
+import { Header } from "@/components/Header";
 
 export default function ContactPage() {
   const { toast } = useToast();
@@ -93,6 +96,11 @@ export default function ContactPage() {
   ];
 
   return (
+    <>
+    <AnnouncementBar forceShow />
+    <div className="sticky top-0 z-40">
+      <Header />
+    </div>
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-6xl mx-auto">
         <motion.div
@@ -117,15 +125,15 @@ export default function ContactPage() {
           >
             <Card>
               <CardHeader>
-                <CardTitle>Company Image</CardTitle>
+                <CardTitle>Mothers Aura Diamonds</CardTitle>
               </CardHeader>
               <CardContent>
                 <Image
-                  src="/placeholder.jpg"
-                  alt="Company"
+                  src="/Mothers-aura-appointment.jpg"
+                  alt="Mothers Aura Diamonds"
                   width={400}
-                  height={192}
-                  className="w-full h-48 object-cover rounded-lg"
+                  height={300}
+                  className="w-full h-auto object-contain rounded-lg"
                 />
               </CardContent>
             </Card>
@@ -235,5 +243,7 @@ export default function ContactPage() {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

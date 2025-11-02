@@ -18,6 +18,7 @@ import { useCart } from "@/lib/contexts/cart-context";
 import { toast } from "sonner";
 import { Loader2 } from "lucide-react";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 interface Product {
   id: string;
@@ -108,16 +109,17 @@ export default function ProductDetailPage() {
 
   if (!product && !isLoading) {
     return (
-      <div className="min-h-screen">
-        <Header />
-        <div className="container mx-auto py-8">
-        <div className="text-center mb-8">
-          <h1 className="text-2xl font-bold mb-2">Product not found</h1>
-          <p className="text-muted-foreground mb-6">
-            We couldn&apos;t find the product you&apos;re looking for.
-          </p>
-          <Button onClick={() => router.back()}>Go Back</Button>
-        </div>
+      <>
+        <div className="min-h-screen">
+          <Header />
+          <div className="container mx-auto py-8">
+            <div className="text-center mb-8">
+              <h1 className="text-2xl font-bold mb-2">Product not found</h1>
+              <p className="text-muted-foreground mb-6">
+                We couldn&apos;t find the product you&apos;re looking for.
+              </p>
+              <Button onClick={() => router.back()}>Go Back</Button>
+            </div>
 
         {allProducts.length > 0 && (
           <div className="mt-12">
@@ -149,8 +151,10 @@ export default function ProductDetailPage() {
             </div>
           </div>
         )}
+          </div>
         </div>
-      </div>
+        <Footer />
+      </>
     );
   }
 
@@ -168,6 +172,7 @@ export default function ProductDetailPage() {
   const displayImages = validImages.length > 0 ? validImages : product.images;
 
   return (
+    <>
     <div className="min-h-screen">
       <Header />
       <div className="container mx-auto px-4 py-8">
@@ -418,5 +423,7 @@ export default function ProductDetailPage() {
       )}
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

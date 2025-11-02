@@ -6,9 +6,11 @@ import { MainNav } from "@/components/MainNav";
 import { UserNav } from "@/components/UserNav";
 import { ModeToggle } from "@/components/ModeToggle";
 import Image from "next/image";
+import { useTheme } from "next-themes";
 
 export function AdminHeader() {
   const { data: session } = useSession();
+  const { theme } = useTheme();
 
   return (
     <header className="sticky top-0 z-50 w-full border-b bg-background/95 backdrop-blur supports-[backdrop-filter]:bg-background/60">
@@ -17,9 +19,9 @@ export function AdminHeader() {
         {!session?.user ? (
           <Link href="/" className="mr-6">
             <Image
-              src="/logo.png"
-              alt="Logo"
-              className="h-8 w-8 object-contain"
+              src={theme === "dark" ? "/logoNameInvertbg.png" : "/logoNamebg.png"}
+              alt="Mother's Aura Logo"
+              className="h-10 w-10 object-contain"
               unoptimized
             />
           </Link>

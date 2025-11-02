@@ -16,7 +16,7 @@ export default function CartButton() {
       <Button
         variant="ghost"
         size="icon"
-        className="relative"
+        className="relative h-10 w-10"
         onClick={() => setIsCartOpen(true)}
       >
         <ShoppingBag className="h-5 w-5" />

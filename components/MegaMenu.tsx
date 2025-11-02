@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useRef } from "react"
 import { useRouter } from "next/navigation"
 import { ChevronDown, X } from "lucide-react"
 import { ProductPreview } from "./ProductPreview"
@@ -467,6 +467,10 @@ export function MegaMenu({ isMobileOpen, setIsMobileOpen, navbarHeight = 56 }: M
   const router = useRouter()
   const [activeMenu, setActiveMenu] = useState<string | null>(null)
   const [clickedMenu, setClickedMenu] = useState<string | null>(null)
+  const [dropdownTop, setDropdownTop] = useState(0)
+  const containerRef = useRef<HTMLDivElement>(null)
+  const ANNOUNCEMENT_BAR_HEIGHT = 32
+  const SPACING = 36 // Additional spacing to prevent overlap
 
   interface Product {
   id: string;
@@ -557,6 +561,32 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
     }
   }
 
+  // Check scroll position and update dropdown position
+  useEffect(() => {
+    const updatePositions = () => {
+      const scrolled = window.scrollY >= ANNOUNCEMENT_BAR_HEIGHT
+      
+      if (containerRef.current) {
+        const rect = containerRef.current.getBoundingClientRect()
+        // If scrolled (announcement bar hidden): subtract announcement bar height and add spacing
+        // If not scrolled (announcement bar visible): use position as-is without extra spacing
+        const adjustedTop = scrolled 
+          ? rect.bottom - ANNOUNCEMENT_BAR_HEIGHT + SPACING 
+          : rect.bottom
+        setDropdownTop(adjustedTop)
+      }
+    }
+
+    updatePositions()
+    window.addEventListener('scroll', updatePositions)
+    window.addEventListener('resize', updatePositions)
+    
+    return () => {
+      window.removeEventListener('scroll', updatePositions)
+      window.removeEventListener('resize', updatePositions)
+    }
+  }, [ANNOUNCEMENT_BAR_HEIGHT, SPACING])
+
   // Close menu when clicking outside
   useEffect(() => {
     const handleClickOutside = (event: MouseEvent) => {
@@ -571,7 +601,7 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
   }, [activeMenu])
 
   return (
-    <div className="relative mega-menu-container w-full flex justify-center" style={{ '--navbar-height': `${navbarHeight}px` } as React.CSSProperties}>
+    <div ref={containerRef} className="relative mega-menu-container w-full flex justify-center" style={{ '--navbar-height': `${navbarHeight}px` } as React.CSSProperties}>
       {/* Desktop Navigation */}
       <div className="hidden md:flex items-center justify-center space-x-12 w-full max-w-[1400px]">
         {menuItems.map((item, index) => (
@@ -590,7 +620,7 @@ const [selectedProduct, setSelectedProduct] = useState<Product | null>(null);
             </button>
 
             {activeMenu === item.label && (
-              <div className="fixed left-0 right-0 top-[calc(var(--navbar-height)+3.4rem)] z-[60] bg-white dark:bg-gray-950 shadow-2xl border-b border-gray-100 dark:border-gray-800 max-h-[70vh] overflow-y-auto">
+              <div className="fixed left-0 right-0 z-[60] bg-white dark:bg-gray-950 shadow-2xl border-b border-gray-100 dark:border-gray-800 max-h-[70vh] overflow-y-auto" style={{ top: `${dropdownTop}px` }}>
                 <div className="container mx-auto px-4 py-4">
                   <div className="grid grid-cols-4 gap-4">
                     {item.items.map((section, idx) => (

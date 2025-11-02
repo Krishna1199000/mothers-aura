@@ -37,26 +37,30 @@ export function CartModal({ open, onClose }: CartModalProps) {
   return (
     <Sheet open={open} onOpenChange={onClose}>
       <SheetContent className="w-full sm:max-w-lg">
-        <SheetHeader className="space-y-2.5 pb-6">
-          <div className="flex items-center justify-between">
-            <SheetTitle className="flex items-center gap-2">
-              <ShoppingBag className="h-5 w-5" />
-              Shopping Cart
-            </SheetTitle>
-            <Button
-              variant="outline"
-              size="sm"
-              className="h-8"
-              onClick={() => {
-                router.push("/orders/history");
-                onClose();
-              }}
-            >
-              Purchase History
-            </Button>
-          </div>
-          <div className="text-sm text-muted-foreground">
-            {items.length} {items.length === 1 ? "item" : "items"} in cart
+        <SheetHeader className="relative space-y-2.5 pb-6 pr-16">
+          <div className="flex items-start justify-between">
+            <div className="flex-1">
+              <SheetTitle className="flex items-center gap-2">
+                <ShoppingBag className="h-5 w-5" />
+                Shopping Cart
+              </SheetTitle>
+              <div className="text-sm text-muted-foreground mt-2">
+                {items.length} {items.length === 1 ? "item" : "items"} in cart
+              </div>
+            </div>
+            <div className="absolute right-4 top-12 flex flex-col items-end">
+              <Button
+                variant="outline"
+                size="sm"
+                className="h-8"
+                onClick={() => {
+                  router.push("/orders/history");
+                  onClose();
+                }}
+              >
+                Purchase History
+              </Button>
+            </div>
           </div>
         </SheetHeader>
 

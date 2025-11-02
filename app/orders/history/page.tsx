@@ -24,6 +24,7 @@ import {
 import { Badge } from "@/components/ui/badge";
 import { Loader2, Search, Eye, ShoppingCart } from "lucide-react";
 import { DashboardHeader } from "@/components/DashboardHeader";
+import { Footer } from "@/components/Footer";
 
 interface Order {
   id: string;
@@ -124,6 +125,7 @@ export default function OrderHistoryPage() {
   }
 
   return (
+    <>
     <div className="min-h-screen bg-background">
       <DashboardHeader />
       <div className="container mx-auto px-4 py-8">
@@ -300,5 +302,7 @@ export default function OrderHistoryPage() {
         </AnimatePresence>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

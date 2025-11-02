@@ -6,6 +6,7 @@ import { useRouter, useSearchParams } from "next/navigation";
 import { Heart, Search, ExternalLink } from "lucide-react";
 import { motion } from "framer-motion";
 import { Header } from "@/components/Header";
+import { Footer } from "@/components/Footer";
 
 interface Product {
   id: string;
@@ -64,6 +65,7 @@ export default function ProductsPage() {
   }
 
   return (
+    <>
     <div>
       <Header />
       <div className="container mx-auto px-4 py-8">
@@ -178,9 +180,11 @@ export default function ProductsPage() {
                 Continue Browsing
               </button>
             </div>
-          </div>
-        )}
+        </div>
+      )}
       </div>
     </div>
+    <Footer />
+    </>
   );
 }

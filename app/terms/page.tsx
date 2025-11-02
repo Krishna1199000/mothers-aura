@@ -2,6 +2,9 @@
 
 import { motion } from "framer-motion";
 import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
+import { Footer } from "@/components/Footer";
+import { AnnouncementBar } from "@/components/AnnouncementBar";
+import { Header } from "@/components/Header";
 
 export default function TermsPage() {
   const fadeIn = {
@@ -58,6 +61,11 @@ export default function TermsPage() {
   ];
 
   return (
+    <>
+    <AnnouncementBar forceShow />
+    <div className="sticky top-0 z-40">
+      <Header />
+    </div>
     <div className="min-h-screen bg-background py-12 px-4 sm:px-6 lg:px-8">
       <div className="max-w-4xl mx-auto space-y-8">
         <motion.div {...fadeIn} className="text-center">
@@ -118,5 +126,7 @@ export default function TermsPage() {
         </div>
       </div>
     </div>
+    <Footer />
+    </>
   );
 }
