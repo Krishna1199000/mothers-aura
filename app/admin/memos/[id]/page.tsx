@@ -632,7 +632,7 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
               <div className="text-center mb-8">
                 <div className="bg-white p-2 rounded-lg inline-block mb-2">
                   <Image
-                    src="/logo.png" 
+                    src="/logoNamebg.png" 
                     alt="Logo" 
                     width={96}
                     height={96}

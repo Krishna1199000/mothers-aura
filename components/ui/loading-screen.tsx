@@ -36,7 +36,7 @@ export function LoadingScreen({ show = true }: LoadingScreenProps) {
             className="relative h-24 w-24"
           >
             <Image
-              src="/logo.png"
+              src="/logoNamebg.png"
               alt="Mother's Aura Logo"
               fill
               className="object-contain"

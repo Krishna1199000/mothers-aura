@@ -87,7 +87,14 @@ export const CustomerHeader = () => {
 
             {/* Center - Logo */}
             <Link href="/dashboard" className="flex items-center">
-              <Image src="/logo.png" alt="Mothers Aura logo" width={48} height={48} className="w-12 h-12 object-contain" unoptimized />
+              <Image 
+                src={isDarkMode ? "/logoNameInvertbg.png" : "/logoNamebg.png"} 
+                alt="Mothers Aura logo" 
+                width={48} 
+                height={48} 
+                className="w-12 h-12 object-contain" 
+                unoptimized 
+              />
             </Link>
 
             {/* Right - Search, Dark Mode, Cart, Profile */}

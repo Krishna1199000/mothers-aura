@@ -173,7 +173,7 @@ async function generateMemoPDF(memo: any) {
   
   // Try to load logo (check both .png and .jpg)
   try {
-    let logoPath = path.join(process.cwd(), 'public', 'logo.png');
+    let logoPath = path.join(process.cwd(), 'public', 'logoNamebg.png');
     let logoFormat = 'PNG';
     
     if (!fs.existsSync(logoPath)) {

@@ -59,7 +59,7 @@ const staticCategories = [
     id: "7",
     title: 'Waist Chain',
     type: 'waist-chain',
-    image: '/WaistChain.png',
+    image: '/Waistchain.png',
     alt: 'Waist chains'
   }
 ];
