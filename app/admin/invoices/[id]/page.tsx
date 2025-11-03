@@ -466,7 +466,7 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
                 {isDownloading ? 'Downloading...' : 'Download PDF'}
               </Button>
               <Button 
-                onClick={sendEmailWithPreviewPdf}
+                onClick={sendEmail}
                 variant="default"
                 disabled={isPrinting || isDownloading || isEmailing}
               >

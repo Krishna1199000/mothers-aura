@@ -57,6 +57,13 @@ export default function AdminChatsPage() {
   const [isLoading, setIsLoading] = useState(true);
   const [isCustomerTyping, setIsCustomerTyping] = useState(false);
 
+  const formatLastActive = (iso?: string) => {
+    if (!iso) return 'No activity';
+    const d = new Date(iso);
+    if (isNaN(d.getTime())) return 'No activity';
+    return d.toLocaleString();
+  };
+
   // Initialize socket connection
   useEffect(() => {
     const socketInstance = io(process.env.NEXT_PUBLIC_APP_URL || window.location.origin, {
@@ -146,7 +153,7 @@ export default function AdminChatsPage() {
           const res = await fetch(`/api/chat/${selectedChat.id}`);
           if (res.ok) {
             const data = await res.json();
-            setSelectedChat(data);
+            setSelectedChat({ ...data, messages: data?.messages ?? [] });
           }
         } catch (error) {
           console.error('Error polling for messages:', error);
@@ -198,7 +205,7 @@ export default function AdminChatsPage() {
       // Remove from requests and add to active chats
       setChatRequests(prev => prev.filter(r => r.id !== request.id));
       setActiveChats(prev => [data.chat, ...prev]);
-      setSelectedChat(data.chat);
+      setSelectedChat({ ...data.chat, messages: data.chat?.messages ?? [] });
 
       toast({
         title: 'Chat Started',
@@ -394,7 +401,7 @@ export default function AdminChatsPage() {
                               </Button>
                             </div>
                             <div className="mt-2 text-sm opacity-70">
-                              Last active: {new Date(chat.lastMessageAt).toLocaleTimeString()}
+                              Last active: {formatLastActive(chat.lastMessageAt)}
                             </div>
                           </div>
                         ))}
@@ -484,7 +491,7 @@ export default function AdminChatsPage() {
                 <CardContent className="flex-1 p-4 overflow-auto">
                   <ScrollArea className="h-full pr-4">
                     <div className="space-y-4">
-                      {selectedChat.messages.map((message) => (
+                      {(selectedChat?.messages ?? []).map((message) => (
                         <div
                           key={message.id}
                           className={`flex ${
