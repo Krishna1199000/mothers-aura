@@ -32,10 +32,10 @@ export async function GET(request: NextRequest) {
     // Build where clause for Mothers Aura diamonds
     const mothersauraWhere: any = {};
 
-    // For employees, only show inventory they created
-    if ((session.user as any)?.role === "EMPLOYEE") {
-      mothersauraWhere.createdById = session.user.id;
-    }
+    // Previously restricted employees to their own records; allow viewing all inventory instead
+    // if ((session.user as any)?.role === "EMPLOYEE") {
+    //   mothersauraWhere.createdById = session.user.id;
+    // }
 
     // Build where clause for both sources
     const commonWhere: any = {};

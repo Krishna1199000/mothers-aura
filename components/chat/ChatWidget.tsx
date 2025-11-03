@@ -19,6 +19,8 @@ interface Message {
   senderType: 'ADMIN' | 'CUSTOMER';
   createdAt: string;
   isRead: boolean;
+  // client-side temporary identifier to de-duplicate before server assigns real id
+  clientId?: string;
 }
 
 interface ChatWidgetProps {
@@ -41,7 +43,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
     message: ''
   });
   
-  const [chatStep, setChatStep] = useState<'welcome' | 'name' | 'email' | 'message'>('welcome');
+  const [chatStep, setChatStep] = useState<'welcome' | 'name' | 'email' | 'issue' | 'message'>('welcome');
   const [tempInput, setTempInput] = useState('');
   const [socket, setSocket] = useState<Socket | null>(null);
   const [isConnected, setIsConnected] = useState(false);
@@ -99,8 +101,25 @@ export function ChatWidget({ className }: ChatWidgetProps) {
       setShowForm(status === 'BUSY' || status === 'OFFLINE');
     });
 
-    socketInstance.on('message', (message: Message) => {
-      setMessages((prev: Message[]) => [...prev, message]);
+    socketInstance.on('message', (message: any) => {
+      // Only add message if it's from admin and we're in the right chat
+      if (message.senderType === 'ADMIN' && (!chatId || message.chatId === chatId)) {
+        setMessages((prev: Message[]) => {
+          // Avoid duplicates - check both regular IDs and temp IDs
+          const exists = prev.some(m => 
+            m.id === message.id || 
+            (m.content === message.content && Math.abs(new Date(m.createdAt).getTime() - new Date(message.createdAt).getTime()) < 1000)
+          );
+          if (exists) return prev;
+          return [...prev, {
+            id: message.id,
+            content: message.content,
+            senderType: message.senderType,
+            createdAt: message.createdAt,
+            isRead: message.isRead || false
+          }];
+        });
+      }
     });
 
     socketInstance.on('admin_typing', (isTyping: boolean) => {
@@ -114,9 +133,9 @@ export function ChatWidget({ className }: ChatWidgetProps) {
     };
   }, []);
 
-  // Scroll to bottom on new messages only if chat is active and FAQ is not shown
+  // Scroll to bottom on new messages during conversation flow and FAQ is not shown
   useEffect(() => {
-    if (chatStep === 'message' && !showOptions) {
+    if (!showOptions && (chatStep === 'welcome' || chatStep === 'name' || chatStep === 'email' || chatStep === 'issue' || chatStep === 'message')) {
       messagesEndRef.current?.scrollIntoView({ behavior: 'smooth' });
     }
   }, [messages, chatStep, showOptions]);
@@ -164,17 +183,34 @@ export function ChatWidget({ className }: ChatWidgetProps) {
 
   // Poll for updates: if chatId present fetch messages; otherwise try to attach to a newly created chat for this email
   useEffect(() => {
-    if (!isOpen) return;
+    if (!isOpen || chatStep !== 'message') return;
 
     const interval = setInterval(async () => {
       try {
         if (chatId) {
-          const res = await fetch(`/api/chat/${chatId}`);
+          const res = await fetch(`/api/chat/public/${chatId}`);
           if (res.ok) {
             const data = await res.json();
-            setMessages(data.messages);
+            // Only update if we have new messages to avoid overwriting local state
+            if (data.messages && data.messages.length > 0) {
+              setMessages(prevMessages => {
+                const newMessages = data.messages.filter((msg: Message) => {
+                  const existsById = prevMessages.some(prevMsg => prevMsg.id === msg.id);
+                  if (existsById) return false;
+                  // De-duplicate by content, sender type, and near timestamp (within 5s)
+                  const existsByContentAndTime = prevMessages.some(prevMsg => 
+                    prevMsg.senderType === msg.senderType &&
+                    prevMsg.content === msg.content &&
+                    Math.abs(new Date(prevMsg.createdAt).getTime() - new Date(msg.createdAt).getTime()) < 5000
+                  );
+                  return !existsByContentAndTime;
+                });
+                return newMessages.length > 0 ? [...prevMessages, ...newMessages] : prevMessages;
+              });
+            }
           }
-        } else if (formData.email) {
+        } else if (formData.email && chatStep === 'message') {
+          // Try to find existing chat for this email
           const res = await fetch('/api/chat/active');
           if (res.ok) {
             const data = await res.json();
@@ -188,10 +224,10 @@ export function ChatWidget({ className }: ChatWidgetProps) {
       } catch (error) {
         console.error('Error polling chat state:', error);
       }
-    }, 2000);
+    }, 3000); // Increased interval to reduce server load
 
     return () => clearInterval(interval);
-  }, [chatId, isOpen, formData.email]);
+  }, [chatId, isOpen, formData.email, chatStep]);
 
   // Load existing chat if any and add welcome message
   useEffect(() => {
@@ -202,7 +238,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
         
         if (savedChatId) {
           // Try to load existing chat
-          const res = await fetch(`/api/chat/${savedChatId}`);
+          const res = await fetch(`/api/chat/public/${savedChatId}`);
           if (res.ok) {
             const data = await res.json();
             setChatId(data.id);
@@ -271,122 +307,219 @@ export function ChatWidget({ className }: ChatWidgetProps) {
   const handleSendMessage = async () => {
     if (!newMessage.trim()) return;
 
+    const currentMessage = newMessage.trim();
+    setNewMessage(''); // Clear input immediately to prevent loss
+
     try {
-      // Add user's message
+      // Add user's message to UI immediately
+      const clientId = `client-${Date.now()}-${Math.random()}`;
       const userMessage: Message = {
-        id: Date.now().toString(),
-        content: newMessage,
+        id: `user-${Date.now()}`,
+        content: currentMessage,
         senderType: 'CUSTOMER',
         createdAt: new Date().toISOString(),
-        isRead: false
+        isRead: false,
+        clientId
       };
       setMessages((prev: Message[]) => [...prev, userMessage]);
 
-      // Store the input based on current step
+      // Handle conversation flow based on current step
       if (chatStep === 'welcome') {
-        // After first message, ask for name
+        // Store first message and ask for name
+        setFormData(prev => ({ ...prev, message: currentMessage }));
+        
         setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: 'ask-name',
+          const botMessage: Message = {
+            id: `bot-${Date.now()}`,
             content: 'Before we continue, could you please tell me your name?',
             senderType: 'ADMIN',
             createdAt: new Date().toISOString(),
             isRead: false
-          }]);
+          };
+          setMessages(prev => [...prev, botMessage]);
           setChatStep('name');
-        }, 500);
+        }, 800);
+        
       } else if (chatStep === 'name') {
-        setFormData(prev => ({ ...prev, name: newMessage }));
-        // Ask for email
+        // Store name and ask for email
+        setFormData(prev => ({ ...prev, name: currentMessage }));
+        
         setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: 'ask-email',
-            content: `Nice to meet you, ${newMessage}! Could you please share your email address?`,
+          const botMessage: Message = {
+            id: `bot-${Date.now()}`,
+            content: `Nice to meet you, ${currentMessage}! Could you please share your email address?`,
             senderType: 'ADMIN',
             createdAt: new Date().toISOString(),
             isRead: false
-          }]);
+          };
+          setMessages(prev => [...prev, botMessage]);
           setChatStep('email');
-        }, 500);
+        }, 800);
+        
       } else if (chatStep === 'email') {
-        setFormData(prev => ({ ...prev, email: newMessage }));
-        // Ask how we can help
+        // Store email and ask how we can help
+        setFormData(prev => ({ ...prev, email: currentMessage }));
+        
         setTimeout(() => {
-          setMessages(prev => [...prev, {
-            id: 'ask-help',
+          const botMessage: Message = {
+            id: `bot-${Date.now()}`,
             content: 'Thank you! Now, how can I assist you today?',
             senderType: 'ADMIN',
             createdAt: new Date().toISOString(),
             isRead: false
-          }]);
-          setChatStep('message');
-        }, 500);
-      } else if (chatStep === 'message') {
-        setFormData(prev => ({ ...prev, message: newMessage }));
+          };
+          setMessages(prev => [...prev, botMessage]);
+          setChatStep('issue');
+        }, 800);
         
-        // If we don't have a chat yet, create one
-        if (!chatId) {
+      } else if (chatStep === 'issue') {
+        // Store issue and transition to live chat
+        setFormData(prev => ({ ...prev, message: currentMessage }));
+        
+        // Create chat session with all collected info
+        try {
+          const chatData = {
+            name: formData.name,
+            email: formData.email,
+            message: `Initial inquiry: ${formData.message}\nIssue: ${currentMessage}`
+          };
+          
           const res = await fetch('/api/chat/request', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              ...formData,
-              message: newMessage
-            })
+            body: JSON.stringify(chatData)
           });
 
-          if (!res.ok) throw new Error('Failed to submit chat request');
+          if (!res.ok) throw new Error('Failed to create chat');
           
           const data = await res.json();
+          
           if (data.chat) {
             setChatId(data.chat.id);
             localStorage.setItem('chatId', data.chat.id);
-          } else if (formData.email) {
-            // Try to immediately attach to any active chat for this email
+            
+            // Add confirmation message
+            setTimeout(() => {
+              const botMessage: Message = {
+                id: `bot-${Date.now()}`,
+                content: 'Perfect! I\'ve connected you with our support team. An admin will respond shortly.',
+                senderType: 'ADMIN',
+                createdAt: new Date().toISOString(),
+                isRead: false
+              };
+              setMessages(prev => [...prev, botMessage]);
+              setChatStep('message'); // Now in live chat mode
+            }, 800);
+          } else {
+            // Fallback if no admin available
+            setTimeout(() => {
+              const botMessage: Message = {
+                id: `bot-${Date.now()}`,
+                content: 'All our agents are currently busy. Your request has been submitted and we\'ll get back to you soon!',
+                senderType: 'ADMIN',
+                createdAt: new Date().toISOString(),
+                isRead: false
+              };
+              setMessages(prev => [...prev, botMessage]);
+            }, 800);
+          }
+        } catch (error) {
+          console.error('Error creating chat:', error);
+          setTimeout(() => {
+            const botMessage: Message = {
+              id: `bot-${Date.now()}`,
+              content: 'Sorry, there was an issue connecting you to our team. Please try again or contact us directly.',
+              senderType: 'ADMIN',
+              createdAt: new Date().toISOString(),
+              isRead: false
+            };
+            setMessages(prev => [...prev, botMessage]);
+          }, 800);
+        }
+        
+      } else if (chatStep === 'message') {
+        // Live chat mode - send to existing chat or create new one
+        if (chatId) {
+          // Send to existing chat using customer endpoint
+          try {
+            const res = await fetch('/api/chat/customer-message', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                content: currentMessage,
+                chatId: chatId
+              })
+            });
+            
+            if (!res.ok) {
+              throw new Error('Failed to send message');
+            }
+            
+            // Replace the temporary client message with the saved one (prevents duplicates during polling)
             try {
-              const activeRes = await fetch('/api/chat/active');
-              if (activeRes.ok) {
-              const activeData = await activeRes.json();
-              const match = (activeData.chats || []).find((c: any) => c.customerEmail === formData.email);
-                if (match?.id) {
-                  setChatId(match.id);
-                  localStorage.setItem('chatId', match.id);
-                  await fetch('/api/chat/message', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({
-                      content: newMessage,
-                      senderType: 'CUSTOMER',
-                      chatId: match.id,
-                      senderId: null,
-                    })
-                  });
-                }
-              }
+              const saved = await res.json();
+              setMessages(prev => prev.map(m => (m.clientId === clientId ? saved : m)) as Message[]);
             } catch {}
+            
+            // Emit via socket for real-time updates
+            if (socket && socket.connected) {
+              socket.emit('message', {
+                content: currentMessage,
+                senderType: 'CUSTOMER',
+                chatId: chatId,
+                senderId: null
+              });
+            }
+          } catch (error) {
+            console.error('Error sending message:', error);
+            // Show error message
+            setTimeout(() => {
+              const errorMessage: Message = {
+                id: `error-${Date.now()}`,
+                content: 'Message failed to send. Please try again.',
+                senderType: 'ADMIN',
+                createdAt: new Date().toISOString(),
+                isRead: false
+              };
+              setMessages(prev => [...prev, errorMessage]);
+            }, 500);
           }
         } else {
-          // Save message to existing chat
-          await fetch('/api/chat/message', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-              content: newMessage,
-              senderType: 'CUSTOMER',
-              chatId: chatId,
-              senderId: null
-            })
-          });
+          // No chat ID - try to create or find existing chat
+          try {
+            const res = await fetch('/api/chat/request', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                name: formData.name || 'Customer',
+                email: formData.email || 'customer@example.com',
+                message: currentMessage
+              })
+            });
+
+            if (res.ok) {
+              const data = await res.json();
+              if (data.chat) {
+                setChatId(data.chat.id);
+                localStorage.setItem('chatId', data.chat.id);
+              }
+            }
+          } catch (error) {
+            console.error('Error creating chat:', error);
+          }
         }
       }
 
-      setNewMessage('');
     } catch (error) {
+      console.error('Error in handleSendMessage:', error);
       toast({
         title: 'Error',
         description: 'Failed to send message. Please try again.',
         variant: 'destructive'
       });
+      
+      // Restore message to input if there was an error
+      setNewMessage(currentMessage);
     }
   };
 
@@ -412,6 +545,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
     } catch {}
     setChatId(null);
     setFormData({ name: '', email: '', message: '' });
+    setNewMessage(''); // Clear any pending message
     setMessages([
       {
         id: 'welcome',
@@ -423,7 +557,8 @@ export function ChatWidget({ className }: ChatWidgetProps) {
     ]);
     setChatStep('welcome');
     setIsMinimized(false);
-    setIsOpen(true);
+    setShowOptions(false); // Close FAQ if open
+    setSelectedFAQ(null); // Clear selected FAQ
   };
 
   return (
@@ -676,8 +811,8 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                         </div>
                       )}
 
-                      {/* Chat Interface - Only show when chat is active */}
-                      {chatStep === 'message' && !showOptions && (
+                      {/* Chat Interface - Show during conversation flow and live chat */}
+                      {!showOptions && (chatStep === 'welcome' || chatStep === 'name' || chatStep === 'email' || chatStep === 'issue' || chatStep === 'message') && (
                         <>
                           <ScrollArea className="h-[200px] pr-2">
                             <div className="space-y-3">
@@ -702,7 +837,7 @@ export function ChatWidget({ className }: ChatWidgetProps) {
                                   </div>
                                 </div>
                               ))}
-                              {isAdminTyping && (
+                              {isAdminTyping && chatStep === 'message' && (
                                 <div className="flex justify-start">
                                   <div className="bg-muted rounded-lg px-4 py-2">
                                     <p className="text-sm">Admin is typing...</p>
@@ -715,13 +850,21 @@ export function ChatWidget({ className }: ChatWidgetProps) {
 
                           <div className="flex items-center gap-2 pt-2">
                             <Input
-                              placeholder="Type your message..."
-                              type="text"
+                              placeholder={
+                                chatStep === 'welcome' ? 'Type your message...' :
+                                chatStep === 'name' ? 'Enter your name...' :
+                                chatStep === 'email' ? 'Enter your email...' :
+                                chatStep === 'issue' ? 'Describe your issue...' :
+                                'Type your message...'
+                              }
+                              type={chatStep === 'email' ? 'email' : 'text'}
                               className="flex-1"
                               value={newMessage}
                               onChange={(e) => {
                                 setNewMessage(e.target.value);
-                                handleTyping();
+                                if (chatStep === 'message') {
+                                  handleTyping();
+                                }
                               }}
                               onKeyPress={(e) => {
                                 if (e.key === 'Enter') {

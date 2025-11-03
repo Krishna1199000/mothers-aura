@@ -213,7 +213,7 @@ export function RoleBasedNavbar({ role, showLogoOnly = false, showNavigationOnly
           <Menu className="h-6 w-6" />
         </button>
       </SheetTrigger>
-      <SheetContent side="left" className="w-[300px] sm:w-[400px]">
+      <SheetContent side="left" className="w-[300px] sm:w-[400px] p-0">
         <SheetHeader>
           <SheetTitle>
             <div className="flex items-center gap-3">
@@ -237,54 +237,57 @@ export function RoleBasedNavbar({ role, showLogoOnly = false, showNavigationOnly
             </div>
           </SheetTitle>
         </SheetHeader>
-        <div className="mt-8 flex flex-col space-y-2">
-          {Object.entries(groupedItems)
-            .filter(([group]) => group !== 'ungrouped')
-            .map(([group, groupItems]) => (
-            <div key={group} className="space-y-1">
-              {group !== "ungrouped" && (
-                <button
-                  className="w-full flex items-center justify-between px-4 py-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider"
-                  onClick={() => setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }))}
-                >
-                  <span>{group}</span>
-                  <ChevronDown className={`h-4 w-4 transition-transform ${expandedGroups[group] ? 'rotate-180' : ''}`} />
-                </button>
-              )}
-              <div className={`${expandedGroups[group] ? 'block' : 'hidden'}`}>
-                {groupItems.map((item) => (
-                  <Link
-                    key={item.href}
-                    href={getFullPath(item.href)}
-                    onClick={() => setIsOpen(false)}
-                    className={cn(
-                      "px-6 py-2 text-sm font-medium rounded-md transition-colors block",
-                      pathname === getFullPath(item.href)
-                        ? "bg-primary/10 text-primary"
-                        : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-                    )}
+        {/* Scrollable content area */}
+        <div className="h-[calc(100vh-96px)] overflow-y-auto overscroll-contain px-4 pb-6">
+          <div className="mt-8 flex flex-col space-y-2">
+            {Object.entries(groupedItems)
+              .filter(([group]) => group !== 'ungrouped')
+              .map(([group, groupItems]) => (
+              <div key={group} className="space-y-1">
+                {group !== "ungrouped" && (
+                  <button
+                    className="w-full flex items-center justify-between px-4 py-2 text-sm font-semibold text-muted-foreground uppercase tracking-wider"
+                    onClick={() => setExpandedGroups(prev => ({ ...prev, [group]: !prev[group] }))}
                   >
-                    {item.label}
-                  </Link>
-                ))}
+                    <span>{group}</span>
+                    <ChevronDown className={`h-4 w-4 transition-transform ${expandedGroups[group] ? 'rotate-180' : ''}`} />
+                  </button>
+                )}
+                <div className={`${expandedGroups[group] ? 'block' : 'hidden'}`}>
+                  {groupItems.map((item) => (
+                    <Link
+                      key={item.href}
+                      href={getFullPath(item.href)}
+                      onClick={() => setIsOpen(false)}
+                      className={cn(
+                        "px-6 py-2 text-sm font-medium rounded-md transition-colors block",
+                        pathname === getFullPath(item.href)
+                          ? "bg-primary/10 text-primary"
+                          : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                      )}
+                    >
+                      {item.label}
+                    </Link>
+                  ))}
+                </div>
               </div>
-            </div>
-          ))}
-          {groupedItems.ungrouped?.map((item) => (
-            <Link
-              key={item.href}
-              href={getFullPath(item.href)}
-              onClick={() => setIsOpen(false)}
-              className={cn(
-                "px-4 py-2 text-sm font-medium rounded-md transition-colors block",
-                pathname === getFullPath(item.href)
-                  ? "bg-primary/10 text-primary"
-                  : "text-muted-foreground hover:text-primary hover:bg-primary/5"
-              )}
-            >
-              {item.label}
-            </Link>
-          ))}
+            ))}
+            {groupedItems.ungrouped?.map((item) => (
+              <Link
+                key={item.href}
+                href={getFullPath(item.href)}
+                onClick={() => setIsOpen(false)}
+                className={cn(
+                  "px-4 py-2 text-sm font-medium rounded-md transition-colors block",
+                  pathname === getFullPath(item.href)
+                    ? "bg-primary/10 text-primary"
+                    : "text-muted-foreground hover:text-primary hover:bg-primary/5"
+                )}
+              >
+                {item.label}
+              </Link>
+            ))}
+          </div>
         </div>
       </SheetContent>
     </Sheet>

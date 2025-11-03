@@ -3,13 +3,6 @@
 import { useRouter } from 'next/navigation';
 import { ArrowRight } from 'lucide-react';
 import Image from 'next/image';
-import {
-  Carousel,
-  CarouselContent,
-  CarouselItem,
-  CarouselNext,
-  CarouselPrevious,
-} from "@/components/ui/carousel";
 
 // Static categories with custom images
 const staticCategories = [
@@ -61,6 +54,13 @@ const staticCategories = [
     type: 'waist-chain',
     image: '/Waistchain.png',
     alt: 'Waist chains'
+  },
+  {
+    id: "8",
+    title: 'Pendent',
+    type: 'pendent',
+    image: '/diamond-pendant-necklace.jpg',
+    alt: 'Diamond pendent'
   }
 ];
 
@@ -85,6 +85,59 @@ export const ShopByCategory = () => {
     }
   };
 
+  const firstRow = staticCategories.slice(0, 4);
+  const secondRow = staticCategories.slice(4, 8);
+
+  const CategoryCard = ({ id, title, type, image, alt }: (typeof staticCategories)[number]) => (
+    <button
+      key={id}
+      onClick={() => handleCategoryClick(type)}
+      className="group relative w-full overflow-hidden rounded-xl bg-card shadow-luxury hover:shadow-premium transition-all duration-500 hover:-translate-y-2"
+    >
+      <div className="aspect-square overflow-hidden relative">
+        {type === 'pendent' ? (
+          <>
+            <Image
+              src="/pendent.png"
+              alt={alt}
+              className="w-full h-full object-cover transition-opacity duration-700 group-hover:opacity-0"
+              loading="lazy"
+              width={800}
+              height={800}
+            />
+            <Image
+              src={image}
+              alt={alt}
+              className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-700"
+              loading="lazy"
+              width={800}
+              height={800}
+            />
+          </>
+        ) : (
+          <Image
+            src={image}
+            alt={alt}
+            className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
+            loading="lazy"
+            width={800}
+            height={800}
+          />
+        )}
+      </div>
+
+      <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
+
+      <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+        <h3 className={`text-xl md:text-2xl font-bold mb-2 ${title === 'Women Wedding Ring' ? 'whitespace-nowrap' : ''}`}>{title}</h3>
+        <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors">
+          <span className="text-sm">Shop now</span>
+          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+        </div>
+      </div>
+    </button>
+  );
+
   return (
     <section className="py-16 bg-background">
       <div className="container mx-auto px-4">
@@ -97,48 +150,15 @@ export const ShopByCategory = () => {
           </p>
         </div>
 
-        <Carousel
-          opts={{
-            align: "start",
-            loop: true,
-          }}
-          className="w-full max-w-7xl mx-auto"
-        >
-          <CarouselContent className="-ml-2 md:-ml-4">
-            {staticCategories.map((category) => (
-              <CarouselItem key={category.id} className="pl-2 md:pl-4 md:basis-1/2 lg:basis-1/3 xl:basis-1/4">
-                <button
-                  onClick={() => handleCategoryClick(category.type)}
-                  className="group relative w-full overflow-hidden rounded-xl bg-card shadow-luxury hover:shadow-premium transition-all duration-500 hover:-translate-y-2"
-                >
-                  <div className="aspect-square overflow-hidden">
-                    <Image
-                      src={category.image}
-                      alt={category.alt}
-                      className="w-full h-full object-cover group-hover:scale-110 transition-transform duration-700"
-                      loading="lazy"
-                      width={800}
-                      height={800}
-                    />
-                  </div>
-                  
-                  <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
-                  
-                  <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-                    <h3 className="text-xl md:text-2xl font-bold mb-2">{category.title}</h3>
-                    <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors">
-                      <span className="text-sm">Shop now</span>
-                      <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
-                    </div>
-                  </div>
-                </button>
-              </CarouselItem>
-            ))}
-          </CarouselContent>
-          <CarouselPrevious className="hidden md:flex -left-12" />
-          <CarouselNext className="hidden md:flex -right-12" />
-        </Carousel>
+        {/* First row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+          {firstRow.map(CategoryCard as any)}
+        </div>
 
+        {/* Second row */}
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+          {secondRow.map(CategoryCard as any)}
+        </div>
       </div>
     </section>
   );

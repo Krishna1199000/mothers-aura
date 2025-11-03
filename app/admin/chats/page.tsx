@@ -262,6 +262,16 @@ export default function AdminChatsPage() {
         messages: [...prev.messages, savedMessage]
       } : null);
 
+      // Emit via socket for real-time updates
+      if (socket && socket.connected) {
+        socket.emit('message', {
+          content: newMessage,
+          senderType: 'ADMIN',
+          chatId: selectedChat.id,
+          senderId: 'admin'
+        });
+      }
+
       setNewMessage('');
     } catch (error) {
       toast({

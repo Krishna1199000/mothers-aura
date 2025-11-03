@@ -74,25 +74,13 @@ export default function DiamondPage() {
     const fetchDiamond = async () => {
       try {
         setIsLoading(true);
-        
-        // Determine the API endpoint based on source
         const source = params.source as string;
-        let apiUrl = '';
-        
-        if (source === 'kyrah') {
-          apiUrl = `/api/admin/kyrah/${params.id}`;
-        } else if (source === 'cranberri') {
-          apiUrl = `/api/admin/cranberri/${params.id}`;
-        } else {
-          apiUrl = `/api/admin/inventory/${params.id}`;
-        }
-        
+        // Use public endpoint so customers can view details without admin auth
+        const apiUrl = `/api/diamond/${source}/${params.id}`;
         const response = await fetch(apiUrl);
-        
         if (!response.ok) {
           throw new Error('Failed to fetch diamond details');
         }
-        
         const data = await response.json();
         setDiamond({ ...data, source: source as 'kyrah' | 'mothersaura' | 'cranberri' });
       } catch (error) {

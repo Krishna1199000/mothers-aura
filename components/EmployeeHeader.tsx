@@ -23,11 +23,14 @@ export const EmployeeHeader = () => {
     };
 
     const darkModePreference = localStorage.getItem('darkMode');
-    const prefersDark = window.matchMedia('(prefers-color-scheme: dark)').matches;
-    
-    if (darkModePreference === 'true' || (!darkModePreference && prefersDark)) {
+
+    // Strict default: Light mode for new users (ignore system preference)
+    if (darkModePreference === 'true') {
       setIsDarkMode(true);
       document.documentElement.classList.add('dark');
+    } else {
+      setIsDarkMode(false);
+      document.documentElement.classList.remove('dark');
     }
 
     window.addEventListener('scroll', handleScroll);

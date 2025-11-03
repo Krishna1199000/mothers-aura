@@ -60,9 +60,16 @@ export const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-serif text-2xl md:text-3xl lg:text-4xl font-semibold mb-6 leading-tight"
+            className="font-serif text-3xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight"
           >
-            Just wear it and watch your aura expand
+            <motion.span
+              className="bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text text-transparent"
+              style={{ backgroundSize: '200% 200%' }}
+              animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
+              transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
+            >
+              The Future of Diamonds Starts Here
+            </motion.span>
           </motion.h1>
           <motion.div
             initial={{ opacity: 0, y: 20 }}

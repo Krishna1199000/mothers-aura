@@ -226,148 +226,17 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
   const sendEmailWithPreviewPdf = async () => {
     try {
       setIsEmailing(true);
-      const content = document.getElementById('memo-content');
-      if (!content) throw new Error('Memo content not found');
-
-      const jsPDF = (await import('jspdf')).default;
-      const html2canvas = (await import('html2canvas-oklch')).default;
-
-      const contentClone = content.cloneNode(true) as HTMLElement;
-      contentClone.style.position = 'absolute';
-      contentClone.style.top = '-9999px';
-      contentClone.style.left = '-9999px';
-      contentClone.style.width = '210mm';
-      contentClone.style.minHeight = '297mm';
-      contentClone.style.margin = '0';
-      contentClone.style.padding = '15mm';
-      contentClone.style.boxSizing = 'border-box';
-      contentClone.style.backgroundColor = '#ffffff';
-      contentClone.style.fontFamily = 'Arial, sans-serif';
-      
-      // Convert logo image to data URL before cloning
-      const logoImg = content.querySelector('img[alt="Logo"]') as HTMLImageElement;
-      if (logoImg) {
-        try {
-          const logoCanvas = document.createElement('canvas');
-          const ctx = logoCanvas.getContext('2d');
-          if (ctx && logoImg.complete && logoImg.naturalWidth > 0) {
-            logoCanvas.width = logoImg.naturalWidth;
-            logoCanvas.height = logoImg.naturalHeight;
-            ctx.drawImage(logoImg, 0, 0);
-            const logoDataUrl = logoCanvas.toDataURL('image/png');
-            const cloneLogo = contentClone.querySelector('img[alt="Logo"]') as HTMLImageElement;
-            if (cloneLogo) {
-              cloneLogo.src = logoDataUrl;
-            }
-          }
-        } catch (logoError) {
-          console.warn('Could not convert logo to data URL:', logoError);
-        }
-      }
-      
-      // Force all Tailwind CSS classes to render with explicit inline styles
-      const inlineAllStyles = (element: HTMLElement) => {
-        const allElements = element.querySelectorAll('*');
-        allElements.forEach((el) => {
-          const htmlEl = el as HTMLElement;
-          const computedStyle = window.getComputedStyle(htmlEl);
-          const propertiesToInline = [
-            'backgroundColor', 'color', 'borderColor', 'borderTopColor',
-            'borderRightColor', 'borderBottomColor', 'borderLeftColor'
-          ];
-          propertiesToInline.forEach(prop => {
-            const value = computedStyle.getPropertyValue(prop);
-            if (value && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') {
-              try {
-                if (value.includes('rgb') || value.includes('#')) {
-                  htmlEl.style.setProperty(prop, value);
-                }
-              } catch (e) {
-                console.log('Skipping color property:', prop, value);
-              }
-            }
-          });
-        });
-      };
-      
-      inlineAllStyles(contentClone);
-      document.body.appendChild(contentClone);
-
-      try {
-        const canvas = await html2canvas(contentClone, { 
-          scale: 2, 
-          useCORS: true, 
-          allowTaint: true, 
-          backgroundColor: '#ffffff', 
-          width: contentClone.offsetWidth, 
-          height: contentClone.offsetHeight, 
-          scrollX: 0, 
-          scrollY: 0, 
-          imageTimeout: 15000,
-          logging: false,
-          onclone: (clonedDoc) => {
-            const originalError = console.error;
-            console.error = (...args) => {
-              if (args[0] && typeof args[0] === 'string' && args[0].includes('oklch')) {
-                return;
-              }
-              originalError.apply(console, args);
-            };
-            setTimeout(() => {
-              console.error = originalError;
-            }, 1000);
-          }
-        });
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        const pageWidth = 210; const pageHeight = 297; const margin = 10;
-        const contentWidth = pageWidth - (margin * 2); const contentHeight = pageHeight - (margin * 2);
-        const scaleX = contentWidth / canvas.width; const scaleY = contentHeight / canvas.height; const scale = Math.min(scaleX, scaleY);
-        const scaledWidth = canvas.width * scale; const scaledHeight = canvas.height * scale;
-        const x = (pageWidth - scaledWidth) / 2; const y = (pageHeight - scaledHeight) / 2;
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-        const pdfDataUrl = pdf.output('datauristring');
-
-        const res = await fetch('/api/admin/memos/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ memoId: id, pdfData: pdfDataUrl })
-        });
-        
-        let result: any;
-        try {
-          const text = await res.text();
-          if (!res.ok) {
-            // Try to parse as JSON first, otherwise use plain text
-            try {
-              result = JSON.parse(text);
-              throw new Error(result.error || text || 'Failed to send email');
-            } catch (parseError) {
-              throw new Error(text || 'Failed to send email');
-            }
-          }
-          // Try to parse as JSON
-          try {
-            result = JSON.parse(text);
-          } catch (parseError) {
-            throw new Error('Invalid response from server');
-          }
-        } catch (fetchError) {
-          throw fetchError instanceof Error ? fetchError : new Error('Failed to send email');
-        }
-        
-        toast.success('Email Sent', {
-          description: 'Memo email sent successfully to customer',
-        });
-      } finally {
-        if (contentClone && contentClone.parentNode) contentClone.parentNode.removeChild(contentClone);
-        setIsEmailing(false);
-      }
+      const res = await fetch('/api/admin/memos/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memoId: id })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      toast.success('Email Sent', { description: 'Memo email sent successfully to customer' });
     } catch (err) {
       console.error(err);
-      toast.error('Email Failed', {
-        description: err instanceof Error ? err.message : 'Failed to send memo email',
-      });
+      toast.error('Email Failed', { description: err instanceof Error ? err.message : 'Failed to send memo email' });
+    } finally {
       setIsEmailing(false);
     }
   };

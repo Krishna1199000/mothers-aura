@@ -38,13 +38,13 @@ export async function GET(
       return NextResponse.json({ error: "Inventory not found" }, { status: 404 });
     }
 
-    // Employees can only view their own inventory
-    if (
-      (session.user as any)?.role === "EMPLOYEE" &&
-      inventory.createdById !== session.user.id
-    ) {
-      return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-    }
+    // Allow EMPLOYEE to view any inventory record (read-only)
+    // if (
+    //   (session.user as any)?.role === "EMPLOYEE" &&
+    //   inventory.createdById !== session.user.id
+    // ) {
+    //   return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+    // }
 
     return NextResponse.json(inventory);
   } catch (error) {

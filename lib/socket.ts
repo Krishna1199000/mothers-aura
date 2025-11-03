@@ -45,29 +45,26 @@ export const ioHandler = async (req: any, res: NextApiResponseServerIO) => {
         }
       });
 
-      // Handle new messages
+      // Handle new messages - only broadcast, don't save (saving is handled by API endpoints)
       socket.on('message', async (data) => {
         try {
           const { content, senderType, chatId, senderId } = data;
           
-          const message = await db.message.create({
-            data: {
-              content,
-              senderType,
-              chatId,
-              senderId: senderId || null,
-            },
-          });
+          // Just broadcast the message with a temporary ID for real-time updates
+          const tempMessage = {
+            id: `temp-${Date.now()}-${Math.random()}`,
+            content,
+            senderType,
+            chatId,
+            senderId: senderId || null,
+            createdAt: new Date().toISOString(),
+            isRead: false
+          };
 
-          // Update chat's lastMessageAt
-          await db.chat.update({
-            where: { id: chatId },
-            data: { lastMessageAt: new Date() },
-          });
-
-          io.emit('message', message);
+          // Broadcast to all connected clients
+          io.emit('message', tempMessage);
         } catch (error) {
-          console.error('Error saving message:', error);
+          console.error('Error broadcasting message:', error);
         }
       });
 

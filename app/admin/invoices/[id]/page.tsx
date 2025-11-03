@@ -344,6 +344,23 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
     }
   };
 
+  const sendEmail = async () => {
+    try {
+      setIsEmailing(true);
+      const res = await fetch('/api/admin/invoices/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ invoiceId: id })
+      });
+      if (!res.ok) throw new Error(await res.text());
+      alert('Invoice email sent successfully');
+    } catch (err) {
+      console.error(err);
+      alert('Failed to send invoice email');
+    } finally {
+      setIsEmailing(false);
+    }
+  };
 
 
   const convertNumberToWords = (num: number): string => {
