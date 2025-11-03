@@ -66,7 +66,7 @@ export const verifyOTP = async (email: string, otp: string, type: 'signup' | 'pa
 // Email Templates
 // Helper to provide company logo for emails (prefer hosted URL for email client reliability)
 const getLogoForEmail = (): string => {
-  return 'https://mothersauradiamonds.com/logoWithDescbg.png';
+  return 'https://mothersauradiamonds.com/logoNamebg.png';
 };
 
 // Professional, reusable email shell matching the reference design (header/logo, styled content, footer)
@@ -306,6 +306,7 @@ export async function sendInvoiceEmailDetailed({
     to,
     subject: `Invoice ${invoiceNo} - Thank you for your purchase from Mothers Aura Diamonds`,
     html,
+    text: `Mothers Aura Logo\n\nThank You for Your Purchase!\nPremium Diamond Jewellery\n\nDear ${customerName},\n\nThank you for choosing Mothers Aura Diamonds. We are delighted to confirm your recent purchase and have attached your invoice for your records.\n\nInvoice Details\nInvoice Number: ${invoiceNo}\nTotal Amount: ₹${totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\nDate: ${new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}\n\nWhat's Next?\n- Your invoice is attached to this email as a PDF\n- Our team will process your order and arrange shipping\n- Our customer service team is available for any questions\n\nNeed Assistance?\nEmail: admintejas@mothersauradiamonds.com\nWebsite: mothersauradiamonds.com\nAddress: 203-Bhav resiedency, Thane 421304, Maharastra, India.\n\nWe truly appreciate your business and look forward to serving you again. Thank you for trusting Mothers Aura Diamonds with your diamond needs.\n\nWarm regards,\nThe Mothers Aura Diamond Team\n\nMothers Aura Diamonds\nEmail: admintejas@mothersauradiamonds.com\nWebsite: mothersauradiamonds.com\n203-Bhav resiedency, Thane 421304, Maharastra, India.`,
     attachments: [{ filename: `Invoice-${safeInvoiceNo}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }]
   });
 }
@@ -325,24 +326,24 @@ export async function sendMemoEmailDetailed({
   pdfBuffer: Buffer;
 }): Promise<void> {
   const logoUrl = getLogoForEmail();
-  const title = 'Your Memo from Mothers Aura Diamonds';
+  const title = 'Thank You for Your Purchase!';
   const content = `
     <p>Dear <strong>${customerName}</strong>,</p>
-    <p>Thank you for choosing Mothers Aura Diamonds. We are pleased to provide your memo and have attached it for your records.</p>
+    <p>Thank you for choosing Mothers Aura Diamonds. We are delighted to confirm your recent purchase and have attached your invoice for your records.</p>
     <div class="highlight">
-      <h3>Memo Details</h3>
-      <p><strong>Memo Number:</strong> ${memoNo}</p>
+      <h3>Invoice Details</h3>
+      <p><strong>Invoice Number:</strong> ${memoNo}</p>
       <p><strong>Total Amount:</strong> <span class="amount">₹${totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}</span></p>
       <p><strong>Date:</strong> ${new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}</p>
     </div>
     <h3>What's Next?</h3>
     <ul>
-      <li>Your memo is attached to this email as a PDF</li>
+      <li>Your invoice is attached to this email as a PDF</li>
       <li>Our team will process your order and arrange shipping</li>
       <li>Our customer service team is available for any questions</li>
     </ul>
     <h3>Need Assistance?</h3>
-    <p>If you have any questions about your memo or need additional support, please don't hesitate to contact us:</p>
+    <p>If you have any questions about your purchase or need additional support, please don't hesitate to contact us:</p>
     <ul>
       <li><strong>Email:</strong> <a href="mailto:admintejas@mothersauradiamonds.com">admintejas@mothersauradiamonds.com</a></li>
       <li><strong>Website:</strong> <a href="https://mothersauradiamonds.com" target="_blank">mothersauradiamonds.com</a></li>
@@ -373,8 +374,9 @@ export async function sendMemoEmailDetailed({
   await transporter.sendMail({
     from: '"Mothers Aura" <admintejas@mothersauradiamonds.com>',
     to,
-    subject: `Memo ${memoNo} - From Mothers Aura Diamonds`,
+    subject: `Memo ${memoNo} - Thank you for your purchase from Mothers Aura Diamonds`,
     html,
+    text: `Mothers Aura Logo\n\nThank You for Your Purchase!\nPremium Diamond Jewellery\n\nDear ${customerName},\n\nThank you for choosing Mothers Aura Diamonds. We are delighted to confirm your recent purchase and have attached your invoice for your records.\n\nInvoice Details\nInvoice Number: ${memoNo}\nTotal Amount: ₹${totalAmount.toLocaleString('en-IN', { minimumFractionDigits: 2, maximumFractionDigits: 2 })}\nDate: ${new Date().toLocaleDateString('en-IN', { year: 'numeric', month: 'long', day: 'numeric' })}\n\nWhat's Next?\n- Your invoice is attached to this email as a PDF\n- Our team will process your order and arrange shipping\n- Our customer service team is available for any questions\n\nNeed Assistance?\nEmail: admintejas@mothersauradiamonds.com\nWebsite: mothersauradiamonds.com\nAddress: 203-Bhav resiedency, Thane 421304, Maharastra, India.\n\nWe truly appreciate your business and look forward to serving you again. Thank you for trusting Mothers Aura Diamonds with your diamond needs.\n\nWarm regards,\nThe Mothers Aura Diamond Team\n\nMothers Aura Diamonds\nEmail: admintejas@mothersauradiamonds.com\nWebsite: mothersauradiamonds.com\n203-Bhav resiedency, Thane 421304, Maharastra, India.`,
     attachments: [{ filename: `Memo-${safeMemoNo}.pdf`, content: pdfBuffer, contentType: 'application/pdf' }]
   });
 }
