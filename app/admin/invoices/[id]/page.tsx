@@ -125,6 +125,27 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
       contentClone.style.backgroundColor = '#ffffff';
       contentClone.style.fontFamily = 'Arial, sans-serif';
 
+      // Convert logo image to data URL inside the clone to avoid CORS issues
+      try {
+        const originalLogo = content.querySelector('img[alt="Logo"]') as HTMLImageElement | null;
+        const clonedLogo = contentClone.querySelector('img[alt="Logo"]') as HTMLImageElement | null;
+        if (originalLogo && clonedLogo) {
+          if (originalLogo.complete && originalLogo.naturalWidth > 0) {
+            const canvas = document.createElement('canvas');
+            canvas.width = originalLogo.naturalWidth;
+            canvas.height = originalLogo.naturalHeight;
+            const ctx = canvas.getContext('2d');
+            if (ctx) {
+              ctx.drawImage(originalLogo, 0, 0);
+              const dataUrl = canvas.toDataURL('image/png');
+              clonedLogo.src = dataUrl;
+            }
+          }
+        }
+      } catch (e) {
+        console.warn('Logo data URL conversion failed:', e);
+      }
+
       // Add the clone to the document temporarily
       document.body.appendChild(contentClone);
 
@@ -518,6 +539,11 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
               .action-buttons {
                 display: none !important;
               }
+              /* Ensure single page fit and prevent stray images */
+              html, body { height: auto !important; overflow: hidden !important; }
+              #invoice-content { page-break-before: avoid; page-break-after: avoid; page-break-inside: avoid; width: 190mm !important; min-height: 277mm !important; margin: 0 auto !important; zoom: 0.95; }
+              /* Hide any images that might be outside the main content (e.g., favicon previews) */
+              body > img { display: none !important; }
               
               /* Hide browser-generated content */
               @page {

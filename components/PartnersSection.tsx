@@ -19,7 +19,7 @@ export const PartnersSection = () => {
   ];
 
   return (
-    <section className="py-24 bg-muted/30">
+    <section className="py-24 bg-[#EEF7FC] dark:bg-background">
       <div className="container mx-auto px-4">
         {/* Payment Partners - Single horizontal row with scroll on small screens */}
         <div className="text-center mb-20">

@@ -5,7 +5,7 @@ import { Button } from '@/components/ui/button';
 
 export const ContactSection = () => {
   return (
-    <section className="py-16 bg-accent/30 dark:bg-background">
+    <section className="py-16 bg-[#EEF7FC] dark:bg-background">
       <div className="container mx-auto px-4">
         <div className="text-center mb-10">
           <h2 className="text-3xl md:text-4xl font-bold mb-3 dark:text-white">

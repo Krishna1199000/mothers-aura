@@ -17,6 +17,7 @@ import { ChatWidget } from '@/components/chat/ChatWidget';
 import { OfferModal } from '@/components/OfferModal';
 import { Footer } from '@/components/Footer';
 import Slides from '@/components/Slides';
+import FollowUsPopout from '@/components/FollowUsPopout';
 
 import { useEffect } from 'react';
 
@@ -230,6 +231,9 @@ const Home = () => {
         <OfferModal />
        
       </motion.div>
+
+      {/* Left-side small Follow Us popout */}
+      <FollowUsPopout />
 
     </motion.div>
   );

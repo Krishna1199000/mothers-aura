@@ -7,10 +7,27 @@ export default function DiamondAppointment() {
   const [isVisible, setIsVisible] = useState(false);
   const [hoursExpanded, setHoursExpanded] = useState(false);
   const [isAppointmentFormOpen, setIsAppointmentFormOpen] = useState(false);
+  const [currentSlide, setCurrentSlide] = useState(0);
+  const [isPaused, setIsPaused] = useState(false);
 
   useEffect(() => {
     setIsVisible(true);
   }, []);
+
+  // Slider images (keep sizes as-is)
+  const sliderImages = [
+    '/Mothers-aura-appointment1.jpg',
+    '/inperson.jpg'
+  ];
+
+  // Auto-advance every 5 seconds; pause on hover/hold
+  useEffect(() => {
+    if (isPaused) return;
+    const id = setInterval(() => {
+      setCurrentSlide((prev) => (prev + 1) % sliderImages.length);
+    }, 5000);
+    return () => clearInterval(id);
+  }, [isPaused, sliderImages.length]);
 
   const storeHours = [
     { day: 'Mon', hours: '09:00 am – 05:00 pm', open: true },
@@ -30,7 +47,7 @@ export default function DiamondAppointment() {
   const todaySchedule = storeHours.find(schedule => schedule.day === currentDay);
 
   return (
-    <div className="bg-white dark:bg-gray-950 py-16 px-4">
+    <div className="bg-[#EEF7FC] dark:bg-gray-950 py-16 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
         <div className={`text-center mb-12 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
@@ -45,19 +62,36 @@ export default function DiamondAppointment() {
 
         {/* Main Content Grid */}
         <div className="grid md:grid-cols-2 gap-8 items-stretch">
-          {/* Left Side - Image Gallery */}
+          {/* Left Side - Image Slider (no buttons, pauses on hold) */}
           <div className={`transform transition-all duration-1000 delay-200 ${isVisible ? 'translate-x-0 opacity-100' : '-translate-x-10 opacity-0'}`}>
-            <div className={`relative group transition-all duration-500 ${hoursExpanded ? 'scale-105' : 'scale-100'}`}>
-              {/* Main Image */}
-              <div className="relative overflow-hidden rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800 h-full">
-                <Image
-                  src="/Mothers-aura-appointment1.jpg"
-                  alt="Mothers Aura Diamond Store"
-                  width={800}
-                  height={600}
-                  className="w-full h-full object-cover transform group-hover:scale-105 transition-transform duration-700"
-                  unoptimized
-                />
+            <div 
+              className={`relative group transition-all duration-500 ${hoursExpanded ? 'scale-105' : 'scale-100'}`}
+              onMouseEnter={() => setIsPaused(true)}
+              onMouseLeave={() => setIsPaused(false)}
+              onTouchStart={() => setIsPaused(true)}
+              onTouchEnd={() => setIsPaused(false)}
+            >
+              {/* Slider */}
+              <div className="relative overflow-hidden rounded-2xl shadow-lg border border-gray-200 dark:border-gray-800">
+                {sliderImages.map((src, index) => (
+                  <div
+                    key={src}
+                    className={`absolute inset-0 transition-opacity duration-700 ${index === currentSlide ? 'opacity-100' : 'opacity-0'}`}
+                  >
+                    <Image
+                      src={src}
+                      alt={index === 0 ? 'Mothers Aura Diamond Store' : 'In Person Experience'}
+                      width={800}
+                      height={600}
+                      className="w-full h-full object-cover"
+                      unoptimized
+                    />
+                  </div>
+                ))}
+                {/* Ensure a fixed height context for absolutely positioned slides */}
+                <div className="invisible">
+                  <Image src={sliderImages[0]} alt="size-holder" width={800} height={600} />
+                </div>
                 
                 {/* Today's Status Badge */}
                 <div className="absolute top-6 right-6 bg-white dark:bg-gray-900 rounded-lg px-5 py-3 shadow-lg border border-gray-200 dark:border-gray-700">

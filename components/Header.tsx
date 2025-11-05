@@ -67,7 +67,7 @@ export const Header = () => {
   return (
     <>
       {/* Main Header */}
-      <div className="bg-background border-b border-border" ref={utilityRef}>
+      <div className="bg-[#EEF7FC] dark:bg-background border-b border-border" ref={utilityRef}>
         <div className="container mx-auto px-4 py-1">
           <div className="flex items-center justify-between">
             {/* Left Section */}
@@ -82,10 +82,10 @@ export const Header = () => {
                     window.dispatchEvent(new CustomEvent('currency:change', { detail: { currency: val } }));
                   }}
                 >
-                  <SelectTrigger className="h-7 px-2 text-xs">
+                  <SelectTrigger className="h-7 px-2 text-xs bg-[#EEF7FC] dark:bg-background">
                     <SelectValue placeholder="USD" />
                   </SelectTrigger>
-                  <SelectContent>
+                  <SelectContent className="bg-[#EEF7FC] dark:bg-background">
                     <SelectItem value="USD">USD</SelectItem>
                     <SelectItem value="INR">INR</SelectItem>
                     <SelectItem value="EUR">EUR</SelectItem>
@@ -129,12 +129,12 @@ export const Header = () => {
                 transition={{ duration: 0.5, ease: "easeOut" }}
                 whileHover={{ scale: 1.02 }}
               >
-                <div className="relative h-16 w-auto">
+                <div className="relative h-20 md:h-24 w-auto">
                   <Image
                     src={theme === "dark" ? "/logoNameInvertbg.png" : "/logoNamebg.png"}
                     alt="Mother's Aura Logo"
-                    width={240}
-                    height={64}
+                    width={320}
+                    height={86}
                     className="h-full w-auto object-contain"
                     priority
                   />
@@ -187,7 +187,7 @@ export const Header = () => {
       </div>
 
       {/* Navigation */}
-      <nav ref={navRef} className={`sticky top-0 z-40 bg-background border-b border-border transition-all duration-300 ${
+      <nav ref={navRef} className={`sticky top-0 z-40 bg-[#EEF7FC] dark:bg-background border-b border-border transition-all duration-300 ${
         isScrolled ? 'shadow-sm' : ''
       }`}>
         <div className="container mx-auto px-4">
