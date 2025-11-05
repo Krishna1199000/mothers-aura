@@ -466,7 +466,7 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
                 {isDownloading ? 'Downloading...' : 'Download PDF'}
               </Button>
               <Button 
-                onClick={sendEmailWithPreviewPdf}
+                onClick={sendEmail}
                 variant="default"
                 disabled={isPrinting || isDownloading || isEmailing}
               >
@@ -659,6 +659,18 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
                     unoptimized
                   />
                 </div>
+                <p className="text-sm text-muted-foreground font-semibold underline">
+                <a
+  href="https://www.mothersauradiamonds.com"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-sm font-semibold text-muted-foreground hover:text-[#0077b6] hover:underline transition-colors duration-300"
+>
+  www.mothersauradiamonds.com
+</a>
+
+</p>
+
                 <p className="text-sm text-muted-foreground">
                   203-Bhav resiedency, Thane 421304 India
                 </p>

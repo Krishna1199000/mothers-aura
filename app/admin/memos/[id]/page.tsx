@@ -226,57 +226,13 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
   const sendEmailWithPreviewPdf = async () => {
     try {
       setIsEmailing(true);
-      // Generate PDF from current memo view (same approach as invoice page)
-      const content = document.getElementById('memo-content');
-      if (!content) throw new Error('Memo content not found');
-
-      const jsPDF = (await import('jspdf')).default;
-      const html2canvas = (await import('html2canvas-oklch')).default;
-
-      const contentClone = content.cloneNode(true) as HTMLElement;
-      contentClone.style.position = 'absolute';
-      contentClone.style.top = '-9999px';
-      contentClone.style.left = '-9999px';
-      contentClone.style.width = '210mm';
-      contentClone.style.minHeight = '297mm';
-      contentClone.style.margin = '0';
-      contentClone.style.padding = '15mm';
-      contentClone.style.boxSizing = 'border-box';
-      contentClone.style.backgroundColor = '#ffffff';
-      document.body.appendChild(contentClone);
-
-      try {
-        const canvas = await html2canvas(contentClone, {
-          scale: 2,
-          useCORS: true,
-          logging: false,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          width: contentClone.offsetWidth,
-          height: contentClone.offsetHeight,
-          scrollX: 0,
-          scrollY: 0
-        });
-
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        const pageWidth = 210; const pageHeight = 297; const margin = 10;
-        const contentWidth = pageWidth - (margin * 2); const contentHeight = pageHeight - (margin * 2);
-        const scaleX = contentWidth / canvas.width; const scaleY = contentHeight / canvas.height; const scale = Math.min(scaleX, scaleY);
-        const scaledWidth = canvas.width * scale; const scaledHeight = canvas.height * scale;
-        const x = (pageWidth - scaledWidth) / 2; const y = (pageHeight - scaledHeight) / 2;
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-        const pdfDataUrl = pdf.output('datauristring');
-
-        const res = await fetch('/api/admin/memos/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ memoId: id, pdfData: pdfDataUrl })
-        });
-        if (!res.ok) throw new Error(await res.text());
-      } finally {
-        if (contentClone && contentClone.parentNode) contentClone.parentNode.removeChild(contentClone);
-      }
+      // Let the server generate the PDF to avoid large payloads
+      const res = await fetch('/api/admin/memos/send-email', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ memoId: id })
+      });
+      if (!res.ok) throw new Error(await res.text());
       toast.success('Email Sent', { description: 'Memo email sent successfully to customer' });
     } catch (err) {
       console.error(err);
@@ -554,6 +510,17 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
                     unoptimized
                   />
                 </div>
+                <p className="text-sm text-muted-foreground font-semibold underline">
+                <a
+  href="https://www.mothersauradiamonds.com"
+  target="_blank"
+  rel="noopener noreferrer"
+  className="text-sm font-semibold text-muted-foreground hover:text-[#0077b6] hover:underline transition-colors duration-300"
+>
+  www.mothersauradiamonds.com
+</a>
+
+</p>
                 <p className="text-sm text-muted-foreground">
                   203-Bhav resiedency, Thane 421304 India
                 </p>

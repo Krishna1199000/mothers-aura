@@ -384,7 +384,7 @@ const menuItems: MenuItem[] = [
     ],
   },
   {
-    label: "Gift",
+    label: "BirthStones",
     items: [
       {
         section: "BIRTHSTONES JEWELLERY",

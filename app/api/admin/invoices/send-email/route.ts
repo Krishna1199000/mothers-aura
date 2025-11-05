@@ -4,6 +4,7 @@ import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { sendInvoiceEmail, sendInvoiceEmailDetailed } from "@/lib/email";
 import { jsPDF } from "jspdf";
+import { generateInvoicePDFBuffer, InvoiceData } from "@/lib/pdf-utils";
 
 const db = prisma as any;
 
@@ -65,8 +66,44 @@ export async function POST(request: NextRequest) {
       const base64 = pdfData.includes(',') ? pdfData.split(',')[1] : pdfData;
       pdfBuffer = Buffer.from(base64, 'base64');
     } else {
-      // Generate PDF from invoice data (server-side fallback)
-      pdfBuffer = await generateInvoicePDF(invoice);
+      // Try Puppeteer HTML->PDF first; fall back to jsPDF on error
+      try {
+        const invoiceData: InvoiceData = {
+          id: invoice.id,
+          invoiceNo: invoice.invoiceNumber,
+          date: new Date(invoice.date),
+          dueDate: new Date(invoice.dueDate),
+          paymentTerms: Number(invoice.paymentTerms || 0),
+          companyName: invoice.master.companyName,
+          addressLine1: invoice.master.addressLine1 || '',
+          addressLine2: invoice.master.addressLine2 || null,
+          city: invoice.master.city || '',
+          state: invoice.master.state || '',
+          country: invoice.master.country || '',
+          postalCode: invoice.master.postalCode || '',
+          description: invoice.description || null,
+          amountInWords: '',
+          subtotal: Number(invoice.subtotal || 0),
+          discount: Number(invoice.discount || 0),
+          crPayment: Number(invoice.crPayment || 0),
+          shipmentCost: Number(invoice.shipmentCost || 0),
+          totalAmount: Number(invoice.totalDue || 0),
+          items: invoice.items.map((it: any) => ({
+            id: it.id,
+            description: it.description || '',
+            carat: Number(it.carat || 0),
+            color: it.color || '',
+            clarity: it.clarity || '',
+            lab: it.lab || '',
+            reportNo: it.reportNo || '',
+            pricePerCarat: Number(it.pricePerCarat || 0),
+            total: Number(it.total || 0),
+          })),
+        };
+        pdfBuffer = await generateInvoicePDFBuffer(invoiceData);
+      } catch (e) {
+        pdfBuffer = await generateInvoicePDF(invoice);
+      }
     }
 
     // Send email with PDF attachment

@@ -170,7 +170,7 @@ export const Header = () => {
                   className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-colors"
                 >
                   <Calendar size={14} />
-                  <span className="text-xs">Book Appointment</span>
+                  <span className="text-xs">Virtual Appointment</span>
                 </button>
                 <ModeToggle />
               </div>

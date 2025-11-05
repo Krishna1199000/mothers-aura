@@ -11,6 +11,7 @@ const staticCategories = [
     title: 'Engagement Rings',
     type: 'engagement-rings',
     image: '/engagement-rings.png',
+    hoverImage: '/Second-engagement-rings.jpg',
     alt: 'Elegant engagement rings'
   },
   {
@@ -18,6 +19,7 @@ const staticCategories = [
     title: 'Women Wedding Ring',
     type: 'women-wedding-ring',
     image: '/Womenweddingring.png',
+    hoverImage: '/second-womens-earrings.jpg',
     alt: 'Women wedding rings'
   },
   {
@@ -25,6 +27,7 @@ const staticCategories = [
     title: 'Mens Wedding Ring',
     type: 'mens-wedding-ring',
     image: '/MenWeddingring.png',
+    hoverImage: '/second-mens-rings.png',
     alt: 'Mens wedding rings'
   },
   {
@@ -32,6 +35,7 @@ const staticCategories = [
     title: 'Earrings',
     type: 'earrings', 
     image: '/earrings.png',
+    hoverImage: '/second-earrings.png',
     alt: 'Diamond earrings'
   },
   {
@@ -39,6 +43,7 @@ const staticCategories = [
     title: 'Bracelets',
     type: 'bracelets',
     image: '/bracelets.png',
+    hoverImage: '/Second-bracelets.jpg',
     alt: 'Diamond bracelets'
   },
   {
@@ -46,6 +51,7 @@ const staticCategories = [
     title: 'Necklace',
     type: 'necklace',
     image: '/Womennecklace.png',
+    hoverImage: '/Second-necklace.jpg',
     alt: 'Diamond necklaces'
   },
   {
@@ -53,13 +59,15 @@ const staticCategories = [
     title: 'Waist Chain',
     type: 'waist-chain',
     image: '/Waistchain.png',
+    hoverImage: '/second-waist-chain.jpg',
     alt: 'Waist chains'
   },
   {
     id: "8",
     title: 'Pendent',
     type: 'pendent',
-    image: '/diamond-pendant-necklace.jpg',
+    image: '/pendent.png',
+    hoverImage: '/second-pendent.jpg',
     alt: 'Diamond pendent'
   }
 ];
@@ -88,17 +96,17 @@ export const ShopByCategory = () => {
   const firstRow = staticCategories.slice(0, 4);
   const secondRow = staticCategories.slice(4, 8);
 
-  const CategoryCard = ({ id, title, type, image, alt }: (typeof staticCategories)[number]) => (
+  const CategoryCard = ({ id, title, type, image, hoverImage, alt }: (typeof staticCategories)[number] & { hoverImage?: string }) => (
     <button
       key={id}
       onClick={() => handleCategoryClick(type)}
       className="group relative w-full overflow-hidden rounded-xl bg-card shadow-luxury hover:shadow-premium transition-all duration-500 hover:-translate-y-2"
     >
       <div className="aspect-square overflow-hidden relative">
-        {type === 'pendent' ? (
+        {hoverImage ? (
           <>
             <Image
-              src="/pendent.png"
+              src={image}
               alt={alt}
               className="w-full h-full object-cover transition-opacity duration-700 group-hover:opacity-0"
               loading="lazy"
@@ -106,7 +114,7 @@ export const ShopByCategory = () => {
               height={800}
             />
             <Image
-              src={image}
+              src={hoverImage}
               alt={alt}
               className="absolute inset-0 w-full h-full object-cover opacity-0 group-hover:opacity-100 transition-opacity duration-700"
               loading="lazy"
@@ -143,10 +151,10 @@ export const ShopByCategory = () => {
       <div className="container mx-auto px-4">
         <div className="text-center mb-12">
           <h2 className="text-4xl md:text-5xl font-bold mb-4">
-            Shop by Category
+            Mother&rsquo;s aura collection
           </h2>
           <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
-            Discover our curated collection of premium diamonds and fine jewellery
+          Just wear it — watch your aura expand
           </p>
         </div>
 

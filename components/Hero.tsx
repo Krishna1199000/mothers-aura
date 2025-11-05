@@ -13,6 +13,12 @@ export const Hero = () => {
     "/Landingimage5.jpg"
   ];
 
+  const captions = [
+    "The Future of Diamonds Starts Here",
+    "Wear this — a reminder of what you’re capable of",
+    "Luxury that awakens your Roar"
+  ];
+
   useEffect(() => {
     const interval = setInterval(() => {
       setCurrentIndex((prevIndex) => (prevIndex + 1) % images.length);
@@ -68,7 +74,7 @@ export const Hero = () => {
               animate={{ backgroundPosition: ['0% 50%', '100% 50%', '0% 50%'] }}
               transition={{ duration: 6, repeat: Infinity, ease: 'linear' }}
             >
-              The Future of Diamonds Starts Here
+              {captions[currentIndex]}
             </motion.span>
           </motion.h1>
           <motion.div

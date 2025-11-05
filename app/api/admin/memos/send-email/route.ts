@@ -3,6 +3,7 @@ import { getServerSession } from "next-auth";
 import { authOptions } from "@/lib/auth";
 import prisma from "@/lib/prisma";
 import { sendMemoEmailDetailed } from "@/lib/email";
+import { generateMemoPDFBuffer, type MemoData } from "@/lib/pdf-utils";
 import { jsPDF } from "jspdf";
 import autoTable from "jspdf-autotable";
 import * as fs from "fs";
@@ -68,8 +69,44 @@ export async function POST(request: NextRequest) {
       const base64 = pdfData.includes(',') ? pdfData.split(',')[1] : pdfData;
       pdfBuffer = Buffer.from(base64, 'base64');
     } else {
-      // Generate PDF from memo data (server-side fallback)
-      pdfBuffer = await generateMemoPDF(memo);
+      // Try Puppeteer HTML->PDF first; fall back to jsPDF on error
+      try {
+        const memoData: MemoData = {
+          id: memo.id,
+          memoNo: memo.memoNumber,
+          date: new Date(memo.date),
+          dueDate: new Date(memo.dueDate),
+          paymentTerms: Number(memo.paymentTerms || 0),
+          companyName: memo.master.companyName,
+          addressLine1: memo.master.addressLine1 || '',
+          addressLine2: memo.master.addressLine2 || null,
+          city: memo.master.city || '',
+          state: memo.master.state || '',
+          country: memo.master.country || '',
+          postalCode: memo.master.postalCode || '',
+          description: memo.description || null,
+          amountInWords: '',
+          subtotal: Number(memo.subtotal || 0),
+          discount: Number(memo.discount || 0),
+          crPayment: Number(memo.crPayment || 0),
+          shipmentCost: Number(memo.shipmentCost || 0),
+          totalAmount: Number(memo.totalDue || 0),
+          items: memo.items.map((it: any) => ({
+            id: it.id,
+            description: it.description || '',
+            carat: Number(it.carat || 0),
+            color: it.color || '',
+            clarity: it.clarity || '',
+            lab: it.lab || '',
+            reportNo: it.reportNo || '',
+            pricePerCarat: Number(it.pricePerCarat || 0),
+            total: Number(it.total || 0),
+          })),
+        };
+        pdfBuffer = await generateMemoPDFBuffer(memoData);
+      } catch (e) {
+        pdfBuffer = await generateMemoPDF(memo);
+      }
     }
 
     // Send email with PDF attachment
