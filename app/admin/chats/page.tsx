@@ -30,11 +30,11 @@ interface ChatRequest {
 
 interface Chat {
   id: string;
-  customerName: string;
+  customerName?: string;
   customerEmail: string;
-  lastMessageAt: string;
+  lastMessageAt?: string;
   status: 'ACTIVE' | 'CLOSED';
-  messages: Message[];
+  messages?: Message[];
 }
 
 interface Message {
@@ -88,7 +88,7 @@ export default function AdminChatsPage() {
       if (selectedChat && message.senderType === 'CUSTOMER') {
         setSelectedChat(prev => prev ? {
           ...prev,
-          messages: [...prev.messages, message]
+          messages: [...(prev.messages || []), message]
         } : null);
       }
     });
@@ -259,7 +259,7 @@ export default function AdminChatsPage() {
       // Update UI
       setSelectedChat(prev => prev ? {
         ...prev,
-        messages: [...prev.messages, savedMessage]
+        messages: [...(prev.messages || []), savedMessage]
       } : null);
 
       // Emit via socket for real-time updates
@@ -375,11 +375,25 @@ export default function AdminChatsPage() {
                                 ? 'bg-primary text-primary-foreground'
                                 : 'bg-muted hover:bg-muted/80'
                             }`}
-                            onClick={() => setSelectedChat(chat)}
+                            onClick={async () => {
+                              // Fetch full chat details with messages
+                              try {
+                                const res = await fetch(`/api/chat/${chat.id}`);
+                                if (res.ok) {
+                                  const fullChat = await res.json();
+                                  setSelectedChat(fullChat);
+                                } else {
+                                  setSelectedChat(chat);
+                                }
+                              } catch (error) {
+                                console.error('Error fetching chat details:', error);
+                                setSelectedChat(chat);
+                              }
+                            }}
                           >
                             <div className="flex items-center justify-between">
                               <div>
-                                <p className="font-medium">{chat.customerName}</p>
+                                <p className="font-medium">{chat.customerName || 'Unknown Customer'}</p>
                                 <p className="text-sm opacity-70">{chat.customerEmail}</p>
                               </div>
                               <Button
@@ -393,9 +407,11 @@ export default function AdminChatsPage() {
                                 <XCircle className="h-4 w-4" />
                               </Button>
                             </div>
-                            <div className="mt-2 text-sm opacity-70">
-                              Last active: {new Date(chat.lastMessageAt).toLocaleTimeString()}
-                            </div>
+                            {chat.lastMessageAt && (
+                              <div className="mt-2 text-sm opacity-70">
+                                Last active: {new Date(chat.lastMessageAt).toLocaleTimeString()}
+                              </div>
+                            )}
                           </div>
                         ))}
                       </div>
@@ -466,7 +482,7 @@ export default function AdminChatsPage() {
                 <CardHeader className="border-b">
                   <div className="flex items-center justify-between">
                     <div>
-                      <CardTitle>{selectedChat.customerName}</CardTitle>
+                      <CardTitle>{selectedChat.customerName || 'Unknown Customer'}</CardTitle>
                       <p className="text-sm text-muted-foreground">
                         {selectedChat.customerEmail}
                       </p>
@@ -484,7 +500,7 @@ export default function AdminChatsPage() {
                 <CardContent className="flex-1 p-4 overflow-auto">
                   <ScrollArea className="h-full pr-4">
                     <div className="space-y-4">
-                      {selectedChat.messages.map((message) => (
+                      {(selectedChat.messages || []).map((message) => (
                         <div
                           key={message.id}
                           className={`flex ${

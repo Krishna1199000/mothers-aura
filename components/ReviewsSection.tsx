@@ -39,10 +39,10 @@ export const ReviewsSection = () => {
   }, []);
 
   return (
-    <section className="py-16 bg-white dark:bg-gray-950">
+    <section className="py-12 sm:py-16 bg-white dark:bg-gray-950">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4 text-black dark:text-white">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 text-black dark:text-white">
             Customer Testimonials
           </h2>
           <div className="flex items-center justify-center space-x-2 mb-4">
@@ -70,11 +70,11 @@ export const ReviewsSection = () => {
             <div className="text-muted-foreground">No testimonials available yet.</div>
           </div>
         ) : (
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-8 max-w-6xl mx-auto">
+          <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6 sm:gap-8 max-w-6xl mx-auto">
             {reviews.map((review) => (
               <div
                 key={review.id}
-                className="bg-white dark:bg-gray-900 p-6 rounded-xl shadow-lg relative border border-transparent dark:border-gray-800"
+                className="bg-white dark:bg-gray-900 p-4 sm:p-5 md:p-6 rounded-xl shadow-lg relative border border-transparent dark:border-gray-800"
               >
                 {/* Quote Icon */}
                 <Quote size={32} className="text-black dark:text-white mb-4" />

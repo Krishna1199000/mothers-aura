@@ -12,7 +12,9 @@ export async function GET() {
     });
     return NextResponse.json(items);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to load announcements' }, { status: 500 });
+    // Dev-friendly fallback when DB is down: return empty list (AnnouncementBar already has UI fallback text)
+    console.error("Announcements API failed:", error);
+    return NextResponse.json([]);
   }
 }
 

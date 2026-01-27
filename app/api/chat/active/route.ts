@@ -10,7 +10,9 @@ export async function GET() {
       },
       select: {
         id: true,
+        customerName: true,
         customerEmail: true,
+        lastMessageAt: true,
         status: true,
       },
       orderBy: {

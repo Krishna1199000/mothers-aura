@@ -6,6 +6,21 @@ import { useEffect, useState } from "react";
 
 export const Hero = () => {
   const [currentIndex, setCurrentIndex] = useState(0);
+  const [mounted, setMounted] = useState(false);
+
+  // Fixed positions for sparkles to avoid hydration mismatch
+  const backgroundSparklePositions = [
+    { top: 90.84, left: 51.78 },
+    { top: 27.01, left: 34.90 },
+    { top: 6.41, left: 72.86 },
+    { top: 59.91, left: 69.32 },
+    { top: 4.09, left: 74.58 },
+    { top: 22.94, left: 65.57 },
+  ];
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   const images = [
     "/Mothers-aura-landingimage.png",
@@ -28,7 +43,7 @@ export const Hero = () => {
   }, [images.length]);
 
   return (
-    <section className="relative w-full h-[100vh] overflow-hidden flex items-center">
+    <section className="relative w-full h-[100vh] min-h-[600px] max-h-[900px] md:min-h-[700px] md:max-h-[100vh] overflow-hidden flex items-center">
       {/* Background Image Slider with Overlay */}
       <div className="absolute inset-0 z-0">
         <AnimatePresence mode="wait">
@@ -60,13 +75,13 @@ export const Hero = () => {
       </div>
 
       {/* Content */}
-      <div className="relative z-10 w-full px-4 md:px-8">
+      <div className="relative z-10 w-full px-4 sm:px-6 md:px-8">
         <div className="max-w-lg text-white">
           <motion.h1
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.2 }}
-            className="font-serif text-3xl md:text-5xl lg:text-6xl font-extrabold mb-6 leading-tight"
+            className="font-serif text-2xl sm:text-3xl md:text-5xl lg:text-6xl font-extrabold mb-4 sm:mb-6 leading-tight"
           >
             <motion.span
               className="bg-gradient-to-r from-amber-300 via-white to-amber-300 bg-clip-text text-transparent"
@@ -81,138 +96,63 @@ export const Hero = () => {
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
             transition={{ duration: 0.8, delay: 0.6 }}
+            className="flex flex-col gap-3 sm:gap-4 w-full sm:w-auto"
           >
+            {/* Start with a diamond - Dark Button */}
             <motion.a
-              href="/signup"
-              className="group relative inline-block overflow-hidden"
-              whileHover={{ scale: 1.05 }}
-              whileTap={{ scale: 0.95 }}
-              animate={{
-                boxShadow: [
-                  "0 0 20px rgba(255, 255, 255, 0.3)",
-                  "0 0 40px rgba(255, 255, 255, 0.5)",
-                  "0 0 20px rgba(255, 255, 255, 0.3)",
-                ],
-              }}
-              transition={{
-                boxShadow: {
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeInOut",
-                },
-              }}
+              href="/choose-diamond?flow=diamond-first"
+              className="group relative inline-block overflow-hidden w-full sm:w-auto"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
             >
-              {/* Glowing background effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-yellow-400 via-white to-yellow-400 opacity-0 group-hover:opacity-20"
-                animate={{
-                  x: ["-100%", "200%"],
-                }}
-                transition={{
-                  duration: 3,
-                  repeat: Infinity,
-                  ease: "linear",
-                }}
-              />
-              
-              {/* Shimmer effect */}
-              <motion.div
-                className="absolute inset-0 bg-gradient-to-r from-transparent via-white/30 to-transparent"
-                animate={{
-                  x: ["-200%", "200%"],
-                }}
-                transition={{
-                  duration: 2.5,
-                  repeat: Infinity,
-                  ease: "linear",
-                  repeatDelay: 1,
-                }}
-              />
-              
-              {/* Button content */}
               <motion.span
-                className="relative z-10 inline-block bg-gradient-to-br from-black via-gray-900 to-black text-white px-10 py-4 rounded-full text-lg font-semibold tracking-wide backdrop-blur-sm"
+                className="relative z-10 inline-block w-full sm:w-auto bg-gray-900 dark:bg-gray-800 text-white px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold tracking-wide text-center transition-all duration-300 hover:bg-gray-800 dark:hover:bg-gray-700"
               >
-                <span className="flex items-center gap-2">
-                  Shop Now
-                  <motion.span
-                    animate={{
-                      x: [0, 5, 0],
-                    }}
-                    transition={{
-                      duration: 1.5,
-                      repeat: Infinity,
-                      ease: "easeInOut",
-                    }}
-                  >
-                    →
-                  </motion.span>
-                </span>
+                Start with a diamond
               </motion.span>
-              
-              {/* Pulse ring effect */}
-              <motion.div
-                className="absolute inset-0 border-2 border-white/50 rounded-full"
-                animate={{
-                  scale: [1, 1.3, 1],
-                  opacity: [0.5, 0, 0.5],
-                }}
-                transition={{
-                  duration: 2,
-                  repeat: Infinity,
-                  ease: "easeOut",
-                }}
-              />
-              
-              {/* Sparkle particles around button */}
-              {[...Array(8)].map((_, i) => (
-                <motion.div
-                  key={i}
-                  className="absolute w-1 h-1 bg-yellow-300 rounded-full"
-                  style={{
-                    top: `${20 + Math.random() * 60}%`,
-                    left: `${20 + Math.random() * 60}%`,
-                  }}
-                  animate={{
-                    scale: [0, 1, 0],
-                    opacity: [0, 1, 0],
-                    y: [0, -20, 0],
-                  }}
-                  transition={{
-                    duration: 2,
-                    repeat: Infinity,
-                    delay: i * 0.25,
-                    ease: "easeInOut",
-                  }}
-                />
-              ))}
+            </motion.a>
+
+            {/* Start with a setting - Light Button */}
+            <motion.a
+              href="/choose-diamond?flow=setting-first"
+              className="group relative inline-block overflow-hidden w-full sm:w-auto"
+              whileHover={{ scale: 1.02 }}
+              whileTap={{ scale: 0.98 }}
+            >
+              <motion.span
+                className="relative z-10 inline-block w-full sm:w-auto bg-white dark:bg-gray-900 text-gray-900 dark:text-white border-2 border-gray-900 dark:border-gray-700 px-6 sm:px-8 md:px-10 py-3 sm:py-4 rounded-full text-base sm:text-lg font-semibold tracking-wide text-center transition-all duration-300 hover:bg-gray-50 dark:hover:bg-gray-800 hover:border-gray-800 dark:hover:border-gray-600"
+              >
+                Start with a setting
+              </motion.span>
             </motion.a>
           </motion.div>
         </div>
       </div>
 
       {/* Enhanced Sparkle Effects */}
-      <div className="absolute inset-0 pointer-events-none z-5">
-        {[...Array(6)].map((_, i) => (
-          <motion.div
-            key={i}
-            className="absolute w-1.5 h-1.5 bg-white rounded-full"
-            style={{
-              top: `${Math.random() * 100}%`,
-              left: `${Math.random() * 100}%`,
-            }}
-            animate={{
-              opacity: [0, 1, 0],
-              scale: [0, 1, 0],
-            }}
-            transition={{
-              duration: 2,
-              repeat: Infinity,
-              delay: i * 0.3,
-            }}
-          />
-        ))}
-      </div>
+      {mounted && (
+        <div className="absolute inset-0 pointer-events-none z-5">
+          {backgroundSparklePositions.map((pos, i) => (
+            <motion.div
+              key={i}
+              className="absolute w-1.5 h-1.5 bg-white rounded-full"
+              style={{
+                top: `${pos.top}%`,
+                left: `${pos.left}%`,
+              }}
+              animate={{
+                opacity: [0, 1, 0],
+                scale: [0, 1, 0],
+              }}
+              transition={{
+                duration: 2,
+                repeat: Infinity,
+                delay: i * 0.3,
+              }}
+            />
+          ))}
+        </div>
+      )}
     </section>
   );
 };

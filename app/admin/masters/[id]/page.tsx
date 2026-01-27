@@ -22,9 +22,9 @@ interface Master {
   state: string;
   postalCode: string;
   country: string;
-  salesExecutive: {
+  salesExecutive?: {
     name: string;
-  };
+  } | null;
   updatedAt: string;
 }
 
@@ -142,7 +142,7 @@ export default function MasterDetailsPage({ params }: { params: Promise<{ id: st
                 </div>
                 <div>
                   <h4 className="font-medium text-sm text-muted-foreground">Sales Executive</h4>
-                  <p className="mt-1">{master.salesExecutive.name}</p>
+                  <p className="mt-1">{master.salesExecutive?.name || "Not assigned"}</p>
                 </div>
                 <div>
                   <h4 className="font-medium text-sm text-muted-foreground">Address Line 1</h4>

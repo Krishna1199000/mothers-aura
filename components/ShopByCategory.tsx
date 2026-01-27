@@ -136,35 +136,35 @@ export const ShopByCategory = () => {
 
       <div className="absolute inset-0 bg-gradient-to-t from-black/60 via-black/20 to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-300" />
 
-      <div className="absolute bottom-0 left-0 right-0 p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
-        <h3 className={`text-xl md:text-2xl font-bold mb-2 ${title === 'Women Wedding Ring' ? 'whitespace-nowrap' : ''}`}>{title}</h3>
+      <div className="absolute bottom-0 left-0 right-0 p-4 sm:p-5 md:p-6 text-white transform translate-y-4 group-hover:translate-y-0 transition-transform duration-300">
+        <h3 className={`text-base sm:text-lg md:text-xl lg:text-2xl font-bold mb-1 sm:mb-2 ${title === 'Women Wedding Ring' ? 'whitespace-nowrap' : ''}`}>{title}</h3>
         <div className="flex items-center space-x-2 text-white/90 hover:text-white transition-colors">
-          <span className="text-sm">Shop now</span>
-          <ArrowRight size={16} className="group-hover:translate-x-1 transition-transform" />
+          <span className="text-xs sm:text-sm">Shop now</span>
+          <ArrowRight size={14} className="sm:w-4 sm:h-4 group-hover:translate-x-1 transition-transform" />
         </div>
       </div>
     </button>
   );
 
   return (
-    <section className="py-16 bg-[#EEF7FC] dark:bg-background">
+    <section className="py-12 sm:py-16 bg-[#EEF7FC] dark:bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-12">
-          <h2 className="text-4xl md:text-5xl font-bold mb-4">
+        <div className="text-center mb-8 sm:mb-12">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4">
             Mother&rsquo;s aura collection
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
           Just wear it — watch your aura expand
           </p>
         </div>
 
         {/* First row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6 mb-8">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6 mb-6 sm:mb-8">
           {firstRow.map(CategoryCard as any)}
         </div>
 
         {/* Second row */}
-        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-6">
+        <div className="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-4 gap-4 sm:gap-5 md:gap-6">
           {secondRow.map(CategoryCard as any)}
         </div>
       </div>

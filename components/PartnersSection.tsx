@@ -19,11 +19,11 @@ export const PartnersSection = () => {
   ];
 
   return (
-    <section className="py-24 bg-[#EEF7FC] dark:bg-background">
+    <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-[#EEF7FC] dark:bg-background">
       <div className="container mx-auto px-4">
         {/* Payment Partners - Single horizontal row with scroll on small screens */}
-        <div className="text-center mb-20">
-          <h3 className="text-3xl font-bold text-muted-foreground mb-12">
+        <div className="text-center mb-12 sm:mb-16 md:mb-20">
+          <h3 className="text-2xl sm:text-3xl font-bold text-muted-foreground mb-8 sm:mb-10 md:mb-12">
             Trusted Payment Partners
           </h3>
           
@@ -47,22 +47,22 @@ export const PartnersSection = () => {
 
         {/* Certification Partners */}
         <div className="text-center">
-          <h3 className="text-3xl font-bold text-muted-foreground mb-12">
+          <h3 className="text-2xl sm:text-3xl font-bold text-muted-foreground mb-8 sm:mb-10 md:mb-12">
             Certified by Leading Laboratories
           </h3>
           
-          <div className="flex flex-wrap justify-center items-center gap-12 md:gap-16">
+          <div className="flex flex-wrap justify-center items-center gap-6 sm:gap-8 md:gap-12 lg:gap-16">
             {certificationPartners.map((partner, index) => (
               <div
                 key={index}
-                className="flex items-center justify-center p-8 bg-background rounded-xl border border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
+                className="flex items-center justify-center p-4 sm:p-6 md:p-8 bg-background rounded-xl border border-border shadow-lg hover:shadow-xl transition-all duration-300 hover:scale-105"
               >
                 <Image
                   src={partner.image}
                   alt={partner.name}
                   width={200}
                   height={80}
-                  className="max-h-20 w-auto object-contain"
+                  className="max-h-16 sm:max-h-18 md:max-h-20 w-auto object-contain"
                 />
               </div>
             ))}

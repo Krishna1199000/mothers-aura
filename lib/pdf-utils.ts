@@ -124,18 +124,27 @@ export function generateInvoiceHTML(invoice: InvoiceData): string {
 
   const formatDate = (date: Date) => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(date));
 
+  // Use public URL for logo - works in both dev and production
+  // Use logoWithDescbg.png which is the actual hosted logo asset
+  const logoUrl = process.env.NEXT_PUBLIC_APP_URL 
+    ? `${process.env.NEXT_PUBLIC_APP_URL}/logoWithDescbg.png`
+    : 'https://mothersauradiamonds.com/logoWithDescbg.png';
+  
   let logoElement = '';
   try {
-    const logoPath = path.join(process.cwd(), 'public', 'logoNamebg.png');
-    if (fs.existsSync(logoPath)) {
+    // Try filesystem first (works in dev)
+    const logoPath = path.join(process.cwd(), 'public', 'logoWithDescbg.png');
+    if (typeof fs.existsSync === 'function' && fs.existsSync(logoPath)) {
       const logoBuffer = fs.readFileSync(logoPath);
       const logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
       logoElement = `<img src="${logoBase64}" alt="Logo" class="logo-img">`;
     } else {
-      logoElement = `<div class="logo-placeholder">MOTHERS AURA DIAMONDS</div>`;
+      // Use URL in production/serverless environments
+      logoElement = `<img src="${logoUrl}" alt="Logo" class="logo-img">`;
     }
   } catch {
-    logoElement = `<div class="logo-placeholder">MOTHERS AURA DIAMONDS</div>`;
+    // Fallback to URL if filesystem access fails
+    logoElement = `<img src="${logoUrl}" alt="Logo" class="logo-img">`;
   }
 
   return `
@@ -613,18 +622,27 @@ export function generateMemoHTML(memo: MemoData): string {
 
   const formatDate = (date: Date) => new Intl.DateTimeFormat('en-GB', { day: '2-digit', month: '2-digit', year: 'numeric' }).format(new Date(date));
 
+  // Use public URL for logo - works in both dev and production
+  // Use logoWithDescbg.png which is the actual hosted logo asset
+  const logoUrl = process.env.NEXT_PUBLIC_APP_URL 
+    ? `${process.env.NEXT_PUBLIC_APP_URL}/logoWithDescbg.png`
+    : 'https://mothersauradiamonds.com/logoWithDescbg.png';
+  
   let logoElement = '';
   try {
-    const logoPath = path.join(process.cwd(), 'public', 'logoNamebg.png');
-    if (fs.existsSync(logoPath)) {
+    // Try filesystem first (works in dev)
+    const logoPath = path.join(process.cwd(), 'public', 'logoWithDescbg.png');
+    if (typeof fs.existsSync === 'function' && fs.existsSync(logoPath)) {
       const logoBuffer = fs.readFileSync(logoPath);
       const logoBase64 = `data:image/png;base64,${logoBuffer.toString('base64')}`;
       logoElement = `<img src="${logoBase64}" alt="Logo" class="logo-img">`;
     } else {
-      logoElement = `<div class="logo-placeholder">MOTHERS AURA DIAMONDS</div>`;
+      // Use URL in production/serverless environments
+      logoElement = `<img src="${logoUrl}" alt="Logo" class="logo-img">`;
     }
   } catch {
-    logoElement = `<div class="logo-placeholder">MOTHERS AURA DIAMONDS</div>`;
+    // Fallback to URL if filesystem access fails
+    logoElement = `<img src="${logoUrl}" alt="Logo" class="logo-img">`;
   }
 
   return `

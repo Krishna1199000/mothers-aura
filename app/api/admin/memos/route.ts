@@ -171,19 +171,45 @@ async function generateMemoPDF(memo: any) {
   
   let yPos = 15;
   
-  // Try to load logo (check both .png and .jpg)
+  // Try to load logo - use URL in production/serverless environments
   try {
-    let logoPath = path.join(process.cwd(), 'public', 'logoNamebg.png');
+    // Try filesystem first (works in dev)
+    let logoPath = path.join(process.cwd(), 'public', 'logoWithDescbg.png');
     let logoFormat = 'PNG';
+    let logoBase64: string | null = null;
     
-    if (!fs.existsSync(logoPath)) {
+    if (typeof fs.existsSync === 'function' && fs.existsSync(logoPath)) {
+      const logoData = fs.readFileSync(logoPath);
+      logoBase64 = `data:image/png;base64,` + logoData.toString('base64');
+    } else {
+      // Fallback: try logo.jpg
       logoPath = path.join(process.cwd(), 'public', 'logo.jpg');
-      logoFormat = 'JPEG';
+      if (typeof fs.existsSync === 'function' && fs.existsSync(logoPath)) {
+        const logoData = fs.readFileSync(logoPath);
+        logoFormat = 'JPEG';
+        logoBase64 = `data:image/jpeg;base64,` + logoData.toString('base64');
+      }
     }
     
-    if (fs.existsSync(logoPath)) {
-      const logoData = fs.readFileSync(logoPath);
-      const logoBase64 = `data:image/${logoFormat.toLowerCase()};base64,` + logoData.toString('base64');
+    // If filesystem failed, try fetching from URL
+    if (!logoBase64) {
+      const logoUrl = process.env.NEXT_PUBLIC_APP_URL 
+        ? `${process.env.NEXT_PUBLIC_APP_URL}/logoWithDescbg.png`
+        : 'https://mothersauradiamonds.com/logoWithDescbg.png';
+      
+      try {
+        const response = await fetch(logoUrl);
+        if (response.ok) {
+          const arrayBuffer = await response.arrayBuffer();
+          const buffer = Buffer.from(arrayBuffer);
+          logoBase64 = `data:image/png;base64,` + buffer.toString('base64');
+        }
+      } catch (fetchError) {
+        console.log('Could not fetch logo from URL:', fetchError);
+      }
+    }
+    
+    if (logoBase64) {
       doc.addImage(logoBase64, logoFormat, 105 - 12, yPos, 24, 24, undefined, 'FAST');
     }
   } catch (error) {

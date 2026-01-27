@@ -66,7 +66,8 @@ export const verifyOTP = async (email: string, otp: string, type: 'signup' | 'pa
 // Email Templates
 // Helper to provide company logo for emails (prefer hosted URL for email client reliability)
 const getLogoForEmail = (): string => {
-  return 'https://mothersauradiamonds.com/logoNamebg.png';
+  // Use the main branded logo asset that exists on the live site
+  return 'https://mothersauradiamonds.com/logoWithDescbg.png';
 };
 
 // Professional, reusable email shell matching the reference design (header/logo, styled content, footer)

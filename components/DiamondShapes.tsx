@@ -63,26 +63,26 @@ export const DiamondShapes = () => {
   };
 
   return (
-    <section className="py-24 bg-background relative overflow-hidden">
+    <section className="py-12 sm:py-16 md:py-20 lg:py-24 bg-background relative overflow-hidden">
       <div className="container mx-auto px-4">
         <motion.div 
-          className="text-center mb-16"
+          className="text-center mb-8 sm:mb-12 md:mb-16"
           initial={{ opacity: 0, y: 20 }}
           whileInView={{ opacity: 1, y: 0 }}
           viewport={{ once: true }}
           transition={{ duration: 0.8 }}
         >
-          <h2 className="text-4xl md:text-5xl font-bold mb-6">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl lg:text-5xl font-bold mb-3 sm:mb-4 md:mb-6">
             Experience Diamond Brilliance
           </h2>
-          <p className="text-xl text-muted-foreground max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-2xl mx-auto">
             Watch our diamonds come to life in stunning detail
           </p>
         </motion.div>
 
         <div className="relative max-w-6xl mx-auto">
           {/* Three Video Slider */}
-          <div className="relative h-[400px] md:h-[500px] flex items-center justify-center gap-4 px-8">
+          <div className="relative h-[300px] sm:h-[350px] md:h-[400px] lg:h-[500px] flex items-center justify-center gap-2 sm:gap-3 md:gap-4 px-4 sm:px-6 md:px-8">
             {getVisibleVideos().map((shape, index) => {
               const isCenter = shape.position === 'current';
               const isPrev = shape.position === 'prev';
@@ -93,8 +93,8 @@ export const DiamondShapes = () => {
                   key={`${shape.index}-${shape.position}`}
                   className={`relative rounded-xl overflow-hidden shadow-lg transition-all duration-500 ${
                     isCenter 
-                      ? 'w-[280px] md:w-[350px] h-[350px] md:h-[450px] z-20' 
-                      : 'w-[120px] md:w-[150px] h-[200px] md:h-[250px] z-10 opacity-70 hover:opacity-90'
+                      ? 'w-[200px] sm:w-[240px] md:w-[280px] lg:w-[350px] h-[250px] sm:h-[300px] md:h-[350px] lg:h-[450px] z-20' 
+                      : 'w-[80px] sm:w-[100px] md:w-[120px] lg:w-[150px] h-[150px] sm:h-[180px] md:h-[200px] lg:h-[250px] z-10 opacity-70 hover:opacity-90'
                   }`}
                   initial={{ 
                     opacity: 0, 
@@ -155,17 +155,17 @@ export const DiamondShapes = () => {
           {/* Navigation Buttons - positioned outside the video container */}
           <button
             onClick={prevSlide}
-            className="absolute left-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-black/90 p-3 rounded-full shadow-lg hover:scale-110 transition-transform z-30"
+            className="absolute left-1 sm:left-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-black/90 p-2 sm:p-3 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-transform z-30"
             aria-label="Previous shape"
           >
-            <ChevronLeft className="w-6 h-6" />
+            <ChevronLeft className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
           </button>
           <button
             onClick={nextSlide}
-            className="absolute right-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-black/90 p-3 rounded-full shadow-lg hover:scale-110 transition-transform z-30"
+            className="absolute right-1 sm:right-2 top-1/2 -translate-y-1/2 bg-white/90 dark:bg-black/90 p-2 sm:p-3 rounded-full shadow-lg hover:scale-110 active:scale-95 transition-transform z-30"
             aria-label="Next shape"
           >
-            <ChevronRight className="w-6 h-6" />
+            <ChevronRight className="w-4 h-4 sm:w-5 sm:h-5 md:w-6 md:h-6" />
           </button>
 
           {/* Progress Indicators */}

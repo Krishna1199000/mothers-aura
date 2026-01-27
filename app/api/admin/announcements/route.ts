@@ -8,7 +8,8 @@ export async function GET() {
     const items = await prisma.siteAnnouncement.findMany({ orderBy: { createdAt: 'desc' } });
     return NextResponse.json(items);
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to load announcements' }, { status: 500 });
+    console.error("Admin announcements GET failed:", error);
+    return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
   }
 }
 
@@ -28,7 +29,8 @@ export async function POST(req: NextRequest) {
     });
     return NextResponse.json(created, { status: 201 });
   } catch (error) {
-    return NextResponse.json({ error: 'Failed to create announcement' }, { status: 500 });
+    console.error("Admin announcements POST failed:", error);
+    return NextResponse.json({ error: 'Database unavailable' }, { status: 503 });
   }
 }
 

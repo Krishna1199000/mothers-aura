@@ -32,8 +32,32 @@ export default function RootLayout({
   children: React.ReactNode
 }) {
   return (
-    <html lang="en-GB" suppressHydrationWarning>
+    <html lang="en-GB" suppressHydrationWarning className="light">
       <head>
+        <script
+          dangerouslySetInnerHTML={{
+            __html: `
+              (function() {
+                try {
+                  const stored = localStorage.getItem('theme');
+                  // Only set to light if no preference exists or if it was set to system
+                  if (!stored || stored === 'system') {
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                    localStorage.setItem('theme', 'light');
+                  } else if (stored === 'dark') {
+                    // User has explicitly chosen dark mode, keep it
+                    document.documentElement.classList.add('dark');
+                  } else {
+                    // User has explicitly chosen light mode
+                    document.documentElement.classList.remove('dark');
+                    document.documentElement.classList.add('light');
+                  }
+                } catch (e) {}
+              })();
+            `,
+          }}
+        />
         <style dangerouslySetInnerHTML={{ __html: `:root { color-scheme: light; }` }} />
         <script
           type="application/ld+json"

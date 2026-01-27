@@ -6,7 +6,7 @@ import Image from 'next/image';
 import { motion } from 'framer-motion';
 import { useRouter } from 'next/navigation';
 import { useSession } from 'next-auth/react';
-import { Phone, Search, ShoppingCart, Menu, Heart, Calendar } from 'lucide-react';
+import { Phone, Search, ShoppingCart, Menu, Calendar, ArrowRight } from 'lucide-react';
 import { Select, SelectContent, SelectItem, SelectTrigger, SelectValue } from '@/components/ui/select';
 import { MegaMenu } from './MegaMenu';
 import { SearchPanel } from './SearchPanel';
@@ -24,6 +24,7 @@ export const Header = () => {
   const [isCartOpen, setIsCartOpen] = useState(false);
   const [isAppointmentFormOpen, setIsAppointmentFormOpen] = useState(false);
   const [navbarHeight, setNavbarHeight] = useState(56);
+  const [mounted, setMounted] = useState(false);
   const utilityRef = useRef<HTMLDivElement | null>(null);
   const navRef = useRef<HTMLDivElement | null>(null);
   const { items } = useCart();
@@ -33,6 +34,10 @@ export const Header = () => {
 
   // Calculate total items in cart
   const totalItems = items.reduce((total, item) => total + item.quantity, 0);
+
+  useEffect(() => {
+    setMounted(true);
+  }, []);
 
   useEffect(() => {
     const handleScroll = () => {
@@ -131,7 +136,7 @@ export const Header = () => {
               >
                 <div className="relative h-20 md:h-24 w-auto">
                   <Image
-                    src={theme === "dark" ? "/logoNameInvertbg.png" : "/logoNamebg.png"}
+                    src={!mounted || theme !== "dark" ? "/logoNamebg.png" : "/logoNameInvertbg.png"}
                     alt="Mother's Aura Logo"
                     width={320}
                     height={86}
@@ -158,13 +163,15 @@ export const Header = () => {
                     </span>
                   )}
                 </button>
+
                 <Link 
-                  href="/wishlist"
+                  href="/signup"
                   className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-colors"
                 >
-                  <Heart size={14} />
-                  <span className="text-xs">WishList</span>
+                  <span className="text-xs">Get Started</span>
+                  <ArrowRight size={14} />
                 </Link>
+
                 <button 
                   onClick={() => setIsAppointmentFormOpen(true)}
                   className="flex items-center space-x-1 text-muted-foreground hover:text-foreground transition-colors"

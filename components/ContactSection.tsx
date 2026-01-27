@@ -5,10 +5,10 @@ import { Button } from '@/components/ui/button';
 
 export const ContactSection = () => {
   return (
-    <section className="py-16 bg-[#EEF7FC] dark:bg-background">
+    <section className="py-12 sm:py-16 bg-[#EEF7FC] dark:bg-background">
       <div className="container mx-auto px-4">
-        <div className="text-center mb-10">
-          <h2 className="text-3xl md:text-4xl font-bold mb-3 dark:text-white">
+        <div className="text-center mb-8 sm:mb-10">
+          <h2 className="text-2xl sm:text-3xl md:text-4xl font-bold mb-2 sm:mb-3 dark:text-white">
             Get in Touch
           </h2>
           <p className="text-lg text-muted-foreground dark:text-gray-300 max-w-2xl mx-auto">
@@ -17,9 +17,9 @@ export const ContactSection = () => {
         </div>
 
         <div className="max-w-7xl mx-auto">
-          <div className="grid grid-cols-1 lg:grid-cols-2 gap-12">
+          <div className="grid grid-cols-1 lg:grid-cols-2 gap-6 sm:gap-8 md:gap-12">
             {/* WhatsApp Contact */}
-            <div className="text-center lg:text-left bg-white dark:bg-gray-900 rounded-2xl p-8 shadow-lg border border-gray-100 dark:border-gray-800">
+            <div className="text-center lg:text-left bg-white dark:bg-gray-900 rounded-2xl p-6 sm:p-7 md:p-8 shadow-lg border border-gray-100 dark:border-gray-800">
               <div className="inline-flex items-center justify-center w-16 h-16 bg-green-500/10 rounded-full mb-6">
                 <MessageCircle className="w-8 h-8 text-green-500" />
               </div>
@@ -69,8 +69,8 @@ export const ContactSection = () => {
                         <MapPin className="w-5 h-5 text-red-500" />
                       </div>
                       <div>
-                        <p className="font-semibold text-lg mb-2">Address</p>
-                        <p className="text-muted-foreground">
+                        <p className="font-semibold text-lg mb-2 dark:text-white">Address</p>
+                        <p className="text-muted-foreground dark:text-gray-300">
                           Bhav Residency, Flat 203, 2nd Floor<br />
                           Bldg No. 09, 2532/17, Near Datta Mandir<br />
                           Kalher, Thane - 421302<br />

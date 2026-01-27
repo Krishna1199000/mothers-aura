@@ -47,15 +47,15 @@ export default function DiamondAppointment() {
   const todaySchedule = storeHours.find(schedule => schedule.day === currentDay);
 
   return (
-    <div className="bg-[#EEF7FC] dark:bg-gray-950 py-16 px-4">
+    <div className="bg-[#EEF7FC] dark:bg-gray-950 py-12 sm:py-16 px-4">
       <div className="max-w-7xl mx-auto">
         {/* Header Section */}
-        <div className={`text-center mb-12 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
-          <h2 className="text-5xl md:text-6xl font-bold text-black dark:text-white mb-4 tracking-tight">
+        <div className={`text-center mb-8 sm:mb-12 transform transition-all duration-1000 ${isVisible ? 'translate-y-0 opacity-100' : 'translate-y-10 opacity-0'}`}>
+          <h2 className="text-3xl sm:text-4xl md:text-5xl lg:text-6xl font-bold text-black dark:text-white mb-3 sm:mb-4 tracking-tight">
             Experience Elegance
-            <span className="block mt-2">In Person</span>
+            <span className="block mt-1 sm:mt-2">In Person</span>
           </h2>
-          <p className="text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
+          <p className="text-base sm:text-lg md:text-xl text-gray-700 dark:text-gray-300 max-w-2xl mx-auto">
             Book your private consultation or visit our showroom to discover timeless beauty
           </p>
         </div>

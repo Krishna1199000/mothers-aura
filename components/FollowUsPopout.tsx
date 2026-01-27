@@ -50,21 +50,21 @@ export default function FollowUsPopout() {
           animate={{ x: 0, opacity: 1 }}
           exit={{ x: -220, opacity: 0 }}
           transition={{ type: "spring", stiffness: 320, damping: 26 }}
-          className="fixed bottom-4 left-4 z-50"
+          className="fixed bottom-4 left-2 sm:left-4 z-40 hidden sm:block"
         >
-          <div className="flex items-center gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl rounded-xl px-3 py-2">
-            <span className="text-sm font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">Follow us</span>
-            <div className="flex items-center gap-2">
+          <div className="flex items-center gap-2 sm:gap-3 bg-white dark:bg-gray-900 border border-gray-200 dark:border-gray-800 shadow-xl rounded-xl px-2 sm:px-3 py-2">
+            <span className="text-xs sm:text-sm font-semibold text-gray-800 dark:text-gray-100 whitespace-nowrap">Follow us</span>
+            <div className="flex items-center gap-1.5 sm:gap-2">
               {socials.map((s) => (
                 <a
                   key={s.label}
                   href={s.href}
                   target="_blank"
                   rel="noopener noreferrer"
-                  className="w-8 h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
+                  className="w-7 h-7 sm:w-8 sm:h-8 rounded-full bg-gray-100 dark:bg-gray-800 text-gray-700 dark:text-gray-200 flex items-center justify-center hover:bg-gray-200 dark:hover:bg-gray-700 transition-colors"
                   aria-label={s.label}
                 >
-                  <s.icon size={16} />
+                  <s.icon size={14} className="sm:w-4 sm:h-4" />
                 </a>
               ))}
             </div>

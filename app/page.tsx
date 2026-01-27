@@ -225,7 +225,7 @@ const Home = () => {
           duration: 0.8,
           ease: [0.22, 1, 0.36, 1]
         }}
-        className="fixed bottom-4 right-4 z-50 flex flex-col gap-4"
+        className="fixed bottom-4 right-4 sm:bottom-6 sm:right-6 z-50 flex flex-col gap-3 sm:gap-4"
       >
         <ChatWidget />
         <OfferModal />
