@@ -52,19 +52,19 @@ export default function ManageUsersPage() {
   const fetchUsers = async () => {
     try {
       const response = await fetch('/api/admin/users');
+      const data = await response.json().catch(() => ({}));
       if (response.ok) {
-        const data = await response.json();
-        setUsers(data);
-        // Initialize password values from fetched users
+        setUsers(Array.isArray(data) ? data : []);
         const initialPasswordValues: Record<string, string> = {};
-        data.forEach((user: User) => {
+        (Array.isArray(data) ? data : []).forEach((user: User) => {
           if (user.password) {
             initialPasswordValues[user.id] = user.password;
           }
         });
         setPasswordValues(initialPasswordValues);
+        setMessage("");
       } else {
-        setMessage("Failed to fetch users");
+        setMessage(data?.details || data?.error || "Failed to fetch users");
       }
     } catch (error) {
       setMessage("Error fetching users");
