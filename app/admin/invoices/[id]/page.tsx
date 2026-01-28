@@ -97,125 +97,22 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
   const downloadPDF = async () => {
     try {
       setIsDownloading(true);
-      console.log('Starting PDF download...');
-      
-      const content = document.getElementById('invoice-content');
-      if (!content) {
-        throw new Error('Invoice content not found');
-      }
-
-      // Import jsPDF and html2canvas
-      const jsPDF = (await import('jspdf')).default;
-      const html2canvas = (await import('html2canvas-oklch')).default;
-
-      console.log('Libraries loaded successfully');
-
-      // Create a clone of the content
-      const contentClone = content.cloneNode(true) as HTMLElement;
-      
-      // Set styles for the clone
-      contentClone.style.position = 'absolute';
-      contentClone.style.top = '-9999px';
-      contentClone.style.left = '-9999px';
-      contentClone.style.width = '210mm';
-      contentClone.style.minHeight = '297mm';
-      contentClone.style.margin = '0';
-      contentClone.style.padding = '15mm';
-      contentClone.style.boxSizing = 'border-box';
-      contentClone.style.backgroundColor = '#ffffff';
-      contentClone.style.fontFamily = 'Arial, sans-serif';
-
-      // Convert logo image to data URL inside the clone to avoid CORS issues
-      try {
-        const originalLogo = content.querySelector('img[alt="Logo"]') as HTMLImageElement | null;
-        const clonedLogo = contentClone.querySelector('img[alt="Logo"]') as HTMLImageElement | null;
-        if (originalLogo && clonedLogo) {
-          if (originalLogo.complete && originalLogo.naturalWidth > 0) {
-            const canvas = document.createElement('canvas');
-            canvas.width = originalLogo.naturalWidth;
-            canvas.height = originalLogo.naturalHeight;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.drawImage(originalLogo, 0, 0);
-              const dataUrl = canvas.toDataURL('image/png');
-              clonedLogo.src = dataUrl;
-            }
-          }
-        }
-      } catch (e) {
-        console.warn('Logo data URL conversion failed:', e);
-      }
-
-      // Add the clone to the document temporarily
-      document.body.appendChild(contentClone);
-
-      try {
-        console.log('Generating canvas...');
-        
-        // Create canvas with optimized settings
-        const canvas = await html2canvas(contentClone, {
-          scale: 2,
-          useCORS: true,
-          logging: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          width: contentClone.offsetWidth,
-          height: contentClone.offsetHeight,
-          scrollX: 0,
-          scrollY: 0
-        });
-
-        console.log('Canvas generated:', canvas.width, 'x', canvas.height);
-
-        // Create PDF
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
-
-        // Calculate dimensions to fit A4
-        const pageWidth = 210;
-        const pageHeight = 297;
-        const margin = 10;
-        const contentWidth = pageWidth - (margin * 2);
-        const contentHeight = pageHeight - (margin * 2);
-
-        // Calculate scaling to fit content
-        const scaleX = contentWidth / canvas.width;
-        const scaleY = contentHeight / canvas.height;
-        const scale = Math.min(scaleX, scaleY);
-
-        const scaledWidth = canvas.width * scale;
-        const scaledHeight = canvas.height * scale;
-
-        // Center the content
-        const x = (pageWidth - scaledWidth) / 2;
-        const y = (pageHeight - scaledHeight) / 2;
-
-        // Add image to PDF
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-
-        // Save PDF
-        const fileName = `Invoice-${invoice?.invoiceNumber || 'Unknown'}.pdf`;
-        pdf.save(fileName);
-        
-        console.log('PDF saved successfully:', fileName);
-        
-      } catch (canvasError) {
-        console.error('Canvas generation error:', canvasError);
-        alert('Error generating PDF canvas. Please try again.');
-      } finally {
-        // Clean up
-        if (contentClone && contentClone.parentNode) {
-          contentClone.parentNode.removeChild(contentClone);
-        }
-        setIsDownloading(false);
-      }
+      const res = await fetch(`/api/admin/invoices/${id}/pdf`);
+      if (!res.ok) throw new Error(res.statusText || "Failed to generate PDF");
+      const blob = await res.blob();
+      const filename =
+        res.headers.get("Content-Disposition")?.match(/filename="?([^";\n]+)"?/)?.[1] ||
+        `Invoice-${invoice?.invoiceNumber ?? "Unknown"}.pdf`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('PDF generation error:', error);
-      alert('Error generating PDF. Please try again.');
+      console.error("PDF download error:", error);
+      alert("Error downloading PDF. Please try again.");
+    } finally {
       setIsDownloading(false);
     }
   };
@@ -229,139 +126,6 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
       alert('Error printing. Please try again.');
     } finally {
       setIsPrinting(false);
-    }
-  };
-
-  const sendEmailWithPreviewPdf = async () => {
-    try {
-      setIsEmailing(true);
-      const content = document.getElementById('invoice-content');
-      if (!content) throw new Error('Invoice content not found');
-
-      const jsPDF = (await import('jspdf')).default;
-      const html2canvas = (await import('html2canvas-oklch')).default;
-
-      const contentClone = content.cloneNode(true) as HTMLElement;
-      contentClone.style.position = 'absolute';
-      contentClone.style.top = '-9999px';
-      contentClone.style.left = '-9999px';
-      contentClone.style.width = '210mm';
-      contentClone.style.minHeight = '297mm';
-      contentClone.style.margin = '0';
-      contentClone.style.padding = '15mm';
-      contentClone.style.boxSizing = 'border-box';
-      contentClone.style.backgroundColor = '#ffffff';
-      contentClone.style.fontFamily = 'Arial, sans-serif';
-      
-      // Convert logo image to data URL before cloning
-      const logoImg = content.querySelector('img[alt="Logo"]') as HTMLImageElement;
-      if (logoImg) {
-        try {
-          const logoCanvas = document.createElement('canvas');
-          const ctx = logoCanvas.getContext('2d');
-          if (ctx && logoImg.complete && logoImg.naturalWidth > 0) {
-            logoCanvas.width = logoImg.naturalWidth;
-            logoCanvas.height = logoImg.naturalHeight;
-            ctx.drawImage(logoImg, 0, 0);
-            const logoDataUrl = logoCanvas.toDataURL('image/png');
-            // Replace the logo src in clone with data URL
-            const cloneLogo = contentClone.querySelector('img[alt="Logo"]') as HTMLImageElement;
-            if (cloneLogo) {
-              cloneLogo.src = logoDataUrl;
-            }
-          }
-        } catch (logoError) {
-          console.warn('Could not convert logo to data URL:', logoError);
-        }
-      }
-      
-      // Force all Tailwind CSS classes to render with explicit inline styles to avoid oklch() parsing errors
-      const inlineAllStyles = (element: HTMLElement) => {
-        const allElements = element.querySelectorAll('*');
-        allElements.forEach((el) => {
-          const htmlEl = el as HTMLElement;
-          
-          // Get all computed styles that have actual values
-          const computedStyle = window.getComputedStyle(htmlEl);
-          
-          // List of properties to inline
-          const propertiesToInline = [
-            'backgroundColor', 'color', 'borderColor', 'borderTopColor',
-            'borderRightColor', 'borderBottomColor', 'borderLeftColor'
-          ];
-          
-          propertiesToInline.forEach(prop => {
-            const value = computedStyle.getPropertyValue(prop);
-            if (value && value !== 'rgba(0, 0, 0, 0)' && value !== 'transparent') {
-              try {
-                // Only set if it's a valid rgb/rgba/hex value
-                if (value.includes('rgb') || value.includes('#')) {
-                  htmlEl.style.setProperty(prop, value);
-                }
-              } catch (e) {
-                // Silently ignore - this means value contains unsupported color function
-                console.log('Skipping color property:', prop, value);
-              }
-            }
-          });
-        });
-      };
-      
-      inlineAllStyles(contentClone);
-      
-      document.body.appendChild(contentClone);
-
-      try {
-        const canvas = await html2canvas(contentClone, { 
-          scale: 2, 
-          useCORS: true, 
-          allowTaint: true, 
-          backgroundColor: '#ffffff', 
-          width: contentClone.offsetWidth, 
-          height: contentClone.offsetHeight, 
-          scrollX: 0, 
-          scrollY: 0, 
-          imageTimeout: 15000,
-          logging: false, // Reduce console noise
-          onclone: (clonedDoc) => {
-            // Suppress oklch warnings by overriding console.error temporarily
-            const originalError = console.error;
-            console.error = (...args) => {
-              if (args[0] && typeof args[0] === 'string' && args[0].includes('oklch')) {
-                return; // Suppress oklch warnings
-              }
-              originalError.apply(console, args);
-            };
-            setTimeout(() => {
-              console.error = originalError; // Restore after canvas render
-            }, 1000);
-          }
-        });
-        const pdf = new jsPDF({ orientation: 'portrait', unit: 'mm', format: 'a4' });
-        const pageWidth = 210; const pageHeight = 297; const margin = 10;
-        const contentWidth = pageWidth - (margin * 2); const contentHeight = pageHeight - (margin * 2);
-        const scaleX = contentWidth / canvas.width; const scaleY = contentHeight / canvas.height; const scale = Math.min(scaleX, scaleY);
-        const scaledWidth = canvas.width * scale; const scaledHeight = canvas.height * scale;
-        const x = (pageWidth - scaledWidth) / 2; const y = (pageHeight - scaledHeight) / 2;
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-        const pdfDataUrl = pdf.output('datauristring');
-
-        const res = await fetch('/api/admin/invoices/send-email', {
-          method: 'POST',
-          headers: { 'Content-Type': 'application/json' },
-          body: JSON.stringify({ invoiceId: id, pdfData: pdfDataUrl })
-        });
-        if (!res.ok) throw new Error(await res.text());
-        alert('Invoice email sent successfully');
-      } finally {
-        if (contentClone && contentClone.parentNode) contentClone.parentNode.removeChild(contentClone);
-        setIsEmailing(false);
-      }
-    } catch (err) {
-      console.error(err);
-      alert('Failed to send invoice email');
-      setIsEmailing(false);
     }
   };
 
@@ -487,7 +251,7 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
                 {isDownloading ? 'Downloading...' : 'Download PDF'}
               </Button>
               <Button 
-                onClick={sendEmailWithPreviewPdf}
+                onClick={sendEmail}
                 variant="default"
                 disabled={isPrinting || isDownloading || isEmailing}
               >
@@ -503,6 +267,17 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
               margin: 0 !important;
             }
             @media print {
+              /* Print only the invoice preview (same as on screen) */
+              body * { visibility: hidden !important; }
+              #invoice-content, #invoice-content * { visibility: visible !important; }
+              #invoice-content {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-shadow: none !important;
+              }
               * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;

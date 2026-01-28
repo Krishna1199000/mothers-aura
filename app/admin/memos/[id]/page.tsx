@@ -109,125 +109,22 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
   const downloadPDF = async () => {
     try {
       setIsDownloading(true);
-      console.log('Starting PDF download...');
-      
-      const content = document.getElementById('memo-content');
-      if (!content) {
-        throw new Error('Memo content not found');
-      }
-
-      // Import jsPDF and html2canvas
-      const jsPDF = (await import('jspdf')).default;
-      const html2canvas = (await import('html2canvas-oklch')).default;
-
-      console.log('Libraries loaded successfully');
-
-      // Create a clone of the content
-      const contentClone = content.cloneNode(true) as HTMLElement;
-      
-      // Set styles for the clone
-      contentClone.style.position = 'absolute';
-      contentClone.style.top = '-9999px';
-      contentClone.style.left = '-9999px';
-      contentClone.style.width = '210mm';
-      contentClone.style.minHeight = '297mm';
-      contentClone.style.margin = '0';
-      contentClone.style.padding = '15mm';
-      contentClone.style.boxSizing = 'border-box';
-      contentClone.style.backgroundColor = '#ffffff';
-      contentClone.style.fontFamily = 'Arial, sans-serif';
-
-      // Convert logo to data URL in clone to ensure it renders in the PDF
-      try {
-        const originalLogo = content.querySelector('img[alt="Logo"]') as HTMLImageElement | null;
-        const clonedLogo = contentClone.querySelector('img[alt="Logo"]') as HTMLImageElement | null;
-        if (originalLogo && clonedLogo) {
-          if (originalLogo.complete && originalLogo.naturalWidth > 0) {
-            const canvas = document.createElement('canvas');
-            canvas.width = originalLogo.naturalWidth;
-            canvas.height = originalLogo.naturalHeight;
-            const ctx = canvas.getContext('2d');
-            if (ctx) {
-              ctx.drawImage(originalLogo, 0, 0);
-              const dataUrl = canvas.toDataURL('image/png');
-              clonedLogo.src = dataUrl;
-            }
-          }
-        }
-      } catch (e) {
-        console.warn('Logo data URL conversion failed:', e);
-      }
-
-      // Add the clone to the document temporarily
-      document.body.appendChild(contentClone);
-
-      try {
-        console.log('Generating canvas...');
-        
-        // Create canvas with optimized settings
-        const canvas = await html2canvas(contentClone, {
-          scale: 2,
-          useCORS: true,
-          logging: true,
-          allowTaint: true,
-          backgroundColor: '#ffffff',
-          width: contentClone.offsetWidth,
-          height: contentClone.offsetHeight,
-          scrollX: 0,
-          scrollY: 0
-        });
-
-        console.log('Canvas generated:', canvas.width, 'x', canvas.height);
-
-        // Create PDF
-        const pdf = new jsPDF({
-          orientation: 'portrait',
-          unit: 'mm',
-          format: 'a4'
-        });
-
-        // Calculate dimensions to fit A4
-        const pageWidth = 210;
-        const pageHeight = 297;
-        const margin = 10;
-        const contentWidth = pageWidth - (margin * 2);
-        const contentHeight = pageHeight - (margin * 2);
-
-        // Calculate scaling to fit content
-        const scaleX = contentWidth / canvas.width;
-        const scaleY = contentHeight / canvas.height;
-        const scale = Math.min(scaleX, scaleY);
-
-        const scaledWidth = canvas.width * scale;
-        const scaledHeight = canvas.height * scale;
-
-        // Center the content
-        const x = (pageWidth - scaledWidth) / 2;
-        const y = (pageHeight - scaledHeight) / 2;
-
-        // Add image to PDF
-        const imgData = canvas.toDataURL('image/png', 1.0);
-        pdf.addImage(imgData, 'PNG', x, y, scaledWidth, scaledHeight);
-
-        // Save PDF
-        const fileName = `Memo-${memo?.memoNumber || 'Unknown'}.pdf`;
-        pdf.save(fileName);
-        
-        console.log('PDF saved successfully:', fileName);
-        
-      } catch (canvasError) {
-        console.error('Canvas generation error:', canvasError);
-        alert('Error generating PDF canvas. Please try again.');
-      } finally {
-        // Clean up
-        if (contentClone && contentClone.parentNode) {
-          contentClone.parentNode.removeChild(contentClone);
-        }
-        setIsDownloading(false);
-      }
+      const res = await fetch(`/api/admin/memos/${id}/pdf`);
+      if (!res.ok) throw new Error(res.statusText || "Failed to generate PDF");
+      const blob = await res.blob();
+      const filename =
+        res.headers.get("Content-Disposition")?.match(/filename="?([^";\n]+)"?/)?.[1] ||
+        `Memo-${memo?.memoNumber ?? "Unknown"}.pdf`;
+      const url = URL.createObjectURL(blob);
+      const a = document.createElement("a");
+      a.href = url;
+      a.download = filename;
+      a.click();
+      URL.revokeObjectURL(url);
     } catch (error) {
-      console.error('PDF generation error:', error);
-      alert('Error generating PDF. Please try again.');
+      console.error("PDF download error:", error);
+      toast.error("Download failed", { description: "Error downloading PDF. Please try again." });
+    } finally {
       setIsDownloading(false);
     }
   };
@@ -354,6 +251,17 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
               margin: 0 !important;
             }
             @media print {
+              /* Print only the memo preview (same as on screen) */
+              body * { visibility: hidden !important; }
+              #memo-content, #memo-content * { visibility: visible !important; }
+              #memo-content {
+                position: absolute !important;
+                left: 0 !important;
+                top: 0 !important;
+                width: 100% !important;
+                max-width: 100% !important;
+                box-shadow: none !important;
+              }
               * {
                 -webkit-print-color-adjust: exact !important;
                 print-color-adjust: exact !important;

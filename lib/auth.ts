@@ -25,10 +25,14 @@ export const authOptions: NextAuthOptions = {
           return null;
         }
 
-        const user = await prisma.user.findUnique({
+        const email = credentials.email.trim().toLowerCase();
+        const passwordInput = credentials.password.trim();
+
+        // Case-insensitive email lookup so "Tejas@gmail.com" matches "tejas@gmail.com"
+        const user = await prisma.user.findFirst({
           where: {
-            email: credentials.email
-          }
+            email: { equals: email, mode: "insensitive" },
+          },
         });
 
         if (!user || !user.password) {
@@ -36,18 +40,19 @@ export const authOptions: NextAuthOptions = {
         }
 
         // Check if password is hashed (starts with $2a$, $2b$, or $2y$ - bcrypt format)
-        // or plaintext (for new users)
+        // or plaintext (for legacy or migrated users)
         let isPasswordValid = false;
-        
-        if (user.password.startsWith('$2a$') || user.password.startsWith('$2b$') || user.password.startsWith('$2y$')) {
-          // Existing user with hashed password - use bcrypt
-          isPasswordValid = await bcrypt.compare(
-            credentials.password,
-            user.password
-          );
+
+        if (
+          user.password.startsWith("$2a$") ||
+          user.password.startsWith("$2b$") ||
+          user.password.startsWith("$2y$")
+        ) {
+          isPasswordValid = await bcrypt.compare(passwordInput, user.password);
         } else {
-          // New user with plaintext password - direct comparison
-          isPasswordValid = credentials.password === user.password;
+          // Plain-text comparison, trim both to avoid hidden spaces
+          isPasswordValid =
+            passwordInput === (user.password || "").trim();
         }
 
         if (!isPasswordValid) {
