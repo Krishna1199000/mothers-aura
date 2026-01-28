@@ -2,20 +2,15 @@
 
 import * as React from "react";
 import * as RechartsPrimitive from "recharts";
+import type { Payload } from "recharts/types/component/DefaultTooltipContent";
 
 import { cn } from "@/lib/utils";
 
 // Format: { THEME_NAME: CSS_SELECTOR }
 const THEMES = { light: "", dark: ".dark" } as const;
 
-// Type guards for payload items
-interface PayloadItem {
-  name?: string;
-  value?: number;
-  dataKey?: string;
-  color?: string;
-  payload?: Record<string, unknown>;
-}
+// Type guards for tooltip payload items
+type PayloadItem = Payload<any, any>;
 
 function isPayloadItem(item: unknown): item is PayloadItem {
   return typeof item === "object" && item !== null;
@@ -113,7 +108,8 @@ const ChartTooltipContent = React.forwardRef<
       indicator?: "line" | "dot" | "dashed";
       nameKey?: string;
       labelKey?: string;
-      payload?: unknown;
+      // These are provided by Recharts Tooltip to the "content" component
+      payload?: readonly PayloadItem[];
       label?: unknown;
     }
 >(
@@ -189,10 +185,14 @@ const ChartTooltipContent = React.forwardRef<
             const key = `${nameKey || item.name || item.dataKey || "value"}`;
             const itemConfig = getPayloadConfigFromPayload(config, item, key);
             const indicatorColor = color || (item.payload as Record<string, unknown>)?.fill || item.color;
+            const reactKey =
+              typeof item.dataKey === "string" || typeof item.dataKey === "number"
+                ? item.dataKey
+                : item.name ?? index;
 
             return (
               <div
-                key={item.dataKey || index}
+                key={reactKey}
                 className={cn(
                   "flex w-full flex-wrap items-stretch gap-2 [&>svg]:h-2.5 [&>svg]:w-2.5 [&>svg]:text-muted-foreground",
                   indicator === "dot" && "items-center",
