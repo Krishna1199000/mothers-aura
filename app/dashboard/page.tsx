@@ -39,7 +39,8 @@ export default function DashboardPage() {
 
   // If customer is not yet approved, show waiting screen instead of dashboard
   if (user.role === "CUSTOMER" && user.approvalStatus !== "APPROVED") {
-    const isRejected = user.approvalStatus === "REJECTED";
+    const status = user.approvalStatus as string | undefined;
+    const isRejected = status === "REJECTED";
 
     const WaitingContent = () => {
       const router = useRouter();
@@ -74,12 +75,11 @@ export default function DashboardPage() {
           <main className="flex-1 container mx-auto px-4 py-16 flex items-center justify-center">
             <div className="max-w-lg w-full bg-white dark:bg-gray-900 border border-border rounded-xl p-8 shadow-sm text-center space-y-4">
               <h1 className="text-2xl font-bold">
-                Account awaiting admin approval
+                {isRejected ? "Account rejected" : "Approval pending"}
               </h1>
               <p className="text-muted-foreground text-sm">
-                Your customer account has been created successfully, but an
-                administrator must approve it before you can access the
-                customer panel.
+                Your customer account is not yet approved. An administrator
+                must approve it before you can access the customer panel.
               </p>
               {isRejected ? (
                 <>
@@ -99,6 +99,7 @@ export default function DashboardPage() {
                 </>
               ) : (
                 <p className="text-xs text-muted-foreground">
+                  Status: <span className="font-semibold">Approval pending</span>.
                   You will receive an email once your account has been reviewed.
                   You can safely sign out and sign in later to check the status.
                 </p>

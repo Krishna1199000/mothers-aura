@@ -272,11 +272,11 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
                 height: 297mm;
                 margin: 0;
                 padding: 0;
-                font-size: 12px !important;
+                font-size: 10px !important; /* slightly smaller to help fit on one page */
               }
               @page {
                 size: A4;
-                margin: 15mm;
+                margin: 5mm; /* tighter margins to reduce blank space */
               }
               body {
                 margin: 0;
@@ -336,7 +336,7 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
             width: 100%;
             border-collapse: collapse;
             page-break-inside: auto;
-            margin-bottom: 1rem;
+            margin-bottom: 0.5rem;
             table-layout: fixed;
           }
           tr { 
@@ -345,9 +345,9 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
           }
           th, td {
             border: 1px solid #000;
-            padding: 1px 2px;
+            padding: 1px 1px;
             text-align: left;
-            font-size: 8px !important;
+            font-size: 7px !important;
             word-wrap: break-word;
             overflow-wrap: break-word;
             line-height: 1.1;
@@ -355,7 +355,7 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
           th { 
             background-color: #e6f3ff !important;
             font-weight: bold;
-            font-size: 8px !important;
+            font-size: 7px !important;
             white-space: nowrap;
           }
           td:first-child { width: 20%; }  /* Description */
@@ -369,8 +369,8 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
           /* Compact text */
           .text-xs { font-size: 8px !important; }
           .text-sm { font-size: 9px !important; }
-          p { margin: 0 0 0.3em 0 !important; }
-          .mb-8 { margin-bottom: 0.3rem !important; }
+          p { margin: 0 0 0.2em 0 !important; }
+          .mb-8 { margin-bottom: 0.25rem !important; }
           .mb-6 { margin-bottom: 0.2rem !important; }
           .mb-4 { margin-bottom: 0.15rem !important; }
           .mb-2 { margin-bottom: 0.1rem !important; }
@@ -389,20 +389,20 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
             margin-bottom: 0.2rem !important;
           }
 
-              /* Logo - restrict to the memo logo only */
+              /* Logo - restrict to the memo logo only, and shrink slightly for print */
               .logo-container img {
-                width: 112px !important;
-                height: 112px !important;
+                width: 80px !important;
+                height: 80px !important;
                 object-fit: cover;
                 border-radius: 8px;
                 background-color: white !important;
               }
               .logo-container {
                 background-color: white !important;
-                padding: 8px;
+                padding: 4px;
                 border-radius: 8px;
                 display: inline-block;
-                margin-bottom: 8px;
+                margin-bottom: 6px;
               }
 
               /* Layout */
@@ -420,11 +420,11 @@ export default function MemoViewPage({ params }: { params: Promise<{ id: string 
               .text-center { text-align: center; }
 
               /* Spacing */
-              .mb-8 { margin-bottom: 2rem; }
-              .mb-4 { margin-bottom: 1rem; }
-              .mb-2 { margin-bottom: 0.5rem; }
-              .space-y-1 > * + * { margin-top: 0.25rem; }
-              .p-8 { padding: 2rem; }
+              .mb-8 { margin-bottom: 0.75rem; }
+              .mb-4 { margin-bottom: 0.5rem; }
+              .mb-2 { margin-bottom: 0.25rem; }
+              .space-y-1 > * + * { margin-top: 0.15rem; }
+              .p-8 { padding: 0 !important; } /* rely on #memo-content padding in print */
 
               /* Colors */
               .text-muted-foreground { color: #666 !important; }

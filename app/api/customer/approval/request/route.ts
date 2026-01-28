@@ -45,6 +45,17 @@ export async function POST(_req: NextRequest) {
       );
     }
 
+    // If already pending, don't allow spamming new requests
+    if (user.approvalStatus === "PENDING") {
+      return NextResponse.json(
+        {
+          error:
+            "Your approval request is already pending. Please wait for an admin to review it.",
+        },
+        { status: 400 },
+      );
+    }
+
     // If previously rejected, enforce max 3 re-request attempts
     let nextAttempts = user.approvalAttempts;
     if (user.approvalStatus === "REJECTED") {
