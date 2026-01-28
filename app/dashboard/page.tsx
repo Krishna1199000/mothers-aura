@@ -35,6 +35,84 @@ export default function DashboardPage() {
     return null; // Will redirect to signin
   }
 
+  const user = session.user as any;
+
+  // If customer is not yet approved, show waiting screen instead of dashboard
+  if (user.role === "CUSTOMER" && user.approvalStatus !== "APPROVED") {
+    const isRejected = user.approvalStatus === "REJECTED";
+
+    const WaitingContent = () => {
+      const router = useRouter();
+
+      const requestApproval = async () => {
+        try {
+          const res = await fetch("/api/customer/approval/request", {
+            method: "POST",
+          });
+          if (!res.ok) {
+            const data = await res.json().catch(() => ({}));
+            alert(
+              data.error ||
+                "Unable to submit approval request. Please try again later.",
+            );
+            return;
+          }
+          alert(
+            "Your approval request has been submitted. Please wait for admin to approve.",
+          );
+          router.refresh();
+        } catch (e) {
+          console.error(e);
+          alert("Something went wrong. Please try again later.");
+        }
+      };
+
+      return (
+        <div className="min-h-screen bg-background flex flex-col">
+          <RoleBasedHeader />
+          <AnnouncementBar />
+          <main className="flex-1 container mx-auto px-4 py-16 flex items-center justify-center">
+            <div className="max-w-lg w-full bg-white dark:bg-gray-900 border border-border rounded-xl p-8 shadow-sm text-center space-y-4">
+              <h1 className="text-2xl font-bold">
+                Account awaiting admin approval
+              </h1>
+              <p className="text-muted-foreground text-sm">
+                Your customer account has been created successfully, but an
+                administrator must approve it before you can access the
+                customer panel.
+              </p>
+              {isRejected ? (
+                <>
+                  <p className="text-sm text-red-500 font-medium">
+                    Your previous approval request was declined.
+                  </p>
+                  <p className="text-xs text-muted-foreground">
+                    You can request approval again up to 3 times. After that,
+                    please contact support if you still need access.
+                  </p>
+                  <button
+                    onClick={requestApproval}
+                    className="mt-4 inline-flex items-center justify-center rounded-md bg-primary px-4 py-2 text-sm font-medium text-primary-foreground hover:bg-primary/90"
+                  >
+                    Request approval again
+                  </button>
+                </>
+              ) : (
+                <p className="text-xs text-muted-foreground">
+                  You will receive an email once your account has been reviewed.
+                  You can safely sign out and sign in later to check the status.
+                </p>
+              )}
+            </div>
+          </main>
+          <Footer />
+        </div>
+      );
+    };
+
+    return <WaitingContent />;
+  }
+
   return (
     <div className="min-h-screen bg-background">
       <RoleBasedHeader />

@@ -684,6 +684,106 @@ const appointmentCustomerEmailTemplate = (formData: {
   </html>
 `;
 
+// -------- Customer approval emails --------
+
+export const sendCustomerApprovalPendingEmail = async (
+  to: string,
+  name: string,
+) => {
+  const logoUrl = getLogoForEmail();
+  const title = "Your Mothers Aura account is pending approval";
+  const content = `
+    <p>Dear <strong>${name}</strong>,</p>
+    <p>Thank you for signing up with Mothers Aura Diamonds.</p>
+    <div class="highlight">
+      <h3>Account Status: <span class="amount" style="font-size:20px;">Pending Admin Approval</span></h3>
+      <p>Your account has been created successfully and is now awaiting review by our team.</p>
+    </div>
+    <p>Once an administrator approves your account, you will be able to access your customer dashboard and start exploring our diamonds.</p>
+    <p style="margin-top:16px;">You don't need to do anything right now. If we need any additional details, we will contact you on this email address.</p>
+  `;
+
+  const html = createEmailTemplate({
+    logoUrl,
+    title,
+    content,
+    footerContent:
+      "<p>203-Bhav resiedency, Thane 421304, Maharastra, India.</p>",
+  });
+
+  await transporter.sendMail({
+    from: '"Mothers Aura" <admintejas@mothersauradiamonds.com>',
+    to,
+    subject: "Your Mothers Aura account is pending admin approval",
+    html,
+  });
+};
+
+export const sendCustomerApprovedEmail = async (to: string, name: string) => {
+  const logoUrl = getLogoForEmail();
+  const title = "Your Mothers Aura account has been approved";
+  const content = `
+    <p>Dear <strong>${name}</strong>,</p>
+    <p>Good news! Your Mothers Aura Diamonds customer account has been <strong>approved</strong>.</p>
+    <div class="highlight">
+      <h3>You're all set</h3>
+      <p>You can now sign in and access your customer dashboard, browse diamonds, and place orders.</p>
+    </div>
+    <p>Use your registered email address to sign in at any time.</p>
+  `;
+
+  const html = createEmailTemplate({
+    logoUrl,
+    title,
+    content,
+    footerContent:
+      "<p>203-Bhav resiedency, Thane 421304, Maharastra, India.</p>",
+  });
+
+  await transporter.sendMail({
+    from: '"Mothers Aura" <admintejas@mothersauradiamonds.com>',
+    to,
+    subject: "Your Mothers Aura account is approved",
+    html,
+  });
+};
+
+export const sendCustomerRejectedEmail = async (
+  to: string,
+  name: string,
+  remainingAttempts: number,
+) => {
+  const logoUrl = getLogoForEmail();
+  const title = "Your Mothers Aura account approval was declined";
+  const content = `
+    <p>Dear <strong>${name}</strong>,</p>
+    <p>At this time, your account approval request has been <strong>declined</strong> by the administrator.</p>
+    <div class="highlight">
+      <h3>What this means</h3>
+      <p>Your customer dashboard access is currently disabled. You can submit a new approval request from the website.</p>
+      <p><strong>Remaining attempts:</strong> ${
+        remainingAttempts > 0 ? remainingAttempts : 0
+      } out of 3</p>
+    </div>
+    <p>If you believe this is a mistake or would like to provide additional information, please reply to this email or contact us via the website.</p>
+  `;
+
+  const html = createEmailTemplate({
+    logoUrl,
+    title,
+    content,
+    footerContent:
+      "<p>203-Bhav resiedency, Thane 421304, Maharastra, India.</p>",
+  });
+
+  await transporter.sendMail({
+    from: '"Mothers Aura" <admintejas@mothersauradiamonds.com>',
+    to,
+    subject: "Your Mothers Aura account approval was declined",
+    html,
+  });
+};
+
 // Send Appointment Email
 export const sendAppointmentEmail = async (formData: {
   name: string;

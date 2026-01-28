@@ -79,9 +79,11 @@ export const authOptions: NextAuthOptions = {
         // Fetch user role from database
         const dbUser = await prisma.user.findUnique({
           where: { id: user.id },
-          select: { role: true }
+          select: { role: true, approvalStatus: true, approvalAttempts: true }
         });
         token.role = dbUser?.role || 'CUSTOMER';
+        token.approvalStatus = dbUser?.approvalStatus || 'PENDING';
+        token.approvalAttempts = dbUser?.approvalAttempts ?? 0;
       }
       return token;
     },
@@ -92,6 +94,10 @@ export const authOptions: NextAuthOptions = {
         session.user.name = token.name as string;
         session.user.image = token.image as string;
         session.user.role = token.role as string;
+        // @ts-expect-error: custom fields on session.user
+        session.user.approvalStatus = token.approvalStatus as string;
+        // @ts-expect-error: custom fields on session.user
+        session.user.approvalAttempts = token.approvalAttempts as number;
       }
       return session;
     },

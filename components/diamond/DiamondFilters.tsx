@@ -372,10 +372,10 @@ export function DiamondFilters({ filters, setFilters, mode = "side" }: DiamondFi
                 <Switch />
             </div>
 
-            {/* Rare Carat Scores */}
+            {/* Mothers Aura Scores */}
             <div className="bg-white dark:bg-gray-900 p-5 rounded-xl border dark:border-gray-700 shadow-sm">
                 <div className="flex justify-between items-center mb-4">
-                    <h3 className="font-semibold text-sm dark:text-gray-200">Rare Carat Scores</h3>
+                    <h3 className="font-semibold text-sm dark:text-gray-200">Mothers Aura Scores</h3>
                     <Info className="w-4 h-4 text-muted-foreground" />
                 </div>
                 <div className="space-y-4">

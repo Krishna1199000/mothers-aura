@@ -55,7 +55,7 @@ export async function POST(request: NextRequest) {
     });
 
     // Store password in plaintext (no hashing for new users)
-    // Create user with default CUSTOMER role
+    // Create user with default CUSTOMER role and pending approval
     const user = await prisma.user.create({
       data: {
         name,
@@ -64,6 +64,8 @@ export async function POST(request: NextRequest) {
         phone: phone || null,
         role: 'CUSTOMER',
         emailVerified: new Date(), // Mark email as verified since OTP was validated
+        approvalStatus: 'PENDING',
+        approvalAttempts: 0,
       },
       select: {
         id: true,

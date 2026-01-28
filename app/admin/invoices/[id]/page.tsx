@@ -487,7 +487,7 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
                 {isDownloading ? 'Downloading...' : 'Download PDF'}
               </Button>
               <Button 
-                onClick={sendEmail}
+                onClick={sendEmailWithPreviewPdf}
                 variant="default"
                 disabled={isPrinting || isDownloading || isEmailing}
               >
@@ -541,7 +541,14 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
               }
               /* Ensure single page fit and prevent stray images */
               html, body { height: auto !important; overflow: hidden !important; }
-              #invoice-content { page-break-before: avoid; page-break-after: avoid; page-break-inside: avoid; width: 190mm !important; min-height: 277mm !important; margin: 0 auto !important; zoom: 0.95; }
+              #invoice-content {
+                page-break-before: avoid;
+                page-break-after: avoid;
+                page-break-inside: avoid;
+                width: 190mm !important;
+                margin: 0 auto !important;
+                padding: 8mm !important;
+              }
               /* Hide any images that might be outside the main content (e.g., favicon previews) */
               body > img { display: none !important; }
               
@@ -611,10 +618,7 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
           .space-y-1 > * + * { margin-top: 0.1rem !important; }
           
           /* Optimize main container spacing */
-          #invoice-content {
-            padding: 8mm !important;
-            margin: 0 !important;
-          }
+          /* main content padding is handled above */
           
           /* Reduce header spacing */
           .invoice-header {
@@ -626,8 +630,8 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
             margin-bottom: 0.2rem !important;
           }
 
-              /* Logo */
-              img {
+              /* Logo - restrict to the invoice logo only */
+              .logo-container img {
                 width: 112px !important;
                 height: 112px !important;
                 object-fit: cover;
@@ -675,9 +679,9 @@ export default function InvoiceViewPage({ params }: { params: Promise<{ id: stri
             <CardContent className="p-8" id="invoice-content">
               {/* Header */}
               <div className="text-center mb-8">
-                <div className="bg-white p-2 rounded-lg inline-block mb-2">
+                <div className="bg-white p-2 rounded-lg inline-block mb-2 logo-container">
                   <Image 
-                    src="/logoNamebg.png"
+                    src="https://mothersauradiamonds.com/logoWithDescbg.png"
                     alt="Logo" 
                     width={96}
                     height={96}

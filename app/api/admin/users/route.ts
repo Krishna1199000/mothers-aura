@@ -37,6 +37,8 @@ export async function GET(request: NextRequest) {
         email: true,
         password: true, // Include password for admin
         role: true,
+        approvalStatus: true,
+        approvalAttempts: true,
         createdAt: true,
       },
       orderBy: {

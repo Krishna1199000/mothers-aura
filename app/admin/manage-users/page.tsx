@@ -21,6 +21,8 @@ interface User {
   email: string;
   password?: string;
   role: 'ADMIN' | 'EMPLOYEE' | 'CUSTOMER';
+  approvalStatus: string;
+  approvalAttempts: number;
   createdAt: string;
 }
 
@@ -280,6 +282,7 @@ export default function ManageUsersPage() {
                     <TableHead>Email</TableHead>
                     <TableHead>Password</TableHead>
                     <TableHead>Current Role</TableHead>
+                    <TableHead>Approval</TableHead>
                     <TableHead>Member Since</TableHead>
                     <TableHead>Actions</TableHead>
                   </TableRow>
@@ -377,23 +380,137 @@ export default function ManageUsersPage() {
                           </Badge>
                         </TableCell>
                         <TableCell>
+                          <div className="flex flex-col gap-1">
+                            <Badge
+                              variant={
+                                user.approvalStatus === "APPROVED"
+                                  ? "default"
+                                  : user.approvalStatus === "REJECTED"
+                                  ? "destructive"
+                                  : "secondary"
+                              }
+                            >
+                              {user.approvalStatus}
+                            </Badge>
+                            {user.approvalStatus === "REJECTED" && (
+                              <span className="text-[10px] text-muted-foreground">
+                                Attempts: {user.approvalAttempts} / 3
+                              </span>
+                            )}
+                          </div>
+                        </TableCell>
+                        <TableCell>
                           {new Date(user.createdAt).toLocaleDateString()}
                         </TableCell>
                         <TableCell>
-                          <Select
-                            value={user.role}
-                            onValueChange={(newRole) => updateUserRole(user.id, newRole)}
-                            disabled={updating === user.id}
-                          >
-                            <SelectTrigger className="w-32">
-                              <SelectValue />
-                            </SelectTrigger>
-                            <SelectContent>
-                              <SelectItem value="CUSTOMER">Customer</SelectItem>
-                              <SelectItem value="EMPLOYEE">Employee</SelectItem>
-                              <SelectItem value="ADMIN">Admin</SelectItem>
-                            </SelectContent>
-                          </Select>
+                          <div className="flex flex-col gap-2">
+                            <Select
+                              value={user.role}
+                              onValueChange={(newRole) =>
+                                updateUserRole(user.id, newRole)
+                              }
+                              disabled={updating === user.id}
+                            >
+                              <SelectTrigger className="w-32">
+                                <SelectValue />
+                              </SelectTrigger>
+                              <SelectContent>
+                                <SelectItem value="CUSTOMER">
+                                  Customer
+                                </SelectItem>
+                                <SelectItem value="EMPLOYEE">
+                                  Employee
+                                </SelectItem>
+                                <SelectItem value="ADMIN">Admin</SelectItem>
+                              </SelectContent>
+                            </Select>
+                            {user.role === "CUSTOMER" && (
+                              <div className="flex gap-2">
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updating === user.id}
+                                  onClick={async () => {
+                                    setUpdating(user.id);
+                                    try {
+                                      const res = await fetch(
+                                        "/api/admin/users/approve",
+                                        {
+                                          method: "POST",
+                                          headers: {
+                                            "Content-Type": "application/json",
+                                          },
+                                          body: JSON.stringify({
+                                            userId: user.id,
+                                          }),
+                                        },
+                                      );
+                                      const data = await res.json();
+                                      if (!res.ok) {
+                                        toast.error("Approve Failed", {
+                                          description:
+                                            data.error ||
+                                            "Failed to approve user",
+                                        });
+                                      } else {
+                                        toast.success("User Approved", {
+                                          description:
+                                            "Customer can now access the panel.",
+                                        });
+                                        fetchUsers();
+                                      }
+                                    } finally {
+                                      setUpdating(null);
+                                    }
+                                  }}
+                                >
+                                  <Check className="w-3 h-3 mr-1" />
+                                  Approve
+                                </Button>
+                                <Button
+                                  size="sm"
+                                  variant="outline"
+                                  disabled={updating === user.id}
+                                  onClick={async () => {
+                                    setUpdating(user.id);
+                                    try {
+                                      const res = await fetch(
+                                        "/api/admin/users/reject",
+                                        {
+                                          method: "POST",
+                                          headers: {
+                                            "Content-Type": "application/json",
+                                          },
+                                          body: JSON.stringify({
+                                            userId: user.id,
+                                          }),
+                                        },
+                                      );
+                                      const data = await res.json();
+                                      if (!res.ok) {
+                                        toast.error("Reject Failed", {
+                                          description:
+                                            data.error ||
+                                            "Failed to reject user",
+                                        });
+                                      } else {
+                                        toast.success("User Rejected", {
+                                          description:
+                                            "Customer will be notified by email.",
+                                        });
+                                        fetchUsers();
+                                      }
+                                    } finally {
+                                      setUpdating(null);
+                                    }
+                                  }}
+                                >
+                                  <X className="w-3 h-3 mr-1" />
+                                  Reject
+                                </Button>
+                              </div>
+                            )}
+                          </div>
                         </TableCell>
                       </TableRow>
                     );

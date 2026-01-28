@@ -68,6 +68,10 @@ model User {
   password       String?
   image          String?
   role           Role     @default(CUSTOMER)
+  /// Customer onboarding approval status: PENDING | APPROVED | REJECTED
+  approvalStatus String   @default("PENDING")
+  /// Number of times a rejected customer has re-requested approval
+  approvalAttempts Int    @default(0)
   emailVerified  DateTime?
   createdAt      DateTime @default(now())
   updatedAt      DateTime @updatedAt
